@@ -2,7 +2,8 @@
 const core = require('discipl-core')
 
 const publish = async (ssid, flint_ld_model) => {
-  return core.claim(ssid, 'FLINT_LD_MODEL', flint_ld_model)
+  let model = new FlintModel(flint_ld_model)
+  return core.claim(ssid, 'FLINT_LD_MODEL', model.source)
 }
 
 const getActiveCase = async (ssid, flint_ld_model_link) => {
@@ -15,6 +16,7 @@ const getActiveCase = async (ssid, flint_ld_model_link) => {
 }
 
 const getRoles = (case) => {
+  if(typeof case !== FlintCase) throw Error('getRoles() requires a FlintCase as argument')
   return case.model.roles
 }
 

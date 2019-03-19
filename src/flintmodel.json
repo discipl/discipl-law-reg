@@ -1,0 +1,232 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/root.json",
+  "type": "object",
+  "title": "The Root Schema",
+  "required": [
+    "type",
+    "roles",
+    "actions",
+    "facts",
+    "duties",
+    "reference"
+  ],
+  "properties": {
+    "type": {
+      "$id": "#/properties/type",
+      "type": "string",
+      "title": "The Type Schema",
+      "default": "",
+      "examples": [
+        "Subsidieregeling lerarenbeurs"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "roles": {
+      "$id": "#/properties/roles",
+      "type": "array",
+      "title": "The Roles Schema",
+      "items": {
+        "$id": "#/properties/roles/items",
+        "type": "object",
+        "title": "The Items Schema",
+        "required": [
+          "name",
+          "reference"
+        ],
+        "properties": {
+          "name": {
+            "$id": "#/properties/roles/items/properties/name",
+            "type": "string",
+            "title": "The Name Schema",
+            "default": "",
+            "examples": [
+              "minister van OCW"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "reference": {
+            "$id": "#/properties/roles/items/properties/reference",
+            "type": "string",
+            "title": "The Reference Schema",
+            "default": "",
+            "examples": [
+              ""
+            ],
+            "pattern": "^(.*)$"
+          }
+        }
+      }
+    },
+    "actions": {
+      "$id": "#/properties/actions",
+      "type": "array",
+      "title": "The Actions Schema",
+      "items": {
+        "$id": "#/properties/actions/items",
+        "type": "object",
+        "title": "The Items Schema",
+        "required": [
+          "action",
+          "actor",
+          "object",
+          "recipient",
+          "preconditions",
+          "create",
+          "terminate",
+          "reference"
+        ],
+        "properties": {
+          "action": {
+            "$id": "#/properties/actions/items/properties/action",
+            "type": "string",
+            "title": "The Action Schema",
+            "default": "",
+            "examples": [
+              "verstrekken"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "actor": {
+            "$id": "#/properties/actions/items/properties/actor",
+            "type": "string",
+            "title": "The Actor Schema",
+            "default": "",
+            "examples": [
+              "minister van OCW"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "object": {
+            "$id": "#/properties/actions/items/properties/object",
+            "type": "string",
+            "title": "The Object Schema",
+            "default": "",
+            "examples": [
+              "subsidie lerarenbeurs"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "recipient": {
+            "$id": "#/properties/actions/items/properties/recipient",
+            "type": "string",
+            "title": "The Recipient Schema",
+            "default": "",
+            "examples": [
+              "leraar"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "preconditions": {
+            "$id": "#/properties/actions/items/properties/preconditions",
+            "type": "string",
+            "title": "The Preconditions Schema",
+            "default": "",
+            "examples": [
+              "([subsidie voor bacheloropleiding leraar] OF [subsidie voor masteropleiding leraar] ..."
+            ],
+            "pattern": "^(.*)$"
+          },
+          "create": {
+            "$id": "#/properties/actions/items/properties/create",
+            "type": "string",
+            "title": "The Create Schema",
+            "default": "",
+            "examples": [
+              ""
+            ],
+            "pattern": "^(.*)$"
+          },
+          "terminate": {
+            "$id": "#/properties/actions/items/properties/terminate",
+            "type": "string",
+            "title": "The Terminate Schema",
+            "default": "",
+            "examples": [
+              ""
+            ],
+            "pattern": "^(.*)$"
+          },
+          "reference": {
+            "$id": "#/properties/actions/items/properties/reference",
+            "type": "string",
+            "title": "The Reference Schema",
+            "default": "",
+            "examples": [
+              "art. 3.1 lid 1, aanhef en onder a, Slb"
+            ],
+            "pattern": "^(.*)$"
+          }
+        }
+      }
+    },
+    "facts": {
+      "$id": "#/properties/facts",
+      "type": "array",
+      "title": "The Facts Schema",
+      "items": {
+        "$id": "#/properties/facts/items",
+        "type": "object",
+        "title": "The Items Schema",
+        "required": [
+          "type",
+          "derivation-rule",
+          "reference"
+        ],
+        "properties": {
+          "type": {
+            "$id": "#/properties/facts/items/properties/type",
+            "type": "string",
+            "title": "The Type Schema",
+            "default": "",
+            "examples": [
+              "leraar voldoet aan de subsidiecriteria"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "derivation-rule": {
+            "$id": "#/properties/facts/items/properties/derivation-rule",
+            "type": "string",
+            "title": "The Derivation-rule Schema",
+            "default": "",
+            "examples": [
+              "[leraar die bij aanvang van het studiejaar waarvoor de subsidie bestemd de graad Bachelor mag voeren] EN [leraar die op het moment van de subsidieaanvraag in dienst is bij een werkgever] EN ( [leraar werkt bij een of meer bekostigde onderwijsinstellingen] OF [leraar werkt in een of meer orthopedagogisch-didactische centra])  EN [leraar die voor minimaal twintig procent van zijn werktijd is belast met lesgebonden taken] EN [leraar die pedagogisch-didactisch verantwoordelijk is voor het onderwijs] EN NIET [leraar is aangesteld als ambulant begeleider] EN NIET [leraar is aangesteld als zorgcoördinator] EN NIET [leraar is aangesteld als intern begeleider] EN NIET [leraar is aangesteld als remedial teacher] EN [leraar die ingeschreven staat in registerleraar.nl]"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "reference": {
+            "$id": "#/properties/facts/items/properties/reference",
+            "type": "string",
+            "title": "The Reference Schema",
+            "default": "",
+            "examples": [
+              "art. 20 lid 1 Slb"
+            ],
+            "pattern": "^(.*)$"
+          }
+        }
+      }
+    },
+    "duties": {
+      "$id": "#/properties/duties",
+      "type": "array",
+      "title": "The Duties Schema",
+      "items": {
+        "$id": "#/properties/duties/items",
+        "type": "object",
+        "title": "The Items Schema"
+      }
+    },
+    "reference": {
+      "$id": "#/properties/reference",
+      "type": "string",
+      "title": "The Reference Schema",
+      "default": "",
+      "examples": [
+        "jci1.3:c:BWBR0039319&z=2018-05-29&g=2018-05-29"
+      ],
+      "pattern": "^(.*)$"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "type": "Subsidieregeling lerarenbeurs",
+  "roles": [
+    {
+      "name": "minister van OCW",
+      "reference": ""
+    },
+    {
+      "name": "leraar",
+      "reference": ""
+    },
+    {
+      "name": "bevoegd gezag",
+      "reference": ""
+    },
+    {
+      "name": "opleiding",
+      "reference": ""
+    }
+  ],
+  "actions": [
+    {
+      "action": "verstrekken",
+      "actor": "minister van OCW",
+      "object": "subsidie lerarenbeurs",
+      "recipient": "leraar",
+      "preconditions": "([subsidie voor bacheloropleiding leraar] OF [subsidie voor masteropleiding leraar] ...",
+      "create": "",
+      "terminate": "",
+      "reference": "art. 3.1 lid 1, aanhef en onder a, Slb"
+    }
+  ],
+  "facts": [
+    {
+      "type": "leraar voldoet aan de subsidiecriteria",
+      "derivation-rule": "[leraar die bij aanvang van het studiejaar waarvoor de subsidie bestemd de graad Bachelor mag voeren] EN [leraar die op het moment van de subsidieaanvraag in dienst is bij een werkgever] EN ( [leraar werkt bij een of meer bekostigde onderwijsinstellingen] OF [leraar werkt in een of meer orthopedagogisch-didactische centra])  EN [leraar die voor minimaal twintig procent van zijn werktijd is belast met lesgebonden taken] EN [leraar die pedagogisch-didactisch verantwoordelijk is voor het onderwijs] EN NIET [leraar is aangesteld als ambulant begeleider] EN NIET [leraar is aangesteld als zorgcoördinator] EN NIET [leraar is aangesteld als intern begeleider] EN NIET [leraar is aangesteld als remedial teacher] EN [leraar die ingeschreven staat in registerleraar.nl]",
+      "reference": "art. 20 lid 1 Slb"
+    },
+    {
+      "type": "subsidie voor bacheloropleiding leraar",
+      "derivation-rule": "",
+      "reference": "art. 3 lid 2 Slb"
+    }
+  ],
+  "duties": [
+    {},
+    {}
+  ],
+  "reference": "jci1.3:c:BWBR0039319&z=2018-05-29&g=2018-05-29"
+}
