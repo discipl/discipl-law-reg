@@ -1,0 +1,103 @@
+{
+  "model" : "Regeling verwelkoming bewoners gemeente",
+  "acts": [
+    {
+      "act" : "<<gemeente voorziet in vervulling behoefte aan verwelkoming van bewoners>>",
+      "action" : "vervullen behoefte",
+      "actor": "[gemeente]",
+      "object": "[verwelkoming]",
+      "interested-party": "[bewoner]",
+      "preconditions": "[bewoner is ingeschreven in gemeente] EN NIET [verwelkomstbehoefte reeds vervuld]",
+      "create": "<<gemeente stuurt welkomstbrief naar bewoner>>",
+      "terminate": "",
+      "reference": "art. 2 lid 1"
+    },
+    {
+      "act" : "<<gemeente stuurt welkomstbrief naar bewoner>>",
+      "action" : "versturen",
+      "actor": "[gemeente]",
+      "object": "[welkomstbrief]",
+      "interested-party": "[bewoner]",
+      "preconditions": "",
+      "create": "<<gemeente verstrekt welkomstpakket aan bewoner binnen 14 dagen na versturen welkomstbrief>>",
+      "terminate": "",
+      "reference": "art. 2 lid 2"
+    },
+    {
+      "act" : "<<gemeente verstrekt welkomstpakket aan nieuwe bewoner>>",
+      "action" : "verstrekken",
+      "actor": "[gemeente]",
+      "object": "[welkomstpakket]",
+      "interested-party": "[bewoner]",
+      "preconditions": "",
+      "create": "",
+      "terminate": "",
+      "reference": "art. 2 lid 3"
+    },
+    {
+      "act" : "<<bewoner kan klacht indienen dat welkomstpakket nog niet is ontvangen>>",
+      "action" : "klacht niet ontvangen",
+      "actor": "[gemeente]",
+      "object": "[welkomstpakket]",
+      "interested-party": "[bewoner]",
+      "preconditions": "[het minimaal 14 dagen na versturen welkomstbrief is]",
+      "create": "",
+      "terminate": "",
+      "reference": "art. 2 lid 4"
+    }
+  ],
+  "facts": [
+    {
+      "fact": "gemeente",
+      "function" : "",
+      "reference": "art. 1 lid 1"
+    },
+    {
+      "fact": "bewoner",
+      "function" : "",
+      "reference": "art. 1 lid 2"
+    },
+    {
+      "fact": "verwelkoming",
+      "function" : "",
+      "reference": "art. 1 lid 3"
+    },
+    {
+      "fact": "welkomstbrief",
+      "function" : "",
+      "reference": "art. 1 lid 4"
+    },
+    {
+      "fact": "welkomstpakket",
+      "function" : "",
+      "reference": "art. 1 lid 5"
+    },
+    {
+      "fact": "bewoner is ingeschreven in gemeente",
+      "function": "",
+      "reference": "art. 1 lid 6"
+    },
+    {
+      "fact": "verwelkomstbehoefte reeds vervuld",
+      "function": "FACT_EXIST(<<vervullen behoefte>> [verwelkoming] [bewoner])",
+      "reference": "art. 1 lid 7"
+    },
+    {
+      "fact": "het minimaal 14 dagen na versturen welkomstbrief is",
+      "function": "NOW() - DATE(<<versturen>> [welkomstbrief] [bewoner]) >= 14",
+      "reference": ""
+    }
+  ],
+  "duties": [
+    {
+      "duty":"gemeente verstrekt welkomstpakket aan bewoner binnen 14 dagen na versturen welkomstbrief",
+      "duty-holder":"gemeente",
+      "claimant":"bewoner",
+      "create":"<<gemeente verstrekt welkomstpakket aan nieuwe bewoner>>",
+      "enforce":"<<bewoner kan klacht indienen dat welkomstpakket nog niet is ontvangen>>",
+      "terminate":"",
+      "reference":"art. 1 lid 6"
+    }
+  ],
+  "reference": ""
+}
