@@ -1,0 +1,16 @@
+language: node_js
+node_js:
+  - "lts/*"
+addons:
+  sonarcloud:
+    organization: "discipl" # the key of the org you chose at step #3
+before_script:
+  - git fetch --unshallow
+script:
+  - npm run lint
+  - npm test
+  # other script steps might be done before running the actual analysis
+
+after_success:
+  - npm run coverage
+  - 'if [ ! -z "$SONAR_TOKEN" ]; then sonar-scanner; fi'

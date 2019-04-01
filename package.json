@@ -1,0 +1,29 @@
+{
+  "name": "discipl-law-reg",
+  "version": "1.0.0",
+  "description": "Discipl Law and Regulation Compliance Library",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/discipl/discipl-law-reg.git"
+  },
+  "keywords": [
+    "Compliance",
+    "By",
+    "Design",
+    "FLINT",
+    "Calculemus"
+  ],
+  "author": "Bas Kaptijn",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/discipl/discipl-law-reg/issues"
+  },
+  "homepage": "https://github.com/discipl/discipl-law-reg#readme"
+}

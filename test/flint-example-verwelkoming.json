@@ -7,7 +7,7 @@
       "actor": "[gemeente]",
       "object": "[verwelkoming]",
       "interested-party": "[bewoner]",
-      "preconditions": "[bewoner is ingeschreven in gemeente] EN NIET [verwelkomstbehoefte reeds vervuld]",
+      "preconditions": "[bewoner is ingeschreven in gemeente] EN NIET [verwelkomingsbehoefte reeds vervuld]",
       "create": "<<gemeente stuurt welkomstbrief naar bewoner>>",
       "terminate": "",
       "reference": "art. 2 lid 1"
@@ -36,11 +36,11 @@
     },
     {
       "act" : "<<bewoner kan klacht indienen dat welkomstpakket nog niet is ontvangen>>",
-      "action" : "klacht niet ontvangen",
+      "action" : "klacht indienen over niet ontvangen",
       "actor": "[gemeente]",
       "object": "[welkomstpakket]",
       "interested-party": "[bewoner]",
-      "preconditions": "[het minimaal 14 dagen na versturen welkomstbrief is]",
+      "preconditions": "[minimaal 14 dagen na versturen welkomstbrief]",
       "create": "",
       "terminate": "",
       "reference": "art. 2 lid 4"
@@ -78,13 +78,13 @@
       "reference": "art. 1 lid 6"
     },
     {
-      "fact": "verwelkomstbehoefte reeds vervuld",
-      "function": "FACT_EXIST(<<vervullen behoefte>> [verwelkoming] [bewoner])",
+      "fact": "verwelkomingsbehoefte reeds vervuld",
+      "function": "",
       "reference": "art. 1 lid 7"
     },
     {
-      "fact": "het minimaal 14 dagen na versturen welkomstbrief is",
-      "function": "NOW() - DATE(<<versturen>> [welkomstbrief] [bewoner]) >= 14",
+      "fact": "minimaal 14 dagen na versturen welkomstbrief",
+      "function": "",
       "reference": ""
     }
   ],
