@@ -1,0 +1,20 @@
+{
+  "name": "excel-to-json",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "xls-to-json": "^0.4.0",
+    "xls-to-json-lc": "^0.3.4",
+    "xlsx-to-json": "^0.3.0",
+    "xlsx-to-json-lc": "^0.5.0"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
+}
