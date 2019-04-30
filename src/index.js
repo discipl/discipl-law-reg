@@ -1,5 +1,5 @@
 
-const core = require('discipl-core')
+import * as abundance from '@discipl/abundance-service'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -8,6 +8,61 @@ const DISCIPL_FLINT_DUTY = 'DISCIPL_FLINT_DUTY'
 const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
 
 
+
+const getAbundanceService = () => {
+  return abundance
+}
+
+const checkActor = async (actor, factLink, ssid) => {
+  let core = abundance.getCoreAPI()
+  if (factLink) {
+    let factReference = await core.get(factLink, ssid)
+    var functionRef = factReference.data['DISCIPL_FLINT_FACT'].function
+    return true
+  } else {
+    return false
+  }
+}
+
+const arrayToObject = (arr) => {
+  var obj = {};
+  Object.keys(arr).forEach(element => {
+    Object.assign(obj, arr[element]);
+  })
+  return obj;
+}
+
+const checkPreconditions = (actor, preconditions) => {
+  console.log('dit is checkPreconditions')
+  return true
+}
+
+const checkAction = async (modelLink, actLink, ssid, context) => {
+
+  context = { act: '', facts: [], duties: [] }
+
+  let core = abundance.getCoreAPI()
+  let modelReference = await core.get(modelLink, ssid)
+  let actReference = await core.get(actLink, ssid)
+  let factReference = arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].facts)
+  let dutyReference = arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].duties)
+
+
+  const actor = actReference.data['DISCIPL_FLINT_ACT'].actor
+
+  const checkedActor = await checkActor('actor', factReference[actor], ssid)
+
+  const checkedPreConditions = checkPreconditions('actor', actReference.data['DISCIPL_FLINT_ACT'].preconditions)
+
+  if (checkedActor && checkedPreConditions) {
+    console.log('checkActor en checkPreconditions zijn true')
+  }
+
+  console.log(context)
+  return context
+
+}
+
 /**
  * Publishes the FLINT model (as JSON) in linked verifiable claims (vc's)
  * in the channel of the given ssid. Each act, fact and duty is stored in a separate vc.
@@ -15,20 +70,21 @@ const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
  * Note that references within the model are not translated into links.
  */
 const publish = async (ssid, flint_model) => {
-  let result = { model : flint_model.model, acts : [], facts : [] , duties : []}
-  for(fact in flint_model.facts) {
-    let link = await core.claim(ssid, DISCIPL_FLINT_FACT, fact)
-    result.facts.push({[fact.fact]:link})
+  let core = abundance.getCoreAPI()
+  let result = { model: flint_model.model, acts: [], facts: [], duties: [] }
+  for (let fact of flint_model.facts) {
+    let link = await core.claim(ssid, { [DISCIPL_FLINT_FACT]: fact })
+    result.facts.push({ [fact.fact]: link })
   }
-  for(act in flint_model.acts) {
-    let link = await core.claim(ssid, DISCIPL_FLINT_ACT, act)
-    result.acts.push({[act.act]:link})
+  for (let act of flint_model.acts) {
+    let link = await core.claim(ssid, { [DISCIPL_FLINT_ACT]: act })
+    result.acts.push({ [act.act]: link })
   }
-  for(duty in flint_model.duties) {
-    let link = await core.claim(ssid, DISCIPL_FLINT_DUTY, duty)
-    result.duties.push({[duty.duty]:link})
+  for (let duty of flint_model.duties) {
+    let link = await core.claim(ssid, { [DISCIPL_FLINT_DUTY]: duty })
+    result.duties.push({ [duty.duty]: link })
   }
-  let mdl = core.claim(ssid, DISCIPL_FLINT_MODEL, result)
+  let mdl = await core.claim(ssid, { [DISCIPL_FLINT_MODEL]: result })
   return mdl
 }
 
@@ -59,32 +115,34 @@ const get = async (model, did) => {
  * differently because of new claims of the interested party of the case (start act) or attestations of such claims
  */
 const observe = async (model, did) => {
-  abundancesvc.observe(case, did)
-  - of all (nested) service channels, observe actions being taken
-  - of all claims of the case subject with a predicate that could be required (through being mentioned in a fact in a precondition), observe attestations thereof
+  // abundancesvc.observe(case, did)
+  //   - of all(nested) service channels, observe actions being taken
+  //     - of all claims of the case subject with a predicate that could be required(through being mentioned in a fact in a precondition), observe attestations thereof
 
-  {
-    match()
-  }
+  // {
+  //   match()
+  // }
 }
 
 /**
  * Denotes a given act in the context of a case as taken, optionally supplying / denoting the object(s)
  * which the action is taken upon or with. The given ssid must be applicable to the actor the action must be taken by
  */
-const take = (ssid, case, act, obj = null) => {
-  let acts = get(case, ssid.did)
-  for(a in acts) {
-    if(Object.keys(a)[0] === act) && (a[act].precondition)) {
-      let actclaim = core.claim(ssid, case, {[DISCIPL_FLINT_ACT_TAKEN]:act, object:obj, ts:now()})
-      abundancesvc.require()
-      return actclaim
-    }
-  }
-  return null
+const take = (ssid, caseLink, act, obj = null) => {
+  // let acts = get(case, ssid.did)
+  // for (a in acts) {
+  //   if (Object.keys(a)[0] === act) && (a[act].precondition)) {
+  //     let actclaim = core.claim(ssid, case, { [DISCIPL_FLINT_ACT_TAKEN]: act, object: obj, ts: now() })
+  //     abundancesvc.require()
+  //     return actclaim
+  //   }
+  // }
+  // return null
 }
 
-module.exports = {
+export {
+  getAbundanceService,
+  checkAction,
   publish,
   get,
   observe,
