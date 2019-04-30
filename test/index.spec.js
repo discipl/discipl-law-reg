@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import * as lawReg from '../src/index.js'
 //import { loadConnector } from '../src/connector-loader.js'
 
-//import sinon from 'sinon'
+import sinon from 'sinon'
 import { take, toArray } from 'rxjs/operators'
 
 describe('discipl-law-reg', () => {
@@ -17,7 +17,7 @@ describe('discipl-law-reg', () => {
           {
             "act": "<<ingezetene kan verwelkomst van overheid aanvragen>>",
             "action": "[aanvragen]",
-            "actor": "[ingezdetene]",
+            "actor": "[ingezetene]",
             "object": "[verwelkomst]",
             "interested-party": "[overheid]",
             "preconditions": "",
@@ -150,6 +150,66 @@ describe('discipl-law-reg', () => {
       expect(modelLink).to.be.a('string')
 
     });
+
+    it('should be able to take an action', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      const model = {
+        'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
+        'acts': [
+          {
+            'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+            'action': '[aanvragen]',
+            'actor': '[ingezetene]',
+            'object': '[verwelkomst]',
+            'interested-party': '[overheid]',
+            'preconditions': '',
+            'create': '<verwelkomen>',
+            'terminate': '',
+            'reference': 'art 2.1',
+            'sourcetext': '',
+            'explanation': '',
+            'version': '2-[19980101]-[jjjjmmdd]',
+            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+          }],
+        'facts': [
+          { 'fact': '[ingezetene]', 'function': '', 'reference': 'art 1.1' }
+        ],
+        'duties': []
+      }
+
+      let lawmakerSsid = await core.newSsid('ephemeral')
+      await core.allow(lawmakerSsid)
+      let modelLink = await lawReg.publish(lawmakerSsid, model)
+
+      let retrievedModel = await core.get(modelLink)
+
+
+      let needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+      let needLink = await core.claim(needSsid, { 'need': 'beer', 'DISCIPL_FLINT_MODEL_LINK': modelLink })
+
+      let actorSsid = await core.newSsid('ephemeral')
+
+      let functions = {
+        '[ingezetene]': () => true
+      }
+
+      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', { 'functions': functions })
+
+      let action = await core.get(actionLink, actorSsid)
+
+      expect(action).to.deep.equal({
+        'data': {
+          'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+          'DISCIPL_FLINT_GLOBAL_CASE': needLink
+        },
+        'previous': null
+      })
+
+    })
+
 
     //   it('should be able to publish and use a simple fictive flint model from JSON', async () => {
 
