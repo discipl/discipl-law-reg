@@ -9,8 +9,6 @@ const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
 const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
-
-
 const getAbundanceService = () => {
   return abundance
 }
@@ -34,11 +32,11 @@ const checkFact = async (fact, ssid, context) => {
 }
 
 const arrayToObject = (arr) => {
-  var obj = {};
+  var obj = {}
   Object.keys(arr).forEach(element => {
-    Object.assign(obj, arr[element]);
+    Object.assign(obj, arr[element])
   })
-  return obj;
+  return obj
 }
 
 const checkPreconditions = (actor, preconditions) => {
@@ -47,16 +45,12 @@ const checkPreconditions = (actor, preconditions) => {
 }
 
 const checkAction = async (modelLink, actLink, ssid, context) => {
-
-
-
   let core = abundance.getCoreAPI()
   let modelReference = await core.get(modelLink, ssid)
   let actReference = await core.get(actLink, ssid)
   let factReference = arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].facts)
-  let dutyReference = arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].duties)
-
-
+  // TODO: Use this?
+  arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].duties)
 
   const actor = actReference.data['DISCIPL_FLINT_ACT'].actor
 
@@ -78,18 +72,18 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
  * Returns a list to the claim holding the whole model with links to individual claims
  * Note that references within the model are not translated into links.
  */
-const publish = async (ssid, flint_model) => {
+const publish = async (ssid, flintModel) => {
   let core = abundance.getCoreAPI()
-  let result = { model: flint_model.model, acts: [], facts: [], duties: [] }
-  for (let fact of flint_model.facts) {
+  let result = { model: flintModel.model, acts: [], facts: [], duties: [] }
+  for (let fact of flintModel.facts) {
     let link = await core.claim(ssid, { [DISCIPL_FLINT_FACT]: fact })
     result.facts.push({ [fact.fact]: link })
   }
-  for (let act of flint_model.acts) {
+  for (let act of flintModel.acts) {
     let link = await core.claim(ssid, { [DISCIPL_FLINT_ACT]: act })
     result.acts.push({ [act.act]: link })
   }
-  for (let duty of flint_model.duties) {
+  for (let duty of flintModel.duties) {
     let link = await core.claim(ssid, { [DISCIPL_FLINT_DUTY]: duty })
     result.duties.push({ [duty.duty]: link })
   }
@@ -114,7 +108,6 @@ const publish = async (ssid, flint_model) => {
  * from which a trail of (sub)needs being solved can be found
  */
 const get = async (model, did) => {
-
 
 }
 
