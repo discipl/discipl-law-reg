@@ -5,6 +5,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
 # Runtime data
 pids
 *.pid
@@ -61,3 +67,4 @@ typings/
 coverage.lcov
 
 dist
+.DS_Store
