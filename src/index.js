@@ -23,7 +23,7 @@ const checkFact = async (fact, ssid, context) => {
     const functionRef = factReference.data['DISCIPL_FLINT_FACT'].function
 
     if (functionRef !== '') {
-      return checkFact(functionRef)
+      return checkFact(functionRef, ssid, context)
     }
     return true
   } else {
@@ -60,7 +60,7 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
 
   const actor = actReference.data['DISCIPL_FLINT_ACT'].actor
 
-  const checkedActor = await checkFact(actor, ssid, {...context, 'facts': factReference })
+  const checkedActor = await checkFact(actor, ssid, { ...context, 'facts': factReference })
 
   const checkedPreConditions = checkPreconditions('actor', actReference.data['DISCIPL_FLINT_ACT'].preconditions)
 

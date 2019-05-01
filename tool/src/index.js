@@ -16,7 +16,12 @@ const excelToJson = async (arr) => {
                 } else {
                     if (i === arr.length - 1) {
                         newArr[i] = result;
-                        const jsonContent = JSON.stringify(newArr);
+                        const jsonContent = JSON.stringify({
+                            'acts': newArr[0],
+                            'facts': newArr[1],
+                            'duties': newArr[2]
+                        });
+
                         fs.writeFile("output.json", jsonContent, 'utf8', function (err) {
                             if (err) {
                                 return console.log(err);
