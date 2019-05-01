@@ -145,7 +145,7 @@ const take = async (ssid, caseLink, act, context) => {
   let firstCaseLink = isFirstActionInCase ? caseLink : caseClaim.data[DISCIPL_FLINT_GLOBAL_CASE]
   let firstCase = await core.get(firstCaseLink, ssid)
 
-  let modelLink = firstCase.data[DISCIPL_FLINT_MODEL_LINK]
+  let modelLink = firstCase.data['need'][DISCIPL_FLINT_MODEL_LINK]
 
   let model = await core.get(modelLink, ssid)
 

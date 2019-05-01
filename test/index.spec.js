@@ -188,7 +188,7 @@ describe('discipl-law-reg', () => {
       let needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
-      let needLink = await core.claim(needSsid, { 'need': 'beer', 'DISCIPL_FLINT_MODEL_LINK': modelLink })
+      let needLink = await core.claim(needSsid, { 'need': { 'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>', 'DISCIPL_FLINT_MODEL_LINK': modelLink } })
 
       let actorSsid = await core.newSsid('ephemeral')
 
@@ -207,7 +207,6 @@ describe('discipl-law-reg', () => {
         },
         'previous': null
       })
-
     })
 
 
