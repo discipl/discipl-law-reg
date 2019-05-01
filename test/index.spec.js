@@ -234,6 +234,44 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to verify an attestation', async () => {
+
+      let abundancesvc = lawReg.getAbundanceService()
+      let core = abundancesvc.getCoreAPI()
+
+      let ssid = await core.newSsid('ephemeral')
+      await core.claim(ssid, { 'actor': 'persoonA' })
+      let claimlink2 = await core.claim(ssid, { 'actor': 'persoonB' })
+
+      let attestorSsid = await core.newSsid('ephemeral')
+      console.log('voorallow', attestorSsid);
+
+      await core.allow(attestorSsid)
+      console.log('NAallow', attestorSsid);
+
+      await core.attest(attestorSsid, 'agree', claimlink2)
+      console.log('NAatetest', attestorSsid);
+
+      let link2obj = await core.get(claimlink2, ssid)
+
+      console.log(link2obj.data);
+
+
+      console.log('dit is de eerste claim: ', await core.get(link2obj.previous, ssid));
+
+
+
+      let verifiedAttestor = await core.verify('agree', claimlink2, [ssid, ssid.did, null, 'did:discipl:ephemeral:1234', attestorSsid.did], ssid)
+      console.log('verifiedattestor: ', verifiedAttestor);
+      console.log('attestorssid: ', attestorSsid);
+      console.log(ssid.did);
+
+
+
+      // The first ssid that is valid and proves the attestation should be returned
+      expect(verifiedAttestor).to.equal(attestorSsid.did)
+    })
+
     //   it('should be able to publish and use a simple fictive flint model from JSON', async () => {
 
     //     /*
