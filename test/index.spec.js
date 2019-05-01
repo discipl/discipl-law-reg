@@ -192,11 +192,9 @@ describe('discipl-law-reg', () => {
 
       let actorSsid = await core.newSsid('ephemeral')
 
-      let functions = {
-        '[ingezetene]': () => true
-      }
+      let factResolver = (fact) => true
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', { 'functions': functions })
+      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', { 'factResolver': factResolver })
 
       let action = await core.get(actionLink, actorSsid)
 

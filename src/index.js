@@ -27,8 +27,8 @@ const checkFact = async (fact, ssid, context) => {
     }
     return true
   } else {
-    if (Object.keys(context.functions).includes(fact)) {
-      return context.functions[fact]()
+    if (context.factResolver) {
+      return context.factResolver(fact)
     }
   }
 }
