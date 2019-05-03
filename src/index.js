@@ -1,5 +1,6 @@
 
 import * as abundance from '@discipl/abundance-service'
+import * as peg from 'pegjs'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -11,6 +12,38 @@ const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
 const getAbundanceService = () => {
   return abundance
+}
+
+const factFunctionParser = peg.generate(`
+// Flint Fact Function Grammar
+// ==========================
+//
+// Accepts expressions like "fact1 AND (fact2 OR fact3)" and evaluates it
+
+Expression
+  = head:Term tail:(_ ("AND" / "OR") _ Term)* {
+      return tail.reduce(function(result, element) {
+        if (element[1] === "AND") { return result && element[3]; }
+        if (element[1] === "OR") { return result || element[3]; }
+      }, head);
+    }
+
+Term
+  = "(" _ expr:Expression _ ")" { return expr; }
+  / Fact
+
+Fact "fact"
+  = ![01] { return text() == "1"; }
+
+_ "whitespace"
+  = [\\r\\n\\t ]*
+`)
+
+/**
+ * evaluates a fact function
+ */
+const evaluateFactFunction = (factfn) => {
+  return factFunctionParser.parse(factfn)
 }
 
 const checkFact = async (fact, ssid, context) => {
