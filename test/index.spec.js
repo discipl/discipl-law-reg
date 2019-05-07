@@ -194,7 +194,8 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
-          'DISCIPL_FLINT_GLOBAL_CASE': needLink
+          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
         },
         'previous': null
       })
@@ -228,7 +229,43 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
-          'DISCIPL_FLINT_GLOBAL_CASE': needLink
+          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
+        },
+        'previous': null
+      })
+    })
+
+    it('should evaluate a fact as true', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let lawmakerSsid = await core.newSsid('ephemeral')
+      await core.allow(lawmakerSsid)
+
+      let modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' })
+
+      let retrievedModel = await core.get(modelLink)
+
+      let needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+      let needLink = await core.claim(needSsid, { 'need': { 'act': '<<indienen verzoek een besluit te nemen>>', 'DISCIPL_FLINT_MODEL_LINK': modelLink } })
+
+      let actorSsid = await core.newSsid('ephemeral')
+
+      let factResolver = (fact) => {
+        return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]'
+      }
+
+      let actionLink = await lawReg.take(actorSsid, needLink, '<<indienen verzoek een besluit te nemen>>', { 'factResolver': factResolver })
+
+      let action = await core.get(actionLink, actorSsid)
+
+      expect(action).to.deep.equal({
+        'data': {
+          'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
         },
         'previous': null
       })

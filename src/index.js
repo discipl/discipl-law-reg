@@ -7,6 +7,7 @@ const DISCIPL_FLINT_ACT = 'DISCIPL_FLINT_ACT'
 const DISCIPL_FLINT_DUTY = 'DISCIPL_FLINT_DUTY'
 const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
 const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
+const DISCIPL_FLINT_PREVIOUS_CASE = 'DISCIPL_FLINT_PREVIOUS_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
 const getAbundanceService = () => {
@@ -19,6 +20,10 @@ const checkFact = async (fact, ssid, context) => {
   if (factLink) {
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data['DISCIPL_FLINT_FACT'].function
+
+    if (functionRef === true) {
+      return true
+    }
 
     if (functionRef !== '') {
       return checkFact(functionRef, ssid, context)
@@ -44,11 +49,47 @@ const checkPreconditions = (actor, preconditions) => {
   return true
 }
 
+const _factsFromCaseLink = async (caseLink, ssid) => {
+  let core = abundance.getCoreAPI()
+
+  let newFacts = []
+  let currentLink = caseLink
+  while (currentLink != null) {
+    let case_ = await core.get(currentLink, ssid)
+    currentLink = case_.data[DISCIPL_FLINT_PREVIOUS_CASE]
+
+    if (case_.data[DISCIPL_FLINT_ACT_TAKEN] != null) {
+      let action = await core.get(case_.data[DISCIPL_FLINT_ACT_TAKEN], ssid)
+
+      let createdFacts = action.data['create']
+        .split(';')
+        .map(x => x.trim())
+        .filter(x => x.startsWith('[') && x.endsWith(']'))
+
+      newFacts = newFacts.concat(createdFacts)
+    }
+  }
+
+  return newFacts
+}
+
 const checkAction = async (modelLink, actLink, ssid, context) => {
   let core = abundance.getCoreAPI()
   let modelReference = await core.get(modelLink, ssid)
   let actReference = await core.get(actLink, ssid)
   let factReference = arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].facts)
+
+
+  if (context.caseLink != null) {
+    let additionalFacts = await _factsFromCaseLink(context.caseLink, ssid)
+
+    for (let additionalFact of additionalFacts) {
+      if (factReference[additionalFact] != null && factReference[additionalFact].function === '[]') {
+        factReference[additionalFact].function = true
+      }
+    }
+  }
+
   // TODO: Use this?
   arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].duties)
 
@@ -146,9 +187,9 @@ const take = async (ssid, caseLink, act, context) => {
     return Object.keys(actWithLink).includes(act)
   }).map((actWithLink) => Object.values(actWithLink)[0])[0]
 
-  if (await checkAction(modelLink, actLink, ssid, context)) {
+  if (await checkAction(modelLink, actLink, ssid, { ...context, 'caseLink': caseLink })) {
     console.log('Claiming')
-    return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink })
+    return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })
   }
 
   throw new Error('Action is not allowed')
