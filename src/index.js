@@ -14,7 +14,7 @@ const getAbundanceService = () => {
 }
 
 /**
- * Splits a given string from the first ':' to extract the did from the total. 
+ * Splits a given string from the first ':' to extract the did from the total.
  *
  * @param {string} functionRef - Total string what you want to split
  * @returns {array} array with two items, first is for what it is for and the second is the DID
