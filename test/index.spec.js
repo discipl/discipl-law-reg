@@ -236,7 +236,6 @@ describe('discipl-law-reg', () => {
       let abundancesvc = lawReg.getAbundanceService()
       let core = abundancesvc.getCoreAPI()
 
-<<<<<<< HEAD
       let ssid = await core.newSsid('ephemeral')
       await core.claim(ssid, { 'actor': 'persoonA' })
       let claimlink2 = await core.claim(ssid, { 'actor': 'persoonB' })
@@ -268,7 +267,6 @@ describe('discipl-law-reg', () => {
 
       // The first ssid that is valid and proves the attestation should be returned
       expect(verifiedAttestor).to.equal(attestorSsid.did)
-=======
       let minister = await core.newSsid('ephemeral')
       let persoonA = await core.newSsid('ephemeral')
       let persoonB = await core.newSsid('ephemeral')
@@ -391,10 +389,7 @@ describe('discipl-law-reg', () => {
       let modelRef = await core.get(modelLink, ssid)
 
       let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
-      console.log('modellink: ', modelRef);
-      console.log('actlink: ', actsLink);
       console.log('uitkomst:', await lawReg.checkAction(modelLink, actsLink, ssid, ''))
->>>>>>> Work in Progress
     })
 
     //   it('should be able to publish and use a simple fictive flint model from JSON', async () => {
