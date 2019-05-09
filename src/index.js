@@ -14,16 +14,7 @@ const getAbundanceService = () => {
 }
 
 const splitFunction = (functionRef) => {
-  let position = 0
-  let count = 0
-  while (position !== -1) {
-    if (count !== 2) {
-      position = functionRef.indexOf(':', position + 1)
-      count = count + 1
-    } else {
-      break
-    }
-  }
+  let position = functionRef.indexOf(':')
   let arr = functionRef.split(':', 2)
   arr.push(functionRef.substring(position + 1))
   return arr
@@ -81,7 +72,7 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
 
   if (checkedActor && checkedPreConditions) {
     console.log('checkedActor: ', checkedActor)
-    console.log('checkPreConditions: ', checkedPreConditions)
+    console.log('checkPreConditions: ', checkedPreConditions);
 
     return true
   }

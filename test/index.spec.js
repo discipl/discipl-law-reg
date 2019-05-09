@@ -289,9 +289,9 @@ describe('discipl-law-reg', () => {
 
       let modelLink = await lawReg.publish(ssid, { ...model, 'model': 'AWB' }, {
         '[uitreiking besluit aan aanvrager]':
-          'IS:assign:did:discipl:ephemeral:1234',
+          'IS:did:discipl:ephemeral:1234',
         '[toezending besluit aan aanvrager]':
-          'IS:assign:did:discipl:ephemeral:1234'
+          'IS:did:discipl:ephemeral:1234'
       })
 
       let retrievedModel = await core.get(modelLink, ssid)
@@ -299,11 +299,11 @@ describe('discipl-law-reg', () => {
       let retrievedFact = await core.get(retrievedModel.data['DISCIPL_FLINT_MODEL'].facts[3]['[uitreiking besluit aan aanvrager]'], ssid)
 
       retrievedFact = retrievedFact.data['DISCIPL_FLINT_FACT'].function
-      expect(retrievedFact).to.deep.equal('IS:assign:did:discipl:ephemeral:1234')
+      expect(retrievedFact).to.deep.equal('IS:did:discipl:ephemeral:1234')
 
       let retrievedSecondFact = await core.get(retrievedModel.data['DISCIPL_FLINT_MODEL'].facts[1]['[toezending besluit aan aanvrager]'], ssid)
       retrievedSecondFact = retrievedSecondFact.data['DISCIPL_FLINT_FACT'].function
-      expect(retrievedSecondFact).to.deep.equal('IS:assign:did:discipl:ephemeral:1234')
+      expect(retrievedSecondFact).to.deep.equal('IS:did:discipl:ephemeral:1234')
     })
 
     it('should perform a checkAction', async () => {
@@ -332,12 +332,16 @@ describe('discipl-law-reg', () => {
       let ssid = await core.newSsid('ephemeral')
       let modelLink = await lawReg.publish(ssid, model, {
         '[toezending besluit aan aanvrager]':
-          'IS:assign:' + ssid.did
+          'IS:' + ssid.did
       })
       let modelRef = await core.get(modelLink, ssid)
 
       let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
-      console.log('uitkomst:', await lawReg.checkAction(modelLink, actsLink, ssid, ''))
+
+      let result = await lawReg.checkAction(modelLink, actsLink, ssid, '')
+      console.log('result: ' + result)
+
+      expect(result).to.be.true
     })
 
     //   it('should be able to publish and use a simple fictive flint model from JSON', async () => {
