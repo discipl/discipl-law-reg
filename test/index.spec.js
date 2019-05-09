@@ -358,8 +358,7 @@ describe('discipl-law-reg', () => {
       let modelRef = await core.get(modelLink, ssid)
 
       let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
-      console.log('modellink: ', modelRef);
-      console.log('actlink: ', actsLink);
+
       console.log('uitkomst:', await lawReg.checkAction(modelLink, actsLink, ssid, ''))
     })
 
