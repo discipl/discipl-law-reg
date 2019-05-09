@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import * as lawReg from '../src/index.js'
 
 import awb from './flint-example-awb'
-import { async } from 'rxjs/internal/scheduler/async';
+
 // import { loadConnector } from '../src/connector-loader.js'
 
 describe('discipl-law-reg', () => {
@@ -231,120 +231,67 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    it('should be able to verify an attestation', async () => {
-
-      let abundancesvc = lawReg.getAbundanceService()
-      let core = abundancesvc.getCoreAPI()
-
-      let ssid = await core.newSsid('ephemeral')
-      await core.claim(ssid, { 'actor': 'persoonA' })
-      let claimlink2 = await core.claim(ssid, { 'actor': 'persoonB' })
-
-      let attestorSsid = await core.newSsid('ephemeral')
-      console.log('voorallow', attestorSsid);
-
-      await core.allow(attestorSsid)
-      console.log('NAallow', attestorSsid);
-
-      await core.attest(attestorSsid, 'agree', claimlink2)
-      console.log('NAatetest', attestorSsid);
-
-      let link2obj = await core.get(claimlink2, ssid)
-
-      console.log(link2obj.data);
-
-
-      console.log('dit is de eerste claim: ', await core.get(link2obj.previous, ssid));
-
-
-
-      let verifiedAttestor = await core.verify('agree', claimlink2, [ssid, ssid.did, null, 'did:discipl:ephemeral:1234', attestorSsid.did], ssid)
-      console.log('verifiedattestor: ', verifiedAttestor);
-      console.log('attestorssid: ', attestorSsid);
-      console.log(ssid.did);
-
-
-
-      // The first ssid that is valid and proves the attestation should be returned
-      expect(verifiedAttestor).to.equal(attestorSsid.did)
-      let minister = await core.newSsid('ephemeral')
-      let persoonA = await core.newSsid('ephemeral')
-      let persoonB = await core.newSsid('ephemeral')
-
-      await core.claim(persoonA, { 'act': 'indienen aanvraag' })
-      let claimlink2 = await core.claim(persoonA, { 'act': 'bevestigen' })
-
-      await core.allow(minister)
-      await core.attest(minister, 'agree', claimlink2)
-
-      let verifiedAttestor = await core.verify('agree', claimlink2, [minister.did, persoonA.did, null, 'did:discipl:ephemeral:1234', persoonB.did])
-
-      // The first ssid that is valid and proves the attestation should be returned
-      expect(verifiedAttestor).to.equal(minister.did)
-
-    })
-
     it('should be able to fill functions of single and multiple facts', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
       let model = {
-        "acts": [],
-        "facts": [
+        'acts': [],
+        'facts': [
           {
-            "explanation": "",
-            "fact": "[belanghebbende]",
-            "function": "[persoon wiens belang rechtstreeks bij een besluit is betrokken]",
-            "reference": "art. 1:2 lid 1 Awb",
-            "version": "2-[19940101]-[jjjjmmdd]",
-            "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10",
-            "sourcetext": "{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}"
+            'explanation': '',
+            'fact': '[belanghebbende]',
+            'function': '[persoon wiens belang rechtstreeks bij een besluit is betrokken]',
+            'reference': 'art. 1:2 lid 1 Awb',
+            'version': '2-[19940101]-[jjjjmmdd]',
+            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10',
+            'sourcetext': '{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}'
           },
           {
-            "explanation": "",
-            "fact": "[toezending besluit aan aanvrager]",
-            "function": "[]",
-            "reference": "art 3:41 lid 1 Awb",
-            "version": "",
-            "juriconnect": "",
-            "sourcetext": ""
+            'explanation': '',
+            'fact': '[toezending besluit aan aanvrager]',
+            'function': '[]',
+            'reference': 'art 3:41 lid 1 Awb',
+            'version': '',
+            'juriconnect': '',
+            'sourcetext': ''
           },
           {
-            "explanation": "",
-            "fact": "[toezending besluit aan meer belanghebbenden]",
-            "function": "[]",
-            "reference": "art 3:41 lid 1 Awb",
-            "version": "",
-            "juriconnect": "",
-            "sourcetext": ""
+            'explanation': '',
+            'fact': '[toezending besluit aan meer belanghebbenden]',
+            'function': '[]',
+            'reference': 'art 3:41 lid 1 Awb',
+            'version': '',
+            'juriconnect': '',
+            'sourcetext': ''
           },
           {
-            "explanation": "",
-            "fact": "[uitreiking besluit aan aanvrager]",
-            "function": "[]",
-            "reference": "art 3:41 lid 1 Awb",
-            "version": "",
-            "juriconnect": "",
-            "sourcetext": ""
+            'explanation': '',
+            'fact': '[uitreiking besluit aan aanvrager]',
+            'function': '[]',
+            'reference': 'art 3:41 lid 1 Awb',
+            'version': '',
+            'juriconnect': '',
+            'sourcetext': ''
           },
           {
-            "explanation": "",
-            "fact": "[uitreiking besluit aan meer belanghebbenden]",
-            "function": "[]",
-            "reference": "art 3:41 lid 1 Awb",
-            "version": "",
-            "juriconnect": "",
-            "sourcetext": ""
-          },
+            'explanation': '',
+            'fact': '[uitreiking besluit aan meer belanghebbenden]',
+            'function': '[]',
+            'reference': 'art 3:41 lid 1 Awb',
+            'version': '',
+            'juriconnect': '',
+            'sourcetext': ''
+          }
         ],
-        "duties": []
+        'duties': []
       }
 
       let modelLink = await lawReg.publish(ssid, { ...model, 'model': 'AWB' }, {
-        "[uitreiking besluit aan aanvrager]":
-          "IS:assign:did:discipl:ephemeral:1234",
-        "[toezending besluit aan aanvrager]":
-          "IS:assign:did:discipl:ephemeral:1234"
+        '[uitreiking besluit aan aanvrager]':
+          'IS:assign:did:discipl:ephemeral:1234',
+        '[toezending besluit aan aanvrager]':
+          'IS:assign:did:discipl:ephemeral:1234'
       })
 
       let retrievedModel = await core.get(modelLink, ssid)
@@ -357,14 +304,13 @@ describe('discipl-law-reg', () => {
       let retrievedSecondFact = await core.get(retrievedModel.data['DISCIPL_FLINT_MODEL'].facts[1]['[toezending besluit aan aanvrager]'], ssid)
       retrievedSecondFact = retrievedSecondFact.data['DISCIPL_FLINT_FACT'].function
       expect(retrievedSecondFact).to.deep.equal('IS:assign:did:discipl:ephemeral:1234')
-
     })
 
     it('should perform a checkAction', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
       let model = {
-        "acts": [{
+        'acts': [{
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'action': '[aanvragen]',
           'actor': '[toezending besluit aan aanvrager]',
@@ -378,13 +324,15 @@ describe('discipl-law-reg', () => {
           'explanation': '',
           'version': '2-[19980101]-[jjjjmmdd]',
           'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
-        }], "facts": [{ "explanation": "", "fact": "[belanghebbende]", "function": "[persoon wiens belang rechtstreeks bij een besluit is betrokken]", "reference": "art. 1:2 lid 1 Awb", "version": "2-[19940101]-[jjjjmmdd]", "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10", "sourcetext": "{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}" }, { "explanation": "", "fact": "[toezending besluit aan aanvrager]", "function": "[]", "reference": "art 3:41 lid 1 Awb", "version": "", "juriconnect": "", "sourcetext": "" }, { "explanation": "", "fact": "[toezending besluit aan meer belanghebbenden]", "function": "[]", "reference": "art 3:41 lid 1 Awb", "version": "", "juriconnect": "", "sourcetext": "" }, { "explanation": "", "fact": "[uitreiking besluit aan aanvrager]", "function": "[]", "reference": "art 3:41 lid 1 Awb", "version": "", "juriconnect": "", "sourcetext": "" }, { "explanation": "", "fact": "[uitreiking besluit aan meer belanghebbenden]", "function": "[]", "reference": "art 3:41 lid 1 Awb", "version": "", "juriconnect": "", "sourcetext": "" },], "duties": []
+        }],
+        'facts': [{ 'explanation': '', 'fact': '[belanghebbende]', 'function': '[persoon wiens belang rechtstreeks bij een besluit is betrokken]', 'reference': 'art. 1:2 lid 1 Awb', 'version': '2-[19940101]-[jjjjmmdd]', 'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10', 'sourcetext': '{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}' }, { 'explanation': '', 'fact': '[toezending besluit aan aanvrager]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }, { 'explanation': '', 'fact': '[toezending besluit aan meer belanghebbenden]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }, { 'explanation': '', 'fact': '[uitreiking besluit aan aanvrager]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }, { 'explanation': '', 'fact': '[uitreiking besluit aan meer belanghebbenden]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }],
+        'duties': []
       }
 
       let ssid = await core.newSsid('ephemeral')
       let modelLink = await lawReg.publish(ssid, model, {
-        "[toezending besluit aan aanvrager]":
-          "IS:assign:" + ssid.did
+        '[toezending besluit aan aanvrager]':
+          'IS:assign:' + ssid.did
       })
       let modelRef = await core.get(modelLink, ssid)
 

@@ -81,7 +81,7 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
 
   if (checkedActor && checkedPreConditions) {
     console.log('checkedActor: ', checkedActor)
-    console.log('checkPreConditions: ', checkedPreConditions);
+    console.log('checkPreConditions: ', checkedPreConditions)
 
     return true
   }
