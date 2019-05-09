@@ -341,7 +341,7 @@ describe('discipl-law-reg', () => {
       let result = await lawReg.checkAction(modelLink, actsLink, ssid, '')
       console.log('result: ' + result)
 
-      expect(result).to.be.true
+      expect(result).to.equal(true)
     })
 
     //   it('should be able to publish and use a simple fictive flint model from JSON', async () => {

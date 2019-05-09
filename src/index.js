@@ -13,6 +13,12 @@ const getAbundanceService = () => {
   return abundance
 }
 
+/**
+ * Splits a given string from the first ':' to extract the did from the total. 
+ *
+ * @param {string} functionRef - Total string what you want to split
+ * @returns {array} array with two items, first is for what it is for and the second is the DID
+ */
 const splitFunction = (functionRef) => {
   let position = functionRef.indexOf(':')
   let arr = functionRef.split(':', 2)
@@ -20,6 +26,14 @@ const splitFunction = (functionRef) => {
   return arr
 }
 
+/**
+ * Checks if the fact did is equal to the did of the ssid. So you can know that someone is allowed to do an action.
+ *
+ * @param {string} fact - fact name
+ * @param {object} ssid - ssid from who wants to make a claim
+ * @param {object} context - context is an object for the status of an act and the factreference
+ * @returns {Promise<*>} boolean of the result for comparing the did's
+ */
 const checkFact = async (fact, ssid, context) => {
   let factLink = context.facts[fact]
   let core = abundance.getCoreAPI()
@@ -44,6 +58,12 @@ const checkFact = async (fact, ssid, context) => {
   }
 }
 
+/**
+ * Converts an array into an object
+ *
+ * @param {array} arr - array with objects in it
+ * @returns {object} object instead of the given array
+ */
 const arrayToObject = (arr) => {
   var obj = {}
   Object.keys(arr).forEach(element => {
@@ -72,7 +92,7 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
 
   if (checkedActor && checkedPreConditions) {
     console.log('checkedActor: ', checkedActor)
-    console.log('checkPreConditions: ', checkedPreConditions);
+    console.log('checkPreConditions: ', checkedPreConditions)
 
     return true
   }
