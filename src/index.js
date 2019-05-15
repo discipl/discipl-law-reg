@@ -22,28 +22,105 @@ const factFunctionParser = peg.generate(`
 
 Expression
   = head:Term tail:(_ ("AND" / "OR") _ Term)* {
+    console.log('head :: ', head)
+    console.log('tail :: ',tail)
       return tail.reduce(function(result, element) {
+        console.log('result :: ', result)
+        console.log('element :: ',element)
         if (element[1] === "AND") { return result && element[3]; }
         if (element[1] === "OR") { return result || element[3]; }
       }, head);
     }
 
 Term
-  = "(" _ expr:Expression _ ")" { return expr; }
+  = "(" _ expr:Expression _ ")" { console.log('expr :: ', expr); return expr; }
   / Fact
 
 Fact "fact"
-  = ![01] { return text() == "1"; }
+  = ![01] { console.log('text() :: ', text());return text() == "1"; }
 
 _ "whitespace"
   = [\\r\\n\\t ]*
 `)
 
+const factParser = peg.generate(`
+start
+  = Expression
+  / DelimitedExpression
+
+Expression
+  = EN
+  / OF
+  / NIET
+  / Fact
+  
+DelimitedExpression
+  = '(' ex:Expression ')' {
+   return ex
+  }
+  / Fact
+
+Fact
+  = '[' quote: NotQuote* ']' {
+  return quote.join("")
+  }
+
+EN
+  = op1: DelimitedExpression op2: (_ 'EN' _ DelimitedExpression)+ {
+  	let operands = [op1]
+    for (let op of op2) {
+    	operands.push(op[3])
+    }
+  	return {
+    	'expression': 'AND',
+        'operands': operands
+    }
+  }
+  
+OF
+  = op1: DelimitedExpression op2: (_ 'OF' _ DelimitedExpression)+ {
+  	let operands = [op1]
+    for (let op of op2) {
+    	operands.push(op[3])
+    }
+  	return {
+    	'expression': 'OR',
+        'operands': operands
+    }
+  }
+  
+NIET
+  =  'NIET' _ op: DelimitedExpression {
+  	return {
+    	'expression': 'NOT',
+        'operand': op
+    }
+  }
+  
+NotQuote
+  = !'[' !']' char: . {
+  return char
+}
+  
+  
+Text
+  = text: NotQuote+ {
+  return text.join('')
+}
+  
+_ "whitespace"
+ = [\\r\\n\\t ]*
+
+`
+)
+
+
+
 /**
  * evaluates a fact function
  */
 const evaluateFactFunction = (factfn) => {
-  return factFunctionParser.parse(factfn)
+  return factParser.parse(factfn)
 }
 
 const checkFact = async (fact, ssid, context) => {
@@ -190,6 +267,7 @@ const take = async (ssid, caseLink, act, context) => {
 export {
   getAbundanceService,
   checkAction,
+  evaluateFactFunction,
   publish,
   get,
   observe,
