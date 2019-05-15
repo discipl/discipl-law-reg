@@ -2,7 +2,7 @@
   "acts": [
     {
       "tags": "",
-      "act": "<<indienen verzoek een besluit te nemen>>",
+      "act": "<<indienen aanvraag>>",
       "actor": "[belanghebbende]",
       "action": "[indienen]",
       "object": "[verzoek een besluit te nemen]",
@@ -18,7 +18,7 @@
     },
     {
       "tags": "",
-      "act": "<<bekendmaken van een beschikking>>",
+      "act": "<<bekendmaken besluit>>",
       "actor": "[bestuursorgaan]",
       "action": "[bekendmaken]",
       "object": "[besluit]",
