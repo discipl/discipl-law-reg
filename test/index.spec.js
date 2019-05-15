@@ -8,13 +8,27 @@ import awb from './flint-example-awb'
 describe('discipl-law-reg', () => {
   describe('The discipl-law-reg library', () => {
     it('test pegjs generator', async () => {
-      let uitkomst1 = lawReg.evaluateFactFunction('(NIET [fact1]) OF ([fact2] EN [fact3])')
 
-      console.log('uitkomst1: ', uitkomst1);
+      let parsedFact = lawReg.evaluateFactFunction('(NIET [fact1]) OF ([fact2] EN [fact3])')
+      console.log('uitkomst1: ', parsedFact);
 
+      expect(parsedFact).to.deep.equal({
+        "expression": "OR",
+        "operands": [
+          {
+            "expression": "NOT",
+            "operand": "fact1"
+          },
+          {
+            "expression": "AND",
+            "operands": [
+              "fact2",
+              "fact3"
+            ]
+          }
+        ]
+      })
     })
-
-
 
     it('should publish small example', async () => {
       const model = {
