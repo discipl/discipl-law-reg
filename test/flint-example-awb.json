@@ -2,7 +2,7 @@
   "acts": [
     {
       "tags": "",
-      "act": "<<indienen verzoek een besluit te nemen>>",
+      "act": "<<indienen aanvraag>>",
       "actor": "[belanghebbende]",
       "action": "[indienen]",
       "object": "[verzoek een besluit te nemen]",
@@ -18,14 +18,14 @@
     },
     {
       "tags": "",
-      "act": "<<bekendmaken van een beschikking>>",
+      "act": "<<bekendmaken besluit>>",
       "actor": "[bestuursorgaan]",
       "action": "[bekendmaken]",
       "object": "[besluit]",
       "interested-party": "[belanghebbende(n)]",
       "preconditions": "[besluit]\r\nEN\r\n(\r\n[toezending besluit aan aanvrager]\r\nOF\r\n[toezending besluit aan meer belanghebbenden]\r\nOF\r\n[uitreiking besluit aan aanvrager]\r\nOF\r\n[uitreiking besluit aan meer belanghebbenden]\r\n)\r\nOF\r\n(\r\nNIET [bekendmaking van het besluit kan geschieden door uitreiking of toezending]\r\nEN\r\n[bekendmaking van het besluit op een andere geschikte wijze]\r\n)",
       "create": "[besluit treedt in werking]",
-      "terminate": "[aanvraag];\r\n<schriftelijk indienen aanvraag>;\r\n<aanvraag indienen bij bevoegd bestuursorgaan>;\r\n<aanvraag ondertekenen>;\r\n<verschaffen gegevens nodig om besluit te nemen>;\r\n<vergaren nodige kennis>;\r\n<besluit berust op deugdelijke motivering>;\r\n<beschikking geven binnen termijn>",
+      "terminate": "[aanvraag];\r\n<schriftelijk indienen aanvraag>;\r\n<aanvraag indienen bij bevoegd bestuursorgaan>;\r\n<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>;\r\n<verschaffen gegevens nodig om besluit te nemen>;\r\n<vergaren nodige kennis>;\r\n<besluit berust op deugdelijke motivering>;\r\n<beschikking geven binnen termijn>",
       "reference": "art. 3:40 Awb",
       "version": "2-[19940101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=3&afdeling=3.6&artikel=3:40&z=2017-04-01&g=2017-04-01",

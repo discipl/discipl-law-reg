@@ -121,15 +121,42 @@ const evaluateFactFunction = (factfn) => {
   return factParser.parse(factfn)
 }
 
+/**
+ * Splits a given string from the first ':' to extract the did from the total.
+ *
+ * @param {string} functionRef - Total string what you want to split
+ * @returns {array} array with two items, first is for what it is for and the second is the DID
+ */
+const splitFunction = (functionRef) => {
+  let position = functionRef.indexOf(':')
+  let arr = functionRef.split(':', 2)
+  arr.push(functionRef.substring(position + 1))
+  return arr
+}
+
+/**
+ * Checks if the fact did is equal to the did of the ssid. So you can know that someone is allowed to do an action.
+ *
+ * @param {string} fact - fact name
+ * @param {object} ssid - ssid from who wants to make a claim
+ * @param {object} context - context is an object for the status of an act and the factreference
+ * @returns {Promise<*>} boolean of the result for comparing the did's
+ */
 const checkFact = async (fact, ssid, context) => {
   let factLink = context.facts[fact]
   let core = abundance.getCoreAPI()
   if (factLink) {
     const factReference = await core.get(factLink, ssid)
-    const functionRef = factReference.data['DISCIPL_FLINT_FACT'].function
+    const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
     if (functionRef !== '') {
-      return checkFact(functionRef, ssid, context)
+      let splitted = splitFunction(functionRef)
+
+      if (ssid.did === splitted[2]) {
+        return true
+      } else {
+        return checkFact(functionRef, ssid, context)
+      }
     }
     return true
   } else {
@@ -139,6 +166,12 @@ const checkFact = async (fact, ssid, context) => {
   }
 }
 
+/**
+ * Converts an array into an object
+ *
+ * @param {array} arr - array with objects in it
+ * @returns {object} object instead of the given array
+ */
 const arrayToObject = (arr) => {
   var obj = {}
   Object.keys(arr).forEach(element => {
@@ -148,7 +181,6 @@ const arrayToObject = (arr) => {
 }
 
 const checkPreconditions = (actor, preconditions) => {
-  console.log('dit is checkPreconditions')
   return true
 }
 
@@ -156,18 +188,20 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
   let core = abundance.getCoreAPI()
   let modelReference = await core.get(modelLink, ssid)
   let actReference = await core.get(actLink, ssid)
-  let factReference = arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].facts)
+  let factReference = arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].facts)
   // TODO: Use this?
-  arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].duties)
+  arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].duties)
 
-  const actor = actReference.data['DISCIPL_FLINT_ACT'].actor
+  const actor = actReference.data[DISCIPL_FLINT_ACT].actor
 
   const checkedActor = await checkFact(actor, ssid, { ...context, 'facts': factReference })
 
-  const checkedPreConditions = checkPreconditions('actor', actReference.data['DISCIPL_FLINT_ACT'].preconditions)
+  const checkedPreConditions = checkPreconditions('actor', actReference.data[DISCIPL_FLINT_ACT].preconditions)
 
   if (checkedActor && checkedPreConditions) {
-    console.log('checkActor en checkPreconditions zijn true')
+    console.log('checkedActor: ', checkedActor)
+    console.log('checkPreConditions: ', checkedPreConditions)
+
     return true
   }
 
@@ -180,10 +214,13 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
  * Returns a list to the claim holding the whole model with links to individual claims
  * Note that references within the model are not translated into links.
  */
-const publish = async (ssid, flintModel) => {
+const publish = async (ssid, flintModel, factFunctions = {}) => {
   let core = abundance.getCoreAPI()
   let result = { model: flintModel.model, acts: [], facts: [], duties: [] }
   for (let fact of flintModel.facts) {
+    if (fact.function === '[]' && factFunctions[fact.fact] != null) {
+      fact.function = factFunctions[fact.fact]
+    }
     let link = await core.claim(ssid, { [DISCIPL_FLINT_FACT]: fact })
     result.facts.push({ [fact.fact]: link })
   }
