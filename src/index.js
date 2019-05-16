@@ -61,7 +61,7 @@ DelimitedExpression
   / Fact
 
 Fact
-  = '[' quote: NotQuote* ']' {
+  = '[' quote: NotFactBracket* ']' {
   return quote.join("")
   }
 
@@ -97,14 +97,14 @@ NIET
   }
   }
   
-NotQuote
+NotFactBracket
   = !'[' !']' char: . {
   return char
 }
   
   
 Text
-  = text: NotQuote+ {
+  = text: NotFactBracket+ {
   return text.join('')
 }
   
