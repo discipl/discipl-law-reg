@@ -34,11 +34,11 @@ describe('discipl-law-reg', () => {
       })
 
       expect(parsedFact2).to.deep.equal({
-        "expression": "AND",
-        "operands": [
-          "fact1",
-          "fact2",
-          "fact3"
+        'expression': 'AND',
+        'operands': [
+          'fact1',
+          'fact2',
+          'fact3'
         ]
       })
 
