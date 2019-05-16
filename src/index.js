@@ -1,5 +1,6 @@
 
 import * as abundance from '@discipl/abundance-service'
+import * as peg from 'pegjs'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -11,6 +12,113 @@ const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
 const getAbundanceService = () => {
   return abundance
+}
+
+// const factFunctionParser = peg.generate(`
+// // Flint Fact Function Grammar
+// // ==========================
+// //
+// // Accepts expressions like "fact1 AND (fact2 OR fact3)" and evaluates it
+
+// Expression
+//   = head:Term tail:(_ ("AND" / "OR") _ Term)* {
+//     console.log('head :: ', head)
+//     console.log('tail :: ',tail)
+//       return tail.reduce(function(result, element) {
+//         console.log('result :: ', result)
+//         console.log('element :: ',element)
+//         if (element[1] === "AND") { return result && element[3]; }
+//         if (element[1] === "OR") { return result || element[3]; }
+//       }, head);
+//     }
+
+// Term
+//   = "(" _ expr:Expression _ ")" { console.log('expr :: ', expr); return expr; }
+//   / Fact
+
+// Fact "fact"
+//   = ![01] { console.log('text() :: ', text());return text() == "1"; }
+
+// _ "whitespace"
+//   = [\\r\\n\\t ]*
+// `)
+
+const factParser = peg.generate(`
+start
+  = Expression
+  / DelimitedExpression
+
+Expression
+  = EN
+  / OF
+  / NIET
+  / Fact
+  
+DelimitedExpression
+  = '(' ex:Expression ')' {
+   return ex
+  }
+  / Fact
+
+Fact
+  = '[' quote: NotFactBracket* ']' {
+  return quote.join("")
+  }
+
+EN
+  = op1: DelimitedExpression op2: (_ 'EN' _ DelimitedExpression)+ {
+  let operands = [op1]
+  for (let op of op2) {
+    operands.push(op[3])
+  }
+  return {
+    'expression': 'AND',
+      'operands': operands
+  }
+}
+  
+OF
+  = op1: DelimitedExpression op2: (_ 'OF' _ DelimitedExpression)+ {
+  let operands = [op1]
+  for (let op of op2) {
+    operands.push(op[3])
+  }
+  return {
+    'expression': 'OR',
+      'operands': operands
+  }
+}
+  
+NIET
+  =  'NIET' _ op: DelimitedExpression {
+  return {
+    'expression': 'NOT',
+    'operand': op
+  }
+  }
+  
+NotFactBracket
+  = !'[' !']' char: . {
+  return char
+}
+  
+  
+Text
+  = text: NotFactBracket+ {
+  return text.join('')
+}
+  
+_ "whitespace"
+ = [\\r\\n\\t ]*
+
+`
+)
+
+/**
+ * evaluates a fact function
+ */
+const evaluateFactFunction = (factfn) => {
+  return factParser.parse(factfn)
 }
 
 /**
@@ -194,6 +302,7 @@ const take = async (ssid, caseLink, act, context) => {
 export {
   getAbundanceService,
   checkAction,
+  evaluateFactFunction,
   publish,
   get,
   observe,
