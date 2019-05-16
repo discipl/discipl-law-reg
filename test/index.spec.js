@@ -8,13 +8,29 @@ import awb from './flint-example-awb'
 
 describe('discipl-law-reg', () => {
   describe('The discipl-law-reg library', () => {
-    it('test pegjs generator', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('(NIET [fact1]) OF ([fact2] EN [fact3])')
-      let parsedFact2 = lawReg.evaluateFactFunction('[fact1] EN [fact2] EN [fact3]')
+    it('correctly parses a single fact', async () => {
       let parsedFact3 = lawReg.evaluateFactFunction('[fact1]')
-      console.log('uitkomst1: ', parsedFact)
-      console.log('uitkomt2: ', parsedFact2)
-      console.log('uitkomst3: ', parsedFact3)
+
+      expect(parsedFact3).to.deep.equal(
+        'fact1'
+      )
+    })
+
+    it('correctly parses a multiple AND construction', async () => {
+      let parsedFact2 = lawReg.evaluateFactFunction('[fact1] EN [fact2] EN [fact3]')
+
+      expect(parsedFact2).to.deep.equal({
+        'expression': 'AND',
+        'operands': [
+          'fact1',
+          'fact2',
+          'fact3'
+        ]
+      })
+    })
+
+    it('correctly parses an OR construction with a NOT and AND construction inside', async () => {
+      let parsedFact = lawReg.evaluateFactFunction('(NIET [fact1]) OF ([fact2] EN [fact3])')
 
       expect(parsedFact).to.deep.equal({
         'expression': 'OR',
@@ -32,19 +48,6 @@ describe('discipl-law-reg', () => {
           }
         ]
       })
-
-      expect(parsedFact2).to.deep.equal({
-        'expression': 'AND',
-        'operands': [
-          'fact1',
-          'fact2',
-          'fact3'
-        ]
-      })
-
-      expect(parsedFact3).to.deep.equal(
-        'fact1'
-      )
     })
 
     it('should publish small example', async () => {
