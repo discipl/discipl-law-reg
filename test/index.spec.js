@@ -210,7 +210,7 @@ describe('discipl-law-reg', () => {
       let needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
-      let needLink = await core.claim(needSsid, { 'need': { 'act': '<<indienen verzoek een besluit te nemen>>', 'DISCIPL_FLINT_MODEL_LINK': modelLink } })
+      let needLink = await core.claim(needSsid, { 'need': { 'act': '<<indienen aanvraag>>', 'DISCIPL_FLINT_MODEL_LINK': modelLink } })
 
       let actorSsid = await core.newSsid('ephemeral')
 
@@ -218,7 +218,7 @@ describe('discipl-law-reg', () => {
         return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]'
       }
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<indienen verzoek een besluit te nemen>>', { 'factResolver': factResolver })
+      let actionLink = await lawReg.take(actorSsid, needLink, '<<indienen aanvraag>>', { 'factResolver': factResolver })
 
       let action = await core.get(actionLink, actorSsid)
 
