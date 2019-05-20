@@ -11,7 +11,6 @@ const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
 const logger = log.getLogger('disciplLawReg')
-logger.setLevel('debug')
 
 const getAbundanceService = () => {
   return abundance

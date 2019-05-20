@@ -1,9 +1,13 @@
 /* eslint-env mocha */
 import { expect } from 'chai'
 import * as lawReg from '../src/index.js'
+import * as log from 'loglevel'
 
 import awb from './flint-example-awb'
 // import { loadConnector } from '../src/connector-loader.js'
+
+// Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
+log.getLogger('disciplLawReg').setLevel('warn')
 
 describe('discipl-law-reg', () => {
   describe('The discipl-law-reg library', () => {
@@ -216,7 +220,12 @@ describe('discipl-law-reg', () => {
       let actorSsid = await core.newSsid('ephemeral')
 
       let factResolver = (fact) => {
-        return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]'
+        if (typeof fact === 'string') {
+          return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
+            fact === '[verzoek een besluit te nemen]' ||
+            fact.includes('[wetgevende macht]')
+        }
+        return false
       }
 
       let actionLink = await lawReg.take(actorSsid, needLink, '<<indienen verzoek een besluit te nemen>>', { 'factResolver': factResolver })
