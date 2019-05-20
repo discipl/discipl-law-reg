@@ -1,6 +1,8 @@
 
 import * as abundance from '@discipl/abundance-service'
+
 import * as log from 'loglevel'
+import * as peg from 'pegjs'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -16,18 +18,153 @@ const getAbundanceService = () => {
   return abundance
 }
 
+// const factFunctionParser = peg.generate(`
+// // Flint Fact Function Grammar
+// // ==========================
+// //
+// // Accepts expressions like "fact1 AND (fact2 OR fact3)" and evaluates it
+
+// Expression
+//   = head:Term tail:(_ ("AND" / "OR") _ Term)* {
+//     console.log('head :: ', head)
+//     console.log('tail :: ',tail)
+//       return tail.reduce(function(result, element) {
+//         console.log('result :: ', result)
+//         console.log('element :: ',element)
+//         if (element[1] === "AND") { return result && element[3]; }
+//         if (element[1] === "OR") { return result || element[3]; }
+//       }, head);
+//     }
+
+// Term
+//   = "(" _ expr:Expression _ ")" { console.log('expr :: ', expr); return expr; }
+//   / Fact
+
+// Fact "fact"
+//   = ![01] { console.log('text() :: ', text());return text() == "1"; }
+
+// _ "whitespace"
+//   = [\\r\\n\\t ]*
+// `)
+
+const factParser = peg.generate(`
+start
+  = Expression
+  / DelimitedExpression
+
+Expression
+  = EN
+  / OF
+  / NIET
+  / Fact
+  
+DelimitedExpression
+  = '(' ex:Expression ')' {
+   return ex
+  }
+  / Fact
+
+Fact
+  = '[' quote: NotFactBracket* ']' {
+  return quote.join("")
+  }
+
+EN
+  = op1: DelimitedExpression op2: (_ 'EN' _ DelimitedExpression)+ {
+  let operands = [op1]
+  for (let op of op2) {
+    operands.push(op[3])
+  }
+  return {
+    'expression': 'AND',
+      'operands': operands
+  }
+}
+  
+OF
+  = op1: DelimitedExpression op2: (_ 'OF' _ DelimitedExpression)+ {
+  let operands = [op1]
+  for (let op of op2) {
+    operands.push(op[3])
+  }
+  return {
+    'expression': 'OR',
+      'operands': operands
+  }
+}
+  
+NIET
+  =  'NIET' _ op: DelimitedExpression {
+  return {
+    'expression': 'NOT',
+    'operand': op
+  }
+  }
+  
+NotFactBracket
+  = !'[' !']' char: . {
+  return char
+}
+  
+  
+Text
+  = text: NotFactBracket+ {
+  return text.join('')
+}
+  
+_ "whitespace"
+ = [\\r\\n\\t ]*
+
+`
+)
+
+/**
+ * evaluates a fact function
+ */
+const evaluateFactFunction = (factfn) => {
+  return factParser.parse(factfn)
+}
+
+/**
+ * Splits a given string from the first ':' to extract the did from the total.
+ *
+ * @param {string} functionRef - Total string what you want to split
+ * @returns {array} array with two items, first is for what it is for and the second is the DID
+ */
+const splitFunction = (functionRef) => {
+  let position = functionRef.indexOf(':')
+  let arr = functionRef.split(':', 2)
+  arr.push(functionRef.substring(position + 1))
+  return arr
+}
+
+/**
+ * Checks if the fact did is equal to the did of the ssid. So you can know that someone is allowed to do an action.
+ *
+ * @param {string} fact - fact name
+ * @param {object} ssid - ssid from who wants to make a claim
+ * @param {object} context - context is an object for the status of an act and the factreference
+ * @returns {Promise<*>} boolean of the result for comparing the did's
+ */
 const checkFact = async (fact, ssid, context) => {
   logger.debug('Checking fact', fact)
   const factLink = context.facts[fact]
   const core = abundance.getCoreAPI()
   if (factLink) {
     const factReference = await core.get(factLink, ssid)
-    const functionRef = factReference.data['DISCIPL_FLINT_FACT'].function
+    const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
     if (functionRef !== '') {
-      const result = await checkFact(functionRef, ssid, context)
-      logger.debug('Resolving fact', fact, 'as', result, 'by recursion')
-      return result
+      let splitted = splitFunction(functionRef)
+
+      if (ssid.did === splitted[2]) {
+        logger.debug('Resolving fact', fact, 'as true by did-identification')
+        return true
+      } else {
+        let result = await checkFact(functionRef, ssid, context)
+        logger.debug('Resolving fact', fact, 'as', result, 'by recursion')
+        return result
+      }
     }
     logger.debug('Resolving fact', fact, 'as true by default')
     return true
@@ -40,6 +177,12 @@ const checkFact = async (fact, ssid, context) => {
   }
 }
 
+/**
+ * Converts an array into an object
+ *
+ * @param {array} arr - array with objects in it
+ * @returns {object} object instead of the given array
+ */
 const arrayToObject = (arr) => {
   var obj = {}
   Object.keys(arr).forEach(element => {
@@ -89,10 +232,13 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
  * Returns a list to the claim holding the whole model with links to individual claims
  * Note that references within the model are not translated into links.
  */
-const publish = async (ssid, flintModel) => {
+const publish = async (ssid, flintModel, factFunctions = {}) => {
   let core = abundance.getCoreAPI()
   let result = { model: flintModel.model, acts: [], facts: [], duties: [] }
   for (let fact of flintModel.facts) {
+    if (fact.function === '[]' && factFunctions[fact.fact] != null) {
+      fact.function = factFunctions[fact.fact]
+    }
     let link = await core.claim(ssid, { [DISCIPL_FLINT_FACT]: fact })
     result.facts.push({ [fact.fact]: link })
   }
@@ -174,6 +320,7 @@ const take = async (ssid, caseLink, act, context) => {
 export {
   getAbundanceService,
   checkAction,
+  evaluateFactFunction,
   publish,
   get,
   observe,
