@@ -98,7 +98,7 @@
     },
     {
       "tags": "",
-      "act": "<<herroepen bestreden besluit>>\r\n",
+      "act": "<<herroepen bestreden besluit>>",
       "actor": "[bestuursorgaan]",
       "action": "[herroepen]",
       "object": "[bestreden besluit]",
