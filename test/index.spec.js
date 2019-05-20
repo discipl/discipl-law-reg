@@ -90,8 +90,6 @@ describe('discipl-law-reg', () => {
 
       let modelReference = await core.get(modelLink, ssid)
 
-      console.log(modelReference.data['DISCIPL_FLINT_MODEL'])
-
       let actsLink = modelReference.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
       let factsLink = modelReference.data['DISCIPL_FLINT_MODEL'].facts[2]['[betrokkene]']
       let dutiesLink = modelReference.data['DISCIPL_FLINT_MODEL'].duties[0]['<verwelkomen binnen 14 dagen na aanvragen>']

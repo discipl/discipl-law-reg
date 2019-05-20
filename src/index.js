@@ -1,5 +1,6 @@
 
 import * as abundance from '@discipl/abundance-service'
+import * as log from 'loglevel'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -9,24 +10,33 @@ const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
 const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
+const logger = log.getLogger('disciplLawReg')
+logger.setLevel('debug')
+
 const getAbundanceService = () => {
   return abundance
 }
 
 const checkFact = async (fact, ssid, context) => {
-  let factLink = context.facts[fact]
-  let core = abundance.getCoreAPI()
+  logger.debug('Checking fact', fact)
+  const factLink = context.facts[fact]
+  const core = abundance.getCoreAPI()
   if (factLink) {
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data['DISCIPL_FLINT_FACT'].function
 
     if (functionRef !== '') {
-      return checkFact(functionRef, ssid, context)
+      const result = await checkFact(functionRef, ssid, context)
+      logger.debug('Resolving fact', fact, 'as', result, 'by recursion')
+      return result
     }
+    logger.debug('Resolving fact', fact, 'as true by default')
     return true
   } else {
     if (context.factResolver) {
-      return context.factResolver(fact)
+      const result = context.factResolver(fact)
+      logger.debug('Resolving fact', fact, 'as', result, 'by factresolver')
+      return result
     }
   }
 }
@@ -40,7 +50,7 @@ const arrayToObject = (arr) => {
 }
 
 const checkPreconditions = (actor, preconditions) => {
-  console.log('dit is checkPreconditions')
+  logger.warn('Running mock check-preconditions')
   return true
 }
 
@@ -48,18 +58,26 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
   let core = abundance.getCoreAPI()
   let modelReference = await core.get(modelLink, ssid)
   let actReference = await core.get(actLink, ssid)
-  let factReference = arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].facts)
+  let factReference = arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].facts)
   // TODO: Use this?
-  arrayToObject(modelReference.data['DISCIPL_FLINT_MODEL'].duties)
+  arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].duties)
 
-  const actor = actReference.data['DISCIPL_FLINT_ACT'].actor
+  const actor = actReference.data[DISCIPL_FLINT_ACT].actor
 
   const checkedActor = await checkFact(actor, ssid, { ...context, 'facts': factReference })
 
+  const object = actReference.data[DISCIPL_FLINT_ACT].object
+
+  const checkedObject = await checkFact(object, ssid, { ...context, 'facts': factReference })
+
+  const interestedParty = actReference.data[DISCIPL_FLINT_ACT]['interested-party']
+
+  const checkedInterestedParty = await checkFact(interestedParty, ssid, { ...context, 'facts': factReference })
+
   const checkedPreConditions = checkPreconditions('actor', actReference.data['DISCIPL_FLINT_ACT'].preconditions)
 
-  if (checkedActor && checkedPreConditions) {
-    console.log('checkActor en checkPreconditions zijn true')
+  if (checkedActor && checkedPreConditions && checkedObject && checkedInterestedParty) {
+    logger.info('Preconditions for act', actLink, 'have been verified')
     return true
   }
 
@@ -147,7 +165,7 @@ const take = async (ssid, caseLink, act, context) => {
   }).map((actWithLink) => Object.values(actWithLink)[0])[0]
 
   if (await checkAction(modelLink, actLink, ssid, context)) {
-    console.log('Claiming')
+    logger.info('Registering act', actLink)
     return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink })
   }
 
