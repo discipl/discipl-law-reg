@@ -237,7 +237,8 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
-          'DISCIPL_FLINT_GLOBAL_CASE': needLink
+          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
         },
         'previous': null
       })
@@ -277,7 +278,8 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
-          'DISCIPL_FLINT_GLOBAL_CASE': needLink
+          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
         },
         'previous': null
       })

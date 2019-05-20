@@ -10,6 +10,7 @@ const DISCIPL_FLINT_ACT = 'DISCIPL_FLINT_ACT'
 const DISCIPL_FLINT_DUTY = 'DISCIPL_FLINT_DUTY'
 const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
 const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
+const DISCIPL_FLINT_PREVIOUS_CASE = 'DISCIPL_FLINT_PREVIOUS_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
 const logger = log.getLogger('disciplLawReg')
@@ -316,7 +317,7 @@ const take = async (ssid, caseLink, act, context) => {
 
   if (await checkAction(modelLink, actLink, ssid, context)) {
     logger.info('Registering act', actLink)
-    return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink })
+    return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })
   }
 
   throw new Error('Action is not allowed')
