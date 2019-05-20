@@ -223,6 +223,7 @@ describe('discipl-law-reg', () => {
         if (typeof fact === 'string') {
           return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
             fact === '[verzoek een besluit te nemen]' ||
+            // Temporary hack until boolean logic works
             fact.includes('[wetgevende macht]')
         }
         return false
