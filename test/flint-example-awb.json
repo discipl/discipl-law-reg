@@ -8,13 +8,13 @@
       "object": "[verzoek een besluit te nemen]",
       "interested-party": "[bestuursorgaan]",
       "preconditions": "NIET [bij wettelijk voorschrift is anders bepaald]",
-      "create": "[aanvraag];&#10;<schriftelijk indienen aanvraag>;&#10;<aanvraag indienen bij bevoegd bestuursorgaan>;&#10;<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>;&#10;<verschaffen gegevens nodig om besluit te nemen>;&#10;<vergaren nodige kennis>;&#10;<besluit berust op deugdelijke motivering>;&#10;<beschikking geven binnen termijn>",
+      "create": "[aanvraag];\r\n<schriftelijk indienen aanvraag>;\r\n<aanvraag indienen bij bevoegd bestuursorgaan>;\r\n<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>;\r\n<verschaffen gegevens nodig om besluit te nemen>;\r\n<vergaren nodige kennis>;\r\n<besluit berust op deugdelijke motivering>;\r\n<beschikking geven binnen termijn>",
       "terminate": "-",
       "reference": "art. 1:3 lid 3 Awb",
       "version": "2-[19980101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01",
       "sourcetext": "{Onder aanvraag wordt verstaan: een verzoek van een belanghebbende, een besluit te nemen.}",
-      "explanation": "De ontvanger [bestuursorgaan] kan worden afgeleid van de definitie van ‘besluit’ in artikel 1:3 lid 1 Awb.&#10;&#10;Wanneer het bij wet anders bepaald is, kunnen uitzonderingen worden gemaakt op de verplichting om de aanvraag schriftelijk in te dienen bij een bestuursorgaan dat bevoegd is op de aanvraag te beslissen. Als zo'n uitzondering wordt gemaakt, leidt de handeling tot een ander resultaat:&#10;- de verplichtingen <schriftelijk indienen aanvraag> en <aanvraag indienen bij bevoegd bestuursorgaan> worden niet gecreëerd;&#10;- waarschijnlijk komen daarvoor in de plaats andere verplichtingen, zoals de verplichting om de aanvraag ergens anders in te dienen, op een nader te omschrijven wijze.&#10;&#10;Als een handeling leidt tot een ander resultaat, wordt een nieuw handelingsframe gemaakt om het functioneel perspectief van de interpretatie te behouden."
+      "explanation": "De ontvanger [bestuursorgaan] kan worden afgeleid van de definitie van ‘besluit’ in artikel 1:3 lid 1 Awb.\r\n\r\nWanneer het bij wet anders bepaald is, kunnen uitzonderingen worden gemaakt op de verplichting om de aanvraag schriftelijk in te dienen bij een bestuursorgaan dat bevoegd is op de aanvraag te beslissen. Als zo'n uitzondering wordt gemaakt, leidt de handeling tot een ander resultaat:\r\n- de verplichtingen <schriftelijk indienen aanvraag> en <aanvraag indienen bij bevoegd bestuursorgaan> worden niet gecreëerd;\r\n- waarschijnlijk komen daarvoor in de plaats andere verplichtingen, zoals de verplichting om de aanvraag ergens anders in te dienen, op een nader te omschrijven wijze.\r\n\r\nAls een handeling leidt tot een ander resultaat, wordt een nieuw handelingsframe gemaakt om het functioneel perspectief van de interpretatie te behouden."
     },
     {
       "tags": "",
@@ -23,14 +23,14 @@
       "action": "[bekendmaken]",
       "object": "[besluit]",
       "interested-party": "[belanghebbende(n)]",
-      "preconditions": "[besluit]&#10;EN&#10;(&#10;[toezending besluit aan aanvrager]&#10;OF&#10;[toezending besluit aan meer belanghebbenden]&#10;OF&#10;[uitreiking besluit aan aanvrager]&#10;OF&#10;[uitreiking besluit aan meer belanghebbenden]&#10;)&#10;OF&#10;(&#10;NIET [bekendmaking van het besluit kan geschieden door uitreiking of toezending]&#10;EN&#10;[bekendmaking van het besluit op een andere geschikte wijze]&#10;)",
+      "preconditions": "[besluit]\r\nEN\r\n(\r\n[toezending besluit aan aanvrager]\r\nOF\r\n[toezending besluit aan meer belanghebbenden]\r\nOF\r\n[uitreiking besluit aan aanvrager]\r\nOF\r\n[uitreiking besluit aan meer belanghebbenden]\r\n)\r\nOF\r\n(\r\nNIET [bekendmaking van het besluit kan geschieden door uitreiking of toezending]\r\nEN\r\n[bekendmaking van het besluit op een andere geschikte wijze]\r\n)",
       "create": "[besluit treedt in werking]",
-      "terminate": "[aanvraag];&#10;<schriftelijk indienen aanvraag>;&#10;<aanvraag indienen bij bevoegd bestuursorgaan>;&#10;<aanvraag ondertekenen>;&#10;<verschaffen gegevens nodig om besluit te nemen>;&#10;<vergaren nodige kennis>;&#10;<besluit berust op deugdelijke motivering>;&#10;<beschikking geven binnen termijn>",
+      "terminate": "[aanvraag];\r\n<schriftelijk indienen aanvraag>;\r\n<aanvraag indienen bij bevoegd bestuursorgaan>;\r\n<aanvraag ondertekenen>;\r\n<verschaffen gegevens nodig om besluit te nemen>;\r\n<vergaren nodige kennis>;\r\n<besluit berust op deugdelijke motivering>;\r\n<beschikking geven binnen termijn>",
       "reference": "art. 3:40 Awb",
       "version": "2-[19940101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=3&afdeling=3.6&artikel=3:40&z=2017-04-01&g=2017-04-01",
       "sourcetext": "{Een besluit treedt niet in werking voordat het is bekendgemaakt.}",
-      "explanation": "Artikel 3.40 Awb impliceert dat het bestuursorgaan dat bevoegd is een besluit te nemen, ook bevoegd is het besluit bekend maken. Ook al staat dat er niet expliciet, dat is de interpretatie die hier gekozen is.&#10;&#10;Het kan natuurlijk altijd dat er regels zijn die andere(n) (bestuursorga(a)n(en)) toestaan om een besluit bekend te maken, of regels die de bevoegdheid om besluiten bekend te maken beperken. Die regels hebben we nog niet gevonden.&#10;&#10;Artikel 3.41 Awb gaat over de wijze waarop het bekendmaken gebeurt. Die regels zijn verwerkt ijn de preconditie."
+      "explanation": "Artikel 3.40 Awb impliceert dat het bestuursorgaan dat bevoegd is een besluit te nemen, ook bevoegd is het besluit bekend maken. Ook al staat dat er niet expliciet, dat is de interpretatie die hier gekozen is.\r\n\r\nHet kan natuurlijk altijd dat er regels zijn die andere(n) (bestuursorga(a)n(en)) toestaan om een besluit bekend te maken, of regels die de bevoegdheid om besluiten bekend te maken beperken. Die regels hebben we nog niet gevonden.\r\n\r\nArtikel 3.41 Awb gaat over de wijze waarop het bekendmaken gebeurt. Die regels zijn verwerkt ijn de preconditie."
     },
     {
       "tags": "",
@@ -45,8 +45,8 @@
       "reference": "art. 4:5 Awb",
       "version": "3-[20040701]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=4&titeldeel=4.1&afdeling=4.1.1&artikel=4:5&z=2017-03-10&g=2017-03-10",
-      "sourcetext": "{Het bestuursorgaan kan besluiten de aanvraag niet te behandelen, indien:&#10;a. de aanvrager niet heeft voldaan aan enig wettelijk voorschrift voor het in behandeling nemen van de aanvraag, of&#10;b. de aanvraag geheel of gedeeltelijk is geweigerd op grond van artikel 2:15, of&#10;c. de verstrekte gegevens en bescheiden onvoldoende zijn voor de beoordeling van de aanvraag of voor de voorbereiding van de beschikking,&#10;mits de aanvrager de gelegenheid heeft gehad de aanvraag binnen een door het bestuursorgaan gestelde termijn aan te vullen.&#10;(...)&#10;4 Een besluit om de aanvraag niet te behandelen wordt aan de aanvrager bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken.}",
-      "explanation": "Hoe omgaan met voorwaarde [besluit om de aanvraag niet te behandelen wordt aan de aanvrager bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken]?&#10;&#10;Het besluit is nog niet bekendgemaakt op het moment dat het wordt genomen. Kan dat dan wel als voorwaarde voor het nemen van een besluit worden gesteld?&#10;(Ik zou zeggen dat dat wel kan. Bij het nemen van het besluit wordt ervan uitgegaan dat het besluit binnen de termijn wordt bekendgemaakt. Als later blijkt dat dat toch niet is gebeurd, kunnen belanghebbenden immuniteit tegen het besluit claimen.)&#10;&#10;Het niet hebben voldaan aan enig wettelijk voorschrift is veranderd in: NIET [voldaan aan alle wettelijke voorschriften].&#10;&#10;Verstrekte gegevens zijn onvoldoende is veranderd in: NIET [gegevens zijn voldoende]."
+      "sourcetext": "{Het bestuursorgaan kan besluiten de aanvraag niet te behandelen, indien:\r\na. de aanvrager niet heeft voldaan aan enig wettelijk voorschrift voor het in behandeling nemen van de aanvraag, of\r\nb. de aanvraag geheel of gedeeltelijk is geweigerd op grond van artikel 2:15, of\r\nc. de verstrekte gegevens en bescheiden onvoldoende zijn voor de beoordeling van de aanvraag of voor de voorbereiding van de beschikking,\r\nmits de aanvrager de gelegenheid heeft gehad de aanvraag binnen een door het bestuursorgaan gestelde termijn aan te vullen.\r\n(...)\r\n4 Een besluit om de aanvraag niet te behandelen wordt aan de aanvrager bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken.}",
+      "explanation": "Hoe omgaan met voorwaarde [besluit om de aanvraag niet te behandelen wordt aan de aanvrager bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken]?\r\n\r\nHet besluit is nog niet bekendgemaakt op het moment dat het wordt genomen. Kan dat dan wel als voorwaarde voor het nemen van een besluit worden gesteld?\r\n(Ik zou zeggen dat dat wel kan. Bij het nemen van het besluit wordt ervan uitgegaan dat het besluit binnen de termijn wordt bekendgemaakt. Als later blijkt dat dat toch niet is gebeurd, kunnen belanghebbenden immuniteit tegen het besluit claimen.)\r\n\r\nHet niet hebben voldaan aan enig wettelijk voorschrift is veranderd in: NIET [voldaan aan alle wettelijke voorschriften].\r\n\r\nVerstrekte gegevens zijn onvoldoende is veranderd in: NIET [gegevens zijn voldoende]."
     },
     {
       "tags": "",
@@ -55,7 +55,7 @@
       "action": "[vaststellen]",
       "object": "[formulier]",
       "interested-party": "[aanvrager]",
-      "preconditions": "[bestuursorgaan is bevoegd op de aanvraag te beslissen]&#10;EN&#10;NIET [formulier is bij wettelijk voorschrift voorzien]",
+      "preconditions": "[bestuursorgaan is bevoegd op de aanvraag te beslissen]\r\nEN\r\nNIET [formulier is bij wettelijk voorschrift voorzien]",
       "create": "[formulier voor het indienen van aanvragen]",
       "terminate": "",
       "reference": "art. 4:4 Awb",
@@ -71,7 +71,7 @@
       "action": "[vaststellen]",
       "object": "[formulier]",
       "interested-party": "[aanvrager]",
-      "preconditions": "[bestuursorgaan is bevoegd op de aanvraag te beslissen]&#10;EN&#10;NIET [formulier is bij wettelijk voorschrift voorzien]",
+      "preconditions": "[bestuursorgaan is bevoegd op de aanvraag te beslissen]\r\nEN\r\nNIET [formulier is bij wettelijk voorschrift voorzien]",
       "create": "[formulier voor het verstrekken van gegevens]",
       "terminate": "",
       "reference": "art. 4:4 Awb",
@@ -98,7 +98,7 @@
     },
     {
       "tags": "",
-      "act": "<<herroepen bestreden besluit>>&#10;",
+      "act": "<<herroepen bestreden besluit>>\r\n",
       "actor": "[bestuursorgaan]",
       "action": "[herroepen]",
       "object": "[bestreden besluit]",
@@ -464,7 +464,7 @@
       "reference": "art. 4:2 lid 1 Awb",
       "version": "2-[19940101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=4&titeldeel=4.1&afdeling=4.1.1&artikel=4:2&lid=1&z=2017-03-10&g=2017-03-10",
-      "sourcetext": "{De aanvraag wordt ondertekend en bevat ten minste:&#10;a. de naam en het adres van de aanvrager;&#10;b. de dagtekening;&#10;c. een aanduiding van de beschikking die wordt gevraagd.}"
+      "sourcetext": "{De aanvraag wordt ondertekend en bevat ten minste:\r\na. de naam en het adres van de aanvrager;\r\nb. de dagtekening;\r\nc. een aanduiding van de beschikking die wordt gevraagd.}"
     },
     {
       "explanation": "",
@@ -529,7 +529,7 @@
       "reference": "art. 6:5 Awb",
       "version": "",
       "juriconnect": "",
-      "sourcetext": "{Het bezwaar- of beroepschrift wordt ondertekend en bevat ten minste:&#10;a. de naam en het adres van de indiener;&#10;b. de dagtekening;&#10;c. een omschrijving van het besluit waartegen het bezwaar of beroep is gericht;&#10;d. de gronden van het bezwaar of beroep.}"
+      "sourcetext": "{Het bezwaar- of beroepschrift wordt ondertekend en bevat ten minste:\r\na. de naam en het adres van de indiener;\r\nb. de dagtekening;\r\nc. een omschrijving van het besluit waartegen het bezwaar of beroep is gericht;\r\nd. de gronden van het bezwaar of beroep.}"
     }
   ]
 }
