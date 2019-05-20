@@ -39,7 +39,6 @@
     "@discipl/abundance-service": "^0.4.1",
     "loglevel": "^1.6.1",
     "pegjs": "^0.10.0"
-
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

@@ -365,7 +365,7 @@ describe('discipl-law-reg', () => {
         'acts': [{
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'action': '[aanvragen]',
-          'actor': '[toezending besluit aan aanvrager]',
+          'actor': '[aanvrager]',
           'object': '[verwelkomst]',
           'interested-party': '[overheid]',
           'preconditions': '',
@@ -377,21 +377,72 @@ describe('discipl-law-reg', () => {
           'version': '2-[19980101]-[jjjjmmdd]',
           'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
         }],
-        'facts': [{ 'explanation': '', 'fact': '[belanghebbende]', 'function': '[persoon wiens belang rechtstreeks bij een besluit is betrokken]', 'reference': 'art. 1:2 lid 1 Awb', 'version': '2-[19940101]-[jjjjmmdd]', 'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10', 'sourcetext': '{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}' }, { 'explanation': '', 'fact': '[toezending besluit aan aanvrager]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }, { 'explanation': '', 'fact': '[toezending besluit aan meer belanghebbenden]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }, { 'explanation': '', 'fact': '[uitreiking besluit aan aanvrager]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }, { 'explanation': '', 'fact': '[uitreiking besluit aan meer belanghebbenden]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }],
+        'facts': [{
+          'explanation': '',
+          'fact': '[belanghebbende]',
+          'function': '[persoon wiens belang rechtstreeks bij een besluit is betrokken]',
+          'reference': 'art. 1:2 lid 1 Awb',
+          'version': '2-[19940101]-[jjjjmmdd]',
+          'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10',
+          'sourcetext': '{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}'
+        }, {
+          'explanation': '',
+          'fact': '[aanvrager]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }, {
+          'explanation': '',
+          'fact': '[toezending besluit aan aanvrager]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }, {
+          'explanation': '',
+          'fact': '[toezending besluit aan meer belanghebbenden]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }, {
+          'explanation': '',
+          'fact': '[uitreiking besluit aan aanvrager]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }, {
+          'explanation': '',
+          'fact': '[uitreiking besluit aan meer belanghebbenden]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }],
         'duties': []
       }
 
       let ssid = await core.newSsid('ephemeral')
       let modelLink = await lawReg.publish(ssid, model, {
-        '[toezending besluit aan aanvrager]':
+        '[aanvrager]':
           'IS:' + ssid.did
       })
       let modelRef = await core.get(modelLink, ssid)
 
       let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
 
-      let result = await lawReg.checkAction(modelLink, actsLink, ssid, '')
-      console.log('result: ' + result)
+      const factResolver = (fact) => {
+        return true
+      }
+
+      let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
       expect(result).to.equal(true)
     })

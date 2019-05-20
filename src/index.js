@@ -148,13 +148,17 @@ const splitFunction = (functionRef) => {
  */
 const checkFact = async (fact, ssid, context) => {
   logger.debug('Checking fact', fact)
+  logger.debug('Facts used', context.facts)
   const factLink = context.facts[fact]
   const core = abundance.getCoreAPI()
+
+  logger.debug('FactLink', factLink, 'used to resolve fact')
   if (factLink) {
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
     if (functionRef !== '') {
+      logger.debug('Using functionRef', functionRef, 'to resolve fact')
       let splitted = splitFunction(functionRef)
 
       if (ssid.did === splitted[2]) {
@@ -201,6 +205,7 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
   let modelReference = await core.get(modelLink, ssid)
   let actReference = await core.get(actLink, ssid)
   let factReference = arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].facts)
+  logger.debug('Fact reference obtained from model', factReference)
   // TODO: Use this?
   arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].duties)
 
