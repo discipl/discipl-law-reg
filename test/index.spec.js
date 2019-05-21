@@ -1,10 +1,14 @@
 /* eslint-env mocha */
 import { expect } from 'chai'
 import * as lawReg from '../src/index.js'
+import * as log from 'loglevel'
 
 import awb from './flint-example-awb'
 
 // import { loadConnector } from '../src/connector-loader.js'
+
+// Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
+log.getLogger('disciplLawReg').setLevel('warn')
 
 describe('discipl-law-reg', () => {
   describe('The discipl-law-reg library', () => {
@@ -226,7 +230,12 @@ describe('discipl-law-reg', () => {
       let needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
-      let needLink = await core.claim(needSsid, { 'need': { 'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>', 'DISCIPL_FLINT_MODEL_LINK': modelLink } })
+      let needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
 
       let actorSsid = await core.newSsid('ephemeral')
 
@@ -239,7 +248,8 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
-          'DISCIPL_FLINT_GLOBAL_CASE': needLink
+          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
         },
         'previous': null
       })
@@ -258,24 +268,105 @@ describe('discipl-law-reg', () => {
       let needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
-      let needLink = await core.claim(needSsid, { 'need': { 'act': '<<indienen aanvraag>>', 'DISCIPL_FLINT_MODEL_LINK': modelLink } })
+      let needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<indienen verzoek een besluit te nemen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
 
       let actorSsid = await core.newSsid('ephemeral')
 
       let factResolver = (fact) => {
-        return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]'
+        if (typeof fact === 'string') {
+          return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
+            fact === '[verzoek een besluit te nemen]' ||
+            // Temporary hack until boolean logic works
+            fact.includes('[wetgevende macht]')
+        }
+        return false
       }
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<indienen aanvraag>>', { 'factResolver': factResolver })
+      let actionLink = await lawReg.take(actorSsid, needLink, '<<indienen verzoek een besluit te nemen>>', { 'factResolver': factResolver })
 
       let action = await core.get(actionLink, actorSsid)
 
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
-          'DISCIPL_FLINT_GLOBAL_CASE': needLink
+          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
         },
         'previous': null
+      })
+    })
+
+    it('should be able to take an action where the object originates from another action', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let lawmakerSsid = await core.newSsid('ephemeral')
+      await core.allow(lawmakerSsid)
+
+      let belanghebbendeSsid = await core.newSsid('ephemeral')
+      await core.allow(belanghebbendeSsid)
+      let bestuursorgaanSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
+
+      let modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
+          'IS:' + belanghebbendeSsid.did
+      })
+
+      let retrievedModel = await core.get(modelLink)
+
+      let needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+      let needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<indienen verzoek een besluit te nemen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      let belanghebbendeFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          return fact === '[verzoek een besluit te nemen]' ||
+            // Temporary hack until boolean logic works
+            // Interested party
+            fact.includes('[wetgevende macht]')
+        }
+        return false
+      }
+
+      let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', { 'factResolver': belanghebbendeFactresolver })
+
+      let bestuursorgaanFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          // interested party
+          return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
+            // Temporary hack until boolean logic works
+            // Should be replaced by factFunction for this actor
+            fact.includes('[wetgevende macht]')
+        }
+        return false
+      }
+
+      let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', {
+        'factResolver': bestuursorgaanFactresolver
+      })
+
+      expect(secondActionLink).to.be.a('string')
+
+      let action = await core.get(secondActionLink, bestuursorgaanSsid)
+
+      const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
+        .filter(item => Object.keys(item).includes('<<besluiten de aanvraag niet te behandelen>>'))
+
+      expect(action.data).to.deep.equal({
+        'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+        'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+        'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
       })
     })
 
@@ -361,7 +452,7 @@ describe('discipl-law-reg', () => {
         'acts': [{
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'action': '[aanvragen]',
-          'actor': '[toezending besluit aan aanvrager]',
+          'actor': '[aanvrager]',
           'object': '[verwelkomst]',
           'interested-party': '[overheid]',
           'preconditions': '',
@@ -373,21 +464,72 @@ describe('discipl-law-reg', () => {
           'version': '2-[19980101]-[jjjjmmdd]',
           'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
         }],
-        'facts': [{ 'explanation': '', 'fact': '[belanghebbende]', 'function': '[persoon wiens belang rechtstreeks bij een besluit is betrokken]', 'reference': 'art. 1:2 lid 1 Awb', 'version': '2-[19940101]-[jjjjmmdd]', 'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10', 'sourcetext': '{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}' }, { 'explanation': '', 'fact': '[toezending besluit aan aanvrager]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }, { 'explanation': '', 'fact': '[toezending besluit aan meer belanghebbenden]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }, { 'explanation': '', 'fact': '[uitreiking besluit aan aanvrager]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }, { 'explanation': '', 'fact': '[uitreiking besluit aan meer belanghebbenden]', 'function': '[]', 'reference': 'art 3:41 lid 1 Awb', 'version': '', 'juriconnect': '', 'sourcetext': '' }],
+        'facts': [{
+          'explanation': '',
+          'fact': '[belanghebbende]',
+          'function': '[persoon wiens belang rechtstreeks bij een besluit is betrokken]',
+          'reference': 'art. 1:2 lid 1 Awb',
+          'version': '2-[19940101]-[jjjjmmdd]',
+          'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10',
+          'sourcetext': '{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}'
+        }, {
+          'explanation': '',
+          'fact': '[aanvrager]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }, {
+          'explanation': '',
+          'fact': '[toezending besluit aan aanvrager]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }, {
+          'explanation': '',
+          'fact': '[toezending besluit aan meer belanghebbenden]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }, {
+          'explanation': '',
+          'fact': '[uitreiking besluit aan aanvrager]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }, {
+          'explanation': '',
+          'fact': '[uitreiking besluit aan meer belanghebbenden]',
+          'function': '[]',
+          'reference': 'art 3:41 lid 1 Awb',
+          'version': '',
+          'juriconnect': '',
+          'sourcetext': ''
+        }],
         'duties': []
       }
 
       let ssid = await core.newSsid('ephemeral')
       let modelLink = await lawReg.publish(ssid, model, {
-        '[toezending besluit aan aanvrager]':
+        '[aanvrager]':
           'IS:' + ssid.did
       })
       let modelRef = await core.get(modelLink, ssid)
 
       let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
 
-      let result = await lawReg.checkAction(modelLink, actsLink, ssid, '')
-      console.log('result: ' + result)
+      const factResolver = (fact) => {
+        return true
+      }
+
+      let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
       expect(result).to.equal(true)
     })
