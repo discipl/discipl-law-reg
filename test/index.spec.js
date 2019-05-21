@@ -50,6 +50,12 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('use parsed logic', async () => {
+      let parsedFact = lawReg.evaluateFactFunction('(NIET [fact3]) OF ([fact4] EN [fact5]) OF ([fact1])')
+      let result = lawReg.loopParsedFacts(parsedFact)
+      console.log('result: ', result)
+    })
+
     it('should publish small example', async () => {
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',

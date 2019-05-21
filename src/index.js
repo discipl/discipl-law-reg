@@ -121,6 +121,117 @@ const evaluateFactFunction = (factfn) => {
   return factParser.parse(factfn)
 }
 
+const loopParsedFacts = (facts) => {
+  if (facts.operands) {
+    checkExpression(facts)
+  }
+  //   for (let fact of facts.operands) {
+  //     console.log('nu in de forloop')
+
+  //     checkExpression(fact)
+  //     if (fact.operands) {
+  //       console.log('nu in de if');
+
+  //       loopParsedFacts(fact)
+  //     }
+  //   }
+  // } else {
+  //   console.log('else', facts)
+  //   //console.log(checkFact(fact))
+  // }
+
+  return facts
+}
+
+const checkExpression = (fact) => {
+  let expr = fact.expression
+  let result = false
+  switch (expr) {
+    case 'OR':
+
+      console.log('Switch case: OR')
+      // console.log(checkOperands(fact))
+      console.log('logje van de checkOr', checkOr(fact))
+      // console.log('fact: ', operands)
+      break
+    case 'AND':
+      console.log('Switch case: AND')
+      // console.log(checkOperands(fact))
+      console.log('logje van de checkAnd', checkAnd(fact))
+      // console.log('fact: ', operands)
+      break
+    case 'NOT':
+      console.log('Switch case: NOT')
+      console.log('logje van de checkNot', checkNot(fact))
+      break
+    default:
+      console.log('Switch case: default')
+      console.log(fact)
+      if (fact) {
+        // checkFact(fact)
+      }
+      break
+  }
+
+  return result
+}
+
+const checkOr = (fact) => {
+  let vulOr = []
+  for (let op of fact.operands) {
+    if (!op.expression) {
+      console.log('dit is klaar in OR', op)
+
+      let checkOp = true // checkFact(op)
+
+      if (checkOp) {
+        vulOr.push({ 'operand': op, 'check': 'true' })
+      } else {
+        vulOr.push({ 'operand': op, 'check': 'false' })
+      }
+    } else {
+      console.log('dit moet doorchecken in OR', op)
+      checkExpression(op)
+    }
+    console.log('dit is op in OR', op)
+  }
+  return vulOr
+}
+
+const checkAnd = (fact) => {
+  let vulAnd = []
+  for (let op of fact.operands) {
+    if (!op.expression) {
+      console.log('dit is klaar in AND', op)
+
+      let checkOp = true // checkFact(op)
+
+      if (checkOp) {
+        vulAnd.push({ 'operand': op, 'check': 'true' })
+      } else {
+        vulAnd.push({ 'operand': op, 'check': 'false' })
+      }
+    } else {
+      console.log('dit moet doorchecken in AND', op)
+      checkExpression(op)
+    }
+    console.log('dit is op in AND', op)
+  }
+  return vulAnd
+}
+
+const checkNot = (fact) => {
+  console.log('dit moet niet zijn', fact.operand)
+  let resultofcheck = false // checkFact(fact.operand, ssid?, actor.did?)
+  if (!resultofcheck) {
+    console.log('checkNot is WEL goed dus is false als uitkomst')
+    return { 'operand': fact.operand, 'check': 'true' }
+  } else {
+    console.log('checkNot is NIET goed dus is true als uitkomst')
+    return { 'operand': fact.operand, 'check': 'false' }
+  }
+}
+
 /**
  * Splits a given string from the first ':' to extract the did from the total.
  *
@@ -303,6 +414,7 @@ export {
   getAbundanceService,
   checkAction,
   evaluateFactFunction,
+  loopParsedFacts,
   publish,
   get,
   observe,
