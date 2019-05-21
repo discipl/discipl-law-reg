@@ -38,7 +38,7 @@
       "actor": "[bestuursorgaan]",
       "action": "[besluiten niet te behandelen]",
       "object": "[aanvraag]",
-      "interested-party": "belanghebbende",
+      "interested-party": "[belanghebbende]",
       "preconditions": "[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]",
       "create": "[besluit tot niet in behandeling nemen aanvraag]",
       "terminate": "[aanvraag]",
@@ -98,7 +98,7 @@
     },
     {
       "tags": "",
-      "act": "<<herroepen bestreden besluit>>",
+      "act": "<<herroepen bestreden besluit>>\r\n",
       "actor": "[bestuursorgaan]",
       "action": "[herroepen]",
       "object": "[bestreden besluit]",
@@ -421,6 +421,15 @@
       "fact": "[beslissing treft de belanghebbende los van het voor te bereiden besluit rechtstreeks in zijn belang]",
       "function": "[]",
       "reference": "art. 6:3 Awb",
+      "version": "",
+      "juriconnect": "",
+      "sourcetext": ""
+    },
+    {
+      "explanation": "",
+      "fact": "[persoon wiens belang rechtstreeks bij een besluit is betrokken]",
+      "function": "[]",
+      "reference": "",
       "version": "",
       "juriconnect": "",
       "sourcetext": ""

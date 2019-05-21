@@ -158,28 +158,61 @@ const checkFact = async (fact, ssid, context) => {
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
-    if (functionRef !== '') {
+    if (functionRef === '<<>>') {
+      let result = await checkCreatedFact(fact, ssid, context)
+      logger.debug('Resolving fact', fact, 'as', result, 'by determining earlier creation')
+      return result
+    }
+
+    if (functionRef !== '' && functionRef !== '[]') {
       logger.debug('Using functionRef', functionRef, 'to resolve fact')
       let splitted = splitFunction(functionRef)
 
-      if (ssid.did === splitted[2]) {
-        logger.debug('Resolving fact', fact, 'as true by did-identification')
+      if (ssid.did === splitted[2] || !context.myself) {
+        logger.debug('Resolving fact', fact, 'as true by', context.myself ? 'did-identification' : 'the concerned being someone else')
         return true
       } else {
         let result = await checkFact(functionRef, ssid, context)
         logger.debug('Resolving fact', fact, 'as', result, 'by recursion')
         return result
       }
+    } else {
+      return checkFactWithResolver(fact, ssid, context)
     }
-    logger.debug('Resolving fact', fact, 'as true by default')
-    return true
   } else {
-    if (context.factResolver) {
-      const result = context.factResolver(fact)
-      logger.debug('Resolving fact', fact, 'as', result, 'by factresolver')
-      return result
-    }
+    return checkFactWithResolver(fact, ssid, context)
   }
+}
+
+const checkFactWithResolver = async (fact, ssid, context) => {
+  if (context.factResolver) {
+    const result = context.factResolver(fact)
+    logger.debug('Resolving fact', fact, 'as', result, 'by factresolver')
+    return result
+  }
+  return false
+}
+
+const checkCreatedFact = async (fact, ssid, context) => {
+  const core = abundance.getCoreAPI()
+  let actionLink = context.caseLink
+
+  while (actionLink != null) {
+    let lastAction = await core.get(actionLink, ssid)
+
+    let actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
+
+    if (actLink != null) {
+      let act = await core.get(actLink, ssid)
+
+      if (typeof act.data[DISCIPL_FLINT_ACT].create === 'string' && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
+        return true
+      }
+    }
+    actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
+  }
+
+  return false
 }
 
 /**
@@ -202,17 +235,17 @@ const checkPreconditions = (actor, preconditions) => {
 }
 
 const checkAction = async (modelLink, actLink, ssid, context) => {
+  logger.debug('Checking action', actLink)
   let core = abundance.getCoreAPI()
   let modelReference = await core.get(modelLink, ssid)
+  logger.debug('Obtained modelReference', modelReference)
   let actReference = await core.get(actLink, ssid)
   let factReference = arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].facts)
   logger.debug('Fact reference obtained from model', factReference)
-  // TODO: Use this?
-  arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].duties)
 
   const actor = actReference.data[DISCIPL_FLINT_ACT].actor
 
-  const checkedActor = await checkFact(actor, ssid, { ...context, 'facts': factReference })
+  const checkedActor = await checkFact(actor, ssid, { ...context, 'facts': factReference, 'myself': true })
 
   const object = actReference.data[DISCIPL_FLINT_ACT].object
 
@@ -229,6 +262,25 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
     return true
   }
 
+  let failureMode = ''
+
+  if (!checkedActor) {
+    failureMode += ' actor'
+  }
+
+  if (!checkedPreConditions) {
+    failureMode += ' preconditions'
+  }
+
+  if (!checkedObject) {
+    failureMode += ' object'
+  }
+
+  if (!checkedInterestedParty) {
+    failureMode += ' interestedParty'
+  }
+
+  logger.info('Preconditions failed for', failureMode)
   return false
 }
 
@@ -303,6 +355,8 @@ const take = async (ssid, caseLink, act, context) => {
   let core = abundance.getCoreAPI()
   let caseClaim = await core.get(caseLink, ssid)
 
+  logger.debug('Obtained caseClaim', caseClaim)
+
   let isFirstActionInCase = !Object.keys(caseClaim.data).includes(DISCIPL_FLINT_ACT_TAKEN)
   let firstCaseLink = isFirstActionInCase ? caseLink : caseClaim.data[DISCIPL_FLINT_GLOBAL_CASE]
   let firstCase = await core.get(firstCaseLink, ssid)
@@ -315,7 +369,7 @@ const take = async (ssid, caseLink, act, context) => {
     return Object.keys(actWithLink).includes(act)
   }).map((actWithLink) => Object.values(actWithLink)[0])[0]
 
-  if (await checkAction(modelLink, actLink, ssid, context)) {
+  if (await checkAction(modelLink, actLink, ssid, { ...context, 'caseLink': caseLink })) {
     logger.info('Registering act', actLink)
     return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })
   }
