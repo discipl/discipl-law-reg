@@ -1,21 +1,19 @@
 /* eslint-env mocha */
 import { expect } from 'chai'
 import * as lawReg from '../src/index.js'
-import * as log from 'loglevel'
+// import * as log from 'loglevel'
 
 import awb from './flint-example-awb'
 
 // import { loadConnector } from '../src/connector-loader.js'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
-log.getLogger('disciplLawReg').setLevel('warn')
 
 describe('discipl-law-reg', () => {
   describe('The discipl-law-reg library', () => {
     it('correctly parses and solves a single fact', async () => {
       let parsedFact = lawReg.evaluateFactFunction('[fact1]')
 
-      log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -26,8 +24,6 @@ describe('discipl-law-reg', () => {
 
       expect(result).to.equal(true)
 
-      log.getLogger('disciplLawReg').setLevel('warn')
-
       expect(parsedFact).to.deep.equal(
         '[fact1]'
       )
@@ -35,9 +31,6 @@ describe('discipl-law-reg', () => {
 
     it('correctly parses and solves a single NOT fact', async () => {
       let parsedFact = lawReg.evaluateFactFunction('NIET [fact1]')
-      console.log(parsedFact)
-
-      log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -47,7 +40,6 @@ describe('discipl-law-reg', () => {
       let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
 
       expect(result).to.equal(true)
-      log.getLogger('disciplLawReg').setLevel('warn')
 
       expect(parsedFact).to.deep.equal({
         'expression': 'NOT',
@@ -57,9 +49,6 @@ describe('discipl-law-reg', () => {
 
     it('correctly parses a multiple AND construction', async () => {
       let parsedFact = lawReg.evaluateFactFunction('[fact1] EN [fact2] EN [fact3]')
-      console.log(parsedFact)
-
-      log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -69,7 +58,6 @@ describe('discipl-law-reg', () => {
       let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
 
       expect(result).to.equal(true)
-      log.getLogger('disciplLawReg').setLevel('warn')
 
       expect(parsedFact).to.deep.equal({
         'expression': 'AND',
@@ -83,9 +71,6 @@ describe('discipl-law-reg', () => {
 
     it('correctly parses a multiple OR construction', async () => {
       let parsedFact = lawReg.evaluateFactFunction('[fact1] OF [fact2] OF [fact3]')
-      console.log(parsedFact)
-
-      log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -95,7 +80,6 @@ describe('discipl-law-reg', () => {
       let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
 
       expect(result).to.equal(true)
-      log.getLogger('disciplLawReg').setLevel('warn')
 
       expect(parsedFact).to.deep.equal({
         'expression': 'OR',
@@ -109,7 +93,6 @@ describe('discipl-law-reg', () => {
 
     it('correctly parses and solves an OR construction with a NOT and AND construction inside', async () => {
       let parsedFact = lawReg.evaluateFactFunction('(NIET [fact1]) OF ([fact2] EN [fact3])')
-      log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -119,7 +102,6 @@ describe('discipl-law-reg', () => {
       let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
 
       expect(result).to.equal(true)
-      log.getLogger('disciplLawReg').setLevel('warn')
 
       expect(parsedFact).to.deep.equal({
         'expression': 'OR',
@@ -141,7 +123,6 @@ describe('discipl-law-reg', () => {
 
     it('correctly parses and solves an OR construction with two AND constructions and a NOT inside of it', async () => {
       let parsedFact = lawReg.evaluateFactFunction('([fact1] EN [fact2]) OF ([fact3] EN (NIET [fact4]))')
-      log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -151,7 +132,6 @@ describe('discipl-law-reg', () => {
       let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
 
       expect(result).to.equal(true)
-      log.getLogger('disciplLawReg').setLevel('warn')
 
       expect(parsedFact).to.deep.equal({
         'expression': 'OR',
@@ -398,8 +378,7 @@ describe('discipl-law-reg', () => {
         if (typeof fact === 'string') {
           return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
             fact === '[verzoek een besluit te nemen]' ||
-            // Temporary hack until boolean logic works
-            fact.includes('[wetgevende macht]')
+            fact === '[wetgevende macht]'
         }
         return false
       }
@@ -449,9 +428,8 @@ describe('discipl-law-reg', () => {
       let belanghebbendeFactresolver = (fact) => {
         if (typeof fact === 'string') {
           return fact === '[verzoek een besluit te nemen]' ||
-            // Temporary hack until boolean logic works
             // Interested party
-            fact.includes('[wetgevende macht]')
+            fact === '[wetgevende macht]'
         }
         return false
       }
@@ -462,9 +440,8 @@ describe('discipl-law-reg', () => {
         if (typeof fact === 'string') {
           // interested party
           return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
-            // Temporary hack until boolean logic works
             // Should be replaced by factFunction for this actor
-            fact.includes('[wetgevende macht]')
+            fact === '[wetgevende macht]'
         }
         return false
       }

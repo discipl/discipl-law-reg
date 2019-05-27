@@ -60,7 +60,7 @@ Expression
   / Fact
   
 DelimitedExpression
-  = '(' ex:Expression ')' {
+  = _ '(' _ ex:Expression _ ')' _ {
    return ex
   }
   / Fact
@@ -216,10 +216,10 @@ const checkFact = async (fact, ssid, context) => {
         return result
       }
     } else {
-      return checkFactWithResolver(fact, ssid, context)
+      return checkExpression(evaluateFactFunction(fact), ssid, context)
     }
   } else {
-    return checkFactWithResolver(fact, ssid, context)
+    return checkExpression(evaluateFactFunction(fact), ssid, context)
   }
 }
 
