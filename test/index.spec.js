@@ -1,13 +1,14 @@
 /* eslint-env mocha */
 import { expect } from 'chai'
 import * as lawReg from '../src/index.js'
-// import * as log from 'loglevel'
+import * as log from 'loglevel'
 
 import awb from './flint-example-awb'
 
 // import { loadConnector } from '../src/connector-loader.js'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
+log.getLogger('disciplLawReg').setLevel('warn')
 
 describe('discipl-law-reg', () => {
   describe('The discipl-law-reg library', () => {
