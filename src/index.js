@@ -60,14 +60,14 @@ Expression
   / Fact
   
 DelimitedExpression
-  = '(' ex:Expression ')' {
+  = _ '(' _ ex:Expression _ ')' _ {
    return ex
   }
   / Fact
 
 Fact
   = '[' quote: NotFactBracket* ']' {
-  return quote.join("")
+  return '[' + quote.join("") + ']'
   }
 
 EN
@@ -115,7 +115,6 @@ Text
   
 _ "whitespace"
  = [\\r\\n\\t ]*
-
 `
 )
 
@@ -124,6 +123,46 @@ _ "whitespace"
  */
 const evaluateFactFunction = (factfn) => {
   return factParser.parse(factfn)
+}
+
+const checkExpression = (fact, ssid, context) => {
+  let expr = fact.expression
+  switch (expr) {
+    case 'OR':
+      logger.debug('Switch case: OR')
+      for (let op of fact.operands) {
+        let operandResult = checkExpression(op, ssid, context)
+        if (operandResult === true) {
+          logger.debug('Resolved OR as true, because', op, 'is true')
+          return true
+        }
+      }
+      logger.debug('Resolved OR as false')
+      return false
+    case 'AND':
+      logger.debug('Switch case: AND')
+      for (let op of fact.operands) {
+        let operandResult = checkExpression(op, ssid, context)
+        logger.debug('OperandResult in AND', operandResult, 'for operand', op)
+        if (operandResult === false) {
+          logger.debug('Resolved AND as false, because', op, 'is false')
+          return false
+        }
+      }
+      logger.debug('Resolved AND as true')
+      return true
+    case 'NOT':
+      logger.debug('Switch case: NOT')
+      return !checkExpression(fact.operand, ssid, context)
+
+    default:
+      logger.debug('Switch case: default')
+      if (fact) {
+        return checkFactWithResolver(fact, ssid, context)
+      }
+
+      throw new Error('Undefined fact')
+  }
 }
 
 /**
@@ -177,18 +216,18 @@ const checkFact = async (fact, ssid, context) => {
         return result
       }
     } else {
-      return checkFactWithResolver(fact, ssid, context)
+      return checkExpression(evaluateFactFunction(fact), ssid, context)
     }
   } else {
-    return checkFactWithResolver(fact, ssid, context)
+    return checkExpression(evaluateFactFunction(fact), ssid, context)
   }
 }
 
-const checkFactWithResolver = async (fact, ssid, context) => {
+const checkFactWithResolver = (fact, ssid, context) => {
   if (context.factResolver) {
     const result = context.factResolver(fact)
     logger.debug('Resolving fact', fact, 'as', result, 'by factresolver')
-    return result
+    return result === true
   }
   return false
 }
@@ -381,6 +420,7 @@ export {
   getAbundanceService,
   checkAction,
   evaluateFactFunction,
+  checkExpression,
   publish,
   get,
   observe,
