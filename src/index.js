@@ -67,7 +67,7 @@ DelimitedExpression
 
 Fact
   = '[' quote: NotFactBracket* ']' {
-  return quote.join("")
+  return '[' + quote.join("") + ']'
   }
 
 EN
@@ -115,7 +115,6 @@ Text
   
 _ "whitespace"
  = [\\r\\n\\t ]*
-
 `
 )
 
@@ -126,114 +125,43 @@ const evaluateFactFunction = (factfn) => {
   return factParser.parse(factfn)
 }
 
-const loopParsedFacts = (facts) => {
-  if (facts.operands) {
-    checkExpression(facts)
-  }
-  //   for (let fact of facts.operands) {
-  //     console.log('nu in de forloop')
-
-  //     checkExpression(fact)
-  //     if (fact.operands) {
-  //       console.log('nu in de if');
-
-  //       loopParsedFacts(fact)
-  //     }
-  //   }
-  // } else {
-  //   console.log('else', facts)
-  //   //console.log(checkFact(fact))
-  // }
-
-  return facts
-}
-
-const checkExpression = (fact) => {
+const checkExpression = (fact, ssid, context) => {
   let expr = fact.expression
-  let result = false
   switch (expr) {
     case 'OR':
-
-      console.log('Switch case: OR')
-      // console.log(checkOperands(fact))
-      console.log('logje van de checkOr', checkOr(fact))
-      // console.log('fact: ', operands)
-      break
+      logger.debug('Switch case: OR')
+      for (let op of fact.operands) {
+        let operandResult = checkExpression(op, ssid, context)
+        if (operandResult === true) {
+          logger.debug('Resolved OR as true, because', op, 'is true')
+          return true
+        }
+      }
+      logger.debug('Resolved OR as false')
+      return false
     case 'AND':
-      console.log('Switch case: AND')
-      // console.log(checkOperands(fact))
-      console.log('logje van de checkAnd', checkAnd(fact))
-      // console.log('fact: ', operands)
-      break
+      logger.debug('Switch case: AND')
+      for (let op of fact.operands) {
+        let operandResult = checkExpression(op, ssid, context)
+        logger.debug('OperandResult in AND', operandResult, 'for operand', op)
+        if (operandResult === false) {
+          logger.debug('Resolved AND as false, because', op, 'is false')
+          return false
+        }
+      }
+      logger.debug('Resolved AND as true')
+      return true
     case 'NOT':
-      console.log('Switch case: NOT')
-      console.log('logje van de checkNot', checkNot(fact))
-      break
+      logger.debug('Switch case: NOT')
+      return !checkExpression(fact.operand, ssid, context)
+
     default:
-      console.log('Switch case: default')
-      console.log(fact)
+      logger.debug('Switch case: default')
       if (fact) {
-        // checkFact(fact)
+        return checkFactWithResolver(fact, ssid, context)
       }
-      break
-  }
 
-  return result
-}
-
-const checkOr = (fact) => {
-  let vulOr = []
-  for (let op of fact.operands) {
-    if (!op.expression) {
-      console.log('dit is klaar in OR', op)
-
-      let checkOp = true // checkFact(op)
-
-      if (checkOp) {
-        vulOr.push({ 'operand': op, 'check': 'true' })
-      } else {
-        vulOr.push({ 'operand': op, 'check': 'false' })
-      }
-    } else {
-      console.log('dit moet doorchecken in OR', op)
-      checkExpression(op)
-    }
-    console.log('dit is op in OR', op)
-  }
-  return vulOr
-}
-
-const checkAnd = (fact) => {
-  let vulAnd = []
-  for (let op of fact.operands) {
-    if (!op.expression) {
-      console.log('dit is klaar in AND', op)
-
-      let checkOp = true // checkFact(op)
-
-      if (checkOp) {
-        vulAnd.push({ 'operand': op, 'check': 'true' })
-      } else {
-        vulAnd.push({ 'operand': op, 'check': 'false' })
-      }
-    } else {
-      console.log('dit moet doorchecken in AND', op)
-      checkExpression(op)
-    }
-    console.log('dit is op in AND', op)
-  }
-  return vulAnd
-}
-
-const checkNot = (fact) => {
-  console.log('dit moet niet zijn', fact.operand)
-  let resultofcheck = false // checkFact(fact.operand, ssid?, actor.did?)
-  if (!resultofcheck) {
-    console.log('checkNot is WEL goed dus is false als uitkomst')
-    return { 'operand': fact.operand, 'check': 'true' }
-  } else {
-    console.log('checkNot is NIET goed dus is true als uitkomst')
-    return { 'operand': fact.operand, 'check': 'false' }
+      throw new Error('Undefined fact')
   }
 }
 
@@ -295,11 +223,11 @@ const checkFact = async (fact, ssid, context) => {
   }
 }
 
-const checkFactWithResolver = async (fact, ssid, context) => {
+const checkFactWithResolver = (fact, ssid, context) => {
   if (context.factResolver) {
     const result = context.factResolver(fact)
     logger.debug('Resolving fact', fact, 'as', result, 'by factresolver')
-    return result
+    return result === true
   }
   return false
 }
@@ -492,7 +420,7 @@ export {
   getAbundanceService,
   checkAction,
   evaluateFactFunction,
-  loopParsedFacts,
+  checkExpression,
   publish,
   get,
   observe,

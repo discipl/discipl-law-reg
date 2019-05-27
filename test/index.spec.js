@@ -12,52 +12,169 @@ log.getLogger('disciplLawReg').setLevel('warn')
 
 describe('discipl-law-reg', () => {
   describe('The discipl-law-reg library', () => {
-    it('correctly parses a single fact', async () => {
-      let parsedFact3 = lawReg.evaluateFactFunction('[fact1]')
+    it('correctly parses and solves a single fact', async () => {
+      let parsedFact = lawReg.evaluateFactFunction('[fact1]')
 
-      expect(parsedFact3).to.deep.equal(
-        'fact1'
+      log.getLogger('disciplLawReg').setLevel('debug')
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let ssid = await core.newSsid('ephemeral')
+
+      const factResolver = (fact) => {
+        return fact === '[fact1]'
+      }
+      let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.equal(true)
+
+      log.getLogger('disciplLawReg').setLevel('warn')
+
+      expect(parsedFact).to.deep.equal(
+        '[fact1]'
       )
     })
 
-    it('correctly parses a multiple AND construction', async () => {
-      let parsedFact2 = lawReg.evaluateFactFunction('[fact1] EN [fact2] EN [fact3]')
+    it('correctly parses and solves a single NOT fact', async () => {
+      let parsedFact = lawReg.evaluateFactFunction('NIET [fact1]')
+      console.log(parsedFact)
 
-      expect(parsedFact2).to.deep.equal({
+      log.getLogger('disciplLawReg').setLevel('debug')
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let ssid = await core.newSsid('ephemeral')
+
+      const factResolver = (fact) => {
+        return fact === '[fact2]'
+      }
+      let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.equal(true)
+      log.getLogger('disciplLawReg').setLevel('warn')
+
+      expect(parsedFact).to.deep.equal({
+        'expression': 'NOT',
+        'operand': '[fact1]'
+      })
+    })
+
+    it('correctly parses a multiple AND construction', async () => {
+      let parsedFact = lawReg.evaluateFactFunction('[fact1] EN [fact2] EN [fact3]')
+      console.log(parsedFact)
+
+      log.getLogger('disciplLawReg').setLevel('debug')
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let ssid = await core.newSsid('ephemeral')
+
+      const factResolver = (fact) => {
+        return fact === '[fact1]' || fact === '[fact2]' || fact === '[fact3]'
+      }
+      let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.equal(true)
+      log.getLogger('disciplLawReg').setLevel('warn')
+
+      expect(parsedFact).to.deep.equal({
         'expression': 'AND',
         'operands': [
-          'fact1',
-          'fact2',
-          'fact3'
+          '[fact1]',
+          '[fact2]',
+          '[fact3]'
         ]
       })
     })
 
-    it('correctly parses an OR construction with a NOT and AND construction inside', async () => {
+    it('correctly parses a multiple OR construction', async () => {
+      let parsedFact = lawReg.evaluateFactFunction('[fact1] OF [fact2] OF [fact3]')
+      console.log(parsedFact)
+
+      log.getLogger('disciplLawReg').setLevel('debug')
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let ssid = await core.newSsid('ephemeral')
+
+      const factResolver = (fact) => {
+        return fact === '[fact2]'
+      }
+      let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.equal(true)
+      log.getLogger('disciplLawReg').setLevel('warn')
+
+      expect(parsedFact).to.deep.equal({
+        'expression': 'OR',
+        'operands': [
+          '[fact1]',
+          '[fact2]',
+          '[fact3]'
+        ]
+      })
+    })
+
+    it('correctly parses and solves an OR construction with a NOT and AND construction inside', async () => {
       let parsedFact = lawReg.evaluateFactFunction('(NIET [fact1]) OF ([fact2] EN [fact3])')
+      log.getLogger('disciplLawReg').setLevel('debug')
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let ssid = await core.newSsid('ephemeral')
+
+      const factResolver = (fact) => {
+        return fact === '[fact]'
+      }
+      let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.equal(true)
+      log.getLogger('disciplLawReg').setLevel('warn')
 
       expect(parsedFact).to.deep.equal({
         'expression': 'OR',
         'operands': [
           {
             'expression': 'NOT',
-            'operand': 'fact1'
+            'operand': '[fact1]'
           },
           {
             'expression': 'AND',
             'operands': [
-              'fact2',
-              'fact3'
+              '[fact2]',
+              '[fact3]'
             ]
           }
         ]
       })
     })
 
-    it('use parsed logic', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('(NIET [fact3]) OF ([fact4] EN [fact5]) OF ([fact1])')
-      let result = lawReg.loopParsedFacts(parsedFact)
-      console.log('result: ', result)
+    it('correctly parses and solves an OR construction with two AND constructions and a NOT inside of it', async () => {
+      let parsedFact = lawReg.evaluateFactFunction('([fact1] EN [fact2]) OF ([fact3] EN (NIET [fact4]))')
+      log.getLogger('disciplLawReg').setLevel('debug')
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let ssid = await core.newSsid('ephemeral')
+
+      const factResolver = (fact) => {
+        return fact === '[fact1]' || fact === '[fact2]'
+      }
+      let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.equal(true)
+      log.getLogger('disciplLawReg').setLevel('warn')
+
+      expect(parsedFact).to.deep.equal({
+        'expression': 'OR',
+        'operands': [
+          {
+            'expression': 'AND',
+            'operands': [
+              '[fact1]',
+              '[fact2]'
+            ]
+          },
+          {
+            'expression': 'AND',
+            'operands': [
+              '[fact3]',
+              {
+                'expression': 'NOT',
+                'operand': '[fact4]'
+              }
+            ]
+          }
+        ]
+      })
     })
 
     it('should publish small example', async () => {
