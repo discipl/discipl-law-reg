@@ -291,8 +291,6 @@ describe('discipl-law-reg', () => {
       let factReference = await core.get(factsLink, ssid)
       let dutyReference = await core.get(dutiesLink, ssid)
 
-      lawReg.checkAction(modelLink, actsLink, ssid, '')
-
       expect(Object.keys(modelReference.data['DISCIPL_FLINT_MODEL'])).to.have.members(['model', 'acts', 'facts', 'duties'])
 
       expect(actReference.data['DISCIPL_FLINT_ACT']).to.deep.equal(
@@ -356,28 +354,32 @@ describe('discipl-law-reg', () => {
             'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
           }],
         'facts': [
-          { 'fact': '[ingezetene]', 'function': '', 'reference': 'art 1.1' }
+          { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' }
         ],
         'duties': []
       }
 
       let lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
-      let modelLink = await lawReg.publish(lawmakerSsid, model)
-
-      let retrievedModel = await core.get(modelLink)
-
       let needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
+
+      let actorSsid = await core.newSsid('ephemeral')
+
+      let modelLink = await lawReg.publish(lawmakerSsid, model, {
+        '[ingezetene]':
+          'IS:' + actorSsid.did
+      })
+
+      let retrievedModel = await core.get(modelLink)
+
       let needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
-
-      let actorSsid = await core.newSsid('ephemeral')
 
       let factResolver = (fact) => true
 
@@ -396,12 +398,18 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to take an action dependent on recursive facts', async () => {
+      // log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
 
       let lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
 
-      let modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' })
+      let actorSsid = await core.newSsid('ephemeral')
+
+      let modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
+        'IS:' + actorSsid.did
+      })
 
       let retrievedModel = await core.get(modelLink)
 
@@ -415,12 +423,9 @@ describe('discipl-law-reg', () => {
         }
       })
 
-      let actorSsid = await core.newSsid('ephemeral')
-
       let factResolver = (fact) => {
         if (typeof fact === 'string') {
-          return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
-            fact === '[verzoek een besluit te nemen]' ||
+          return fact === '[verzoek een besluit te nemen]' ||
             fact === '[wetgevende macht]'
         }
         return false
@@ -483,7 +488,8 @@ describe('discipl-law-reg', () => {
         if (typeof fact === 'string') {
           // interested party
           return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
-            // Should be replaced by factFunction for this actor
+            fact === '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]' ||
+            // temporary shortcut
             fact === '[wetgevende macht]'
         }
         return false

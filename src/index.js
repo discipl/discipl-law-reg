@@ -125,13 +125,13 @@ const evaluateFactFunction = (factfn) => {
   return factParser.parse(factfn)
 }
 
-const checkExpression = (fact, ssid, context) => {
+const checkExpression = async (fact, ssid, context) => {
   let expr = fact.expression
   switch (expr) {
     case 'OR':
       logger.debug('Switch case: OR')
       for (let op of fact.operands) {
-        let operandResult = checkExpression(op, ssid, context)
+        let operandResult = await checkExpression(op, ssid, context)
         if (operandResult === true) {
           logger.debug('Resolved OR as true, because', op, 'is true')
           return true
@@ -142,7 +142,7 @@ const checkExpression = (fact, ssid, context) => {
     case 'AND':
       logger.debug('Switch case: AND')
       for (let op of fact.operands) {
-        let operandResult = checkExpression(op, ssid, context)
+        let operandResult = await checkExpression(op, ssid, context)
         logger.debug('OperandResult in AND', operandResult, 'for operand', op)
         if (operandResult === false) {
           logger.debug('Resolved AND as false, because', op, 'is false')
@@ -153,7 +153,7 @@ const checkExpression = (fact, ssid, context) => {
       return true
     case 'NOT':
       logger.debug('Switch case: NOT')
-      return !checkExpression(fact.operand, ssid, context)
+      return !await checkExpression(fact.operand, ssid, context)
 
     default:
       logger.debug('Switch case: default')
@@ -178,6 +178,37 @@ const splitFunction = (functionRef) => {
   return arr
 }
 
+async function checkFactLink (factLink, fact, ssid, context) {
+  const core = abundance.getCoreAPI()
+  const factReference = await core.get(factLink, ssid)
+  const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
+
+  if (functionRef === '<<>>') {
+    let result = await checkCreatedFact(fact, ssid, context)
+    logger.debug('Resolving fact', fact, 'as', result, 'by determining earlier creation')
+    return result
+  }
+
+  if (functionRef !== '' && functionRef !== '[]') {
+    logger.debug('Using functionRef', functionRef, 'to resolve fact')
+    let splitted = splitFunction(functionRef)
+    logger.debug('Splitted functionRef', functionRef)
+    logger.debug('Ssid for comparison', ssid)
+
+    if (ssid.did === splitted[2] || !context.myself) {
+      logger.debug('Resolving fact', fact, 'as true by', context.myself ? 'did-identification' : 'the concerned being someone else')
+      return true
+    } else {
+      logger.debug('FunctionRef', functionRef, 'cannot be resolved by identification')
+      let result = await checkExpression(evaluateFactFunction(functionRef), ssid, context)
+      logger.debug('Resolving fact', fact, 'as', result, 'by recursion')
+      return result
+    }
+  } else {
+    throw new Error('Not a useful functionRef')
+  }
+}
+
 /**
  * Checks if the fact did is equal to the did of the ssid. So you can know that someone is allowed to do an action.
  *
@@ -188,42 +219,41 @@ const splitFunction = (functionRef) => {
  */
 const checkFact = async (fact, ssid, context) => {
   logger.debug('Checking fact', fact)
-  logger.debug('Facts used', context.facts)
+  if (fact === '') {
+    logger.debug('Resolving empty fact as true')
+    return true
+  }
+
   const factLink = context.facts[fact]
-  const core = abundance.getCoreAPI()
 
   logger.debug('FactLink', factLink, 'used to resolve fact')
   if (factLink) {
-    const factReference = await core.get(factLink, ssid)
-    const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
-
-    if (functionRef === '<<>>') {
-      let result = await checkCreatedFact(fact, ssid, context)
-      logger.debug('Resolving fact', fact, 'as', result, 'by determining earlier creation')
-      return result
-    }
-
-    if (functionRef !== '' && functionRef !== '[]') {
-      logger.debug('Using functionRef', functionRef, 'to resolve fact')
-      let splitted = splitFunction(functionRef)
-
-      if (ssid.did === splitted[2] || !context.myself) {
-        logger.debug('Resolving fact', fact, 'as true by', context.myself ? 'did-identification' : 'the concerned being someone else')
-        return true
-      } else {
-        let result = await checkFact(functionRef, ssid, context)
-        logger.debug('Resolving fact', fact, 'as', result, 'by recursion')
-        return result
-      }
-    } else {
-      return checkExpression(evaluateFactFunction(fact), ssid, context)
+    try {
+      return await checkFactLink(factLink, fact, ssid, context)
+    } catch (e) {
+      const result = context.factResolver(fact)
+      logger.debug('Resolving fact', fact, 'as', result, 'by factresolver after link failed')
+      return result === true
     }
   } else {
     return checkExpression(evaluateFactFunction(fact), ssid, context)
   }
 }
 
-const checkFactWithResolver = (fact, ssid, context) => {
+const checkFactWithResolver = async (fact, ssid, context) => {
+  const factLink = context.facts ? context.facts[fact] : null
+
+  if (factLink) {
+    logger.debug('Deferring to factLink', fact)
+    try {
+      return await checkFactLink(factLink, fact, ssid, context)
+    } catch (e) {
+      const result = context.factResolver(fact)
+      logger.debug('Resolving fact', fact, 'as', result, 'by factresolver after link failed')
+      return result === true
+    }
+  }
+
   if (context.factResolver) {
     const result = context.factResolver(fact)
     logger.debug('Resolving fact', fact, 'as', result, 'by factresolver')
@@ -268,11 +298,6 @@ const arrayToObject = (arr) => {
   return obj
 }
 
-const checkPreconditions = (actor, preconditions) => {
-  logger.warn('Running mock check-preconditions')
-  return true
-}
-
 const checkAction = async (modelLink, actLink, ssid, context) => {
   logger.debug('Checking action', actLink)
   let core = abundance.getCoreAPI()
@@ -294,7 +319,7 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
 
   const checkedInterestedParty = await checkFact(interestedParty, ssid, { ...context, 'facts': factReference })
 
-  const checkedPreConditions = checkPreconditions('actor', actReference.data['DISCIPL_FLINT_ACT'].preconditions)
+  const checkedPreConditions = await checkFact(actReference.data['DISCIPL_FLINT_ACT'].preconditions, ssid, { ...context, 'facts': factReference })
 
   if (checkedActor && checkedPreConditions && checkedObject && checkedInterestedParty) {
     logger.info('Preconditions for act', actLink, 'have been verified')
@@ -330,15 +355,20 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
  * Note that references within the model are not translated into links.
  */
 const publish = async (ssid, flintModel, factFunctions = {}) => {
+  logger.debug('Publishing model')
   let core = abundance.getCoreAPI()
   let result = { model: flintModel.model, acts: [], facts: [], duties: [] }
   for (let fact of flintModel.facts) {
+    let resultFact = fact
     if (fact.function === '[]' && factFunctions[fact.fact] != null) {
-      fact.function = factFunctions[fact.fact]
+      logger.debug('Setting function for', fact.fact, 'to', factFunctions[fact.fact])
+
+      resultFact = { ...fact, 'function': factFunctions[fact.fact] }
     }
-    let link = await core.claim(ssid, { [DISCIPL_FLINT_FACT]: fact })
+    let link = await core.claim(ssid, { [DISCIPL_FLINT_FACT]: resultFact })
     result.facts.push({ [fact.fact]: link })
   }
+
   for (let act of flintModel.acts) {
     let link = await core.claim(ssid, { [DISCIPL_FLINT_ACT]: act })
     result.acts.push({ [act.act]: link })
@@ -408,6 +438,7 @@ const take = async (ssid, caseLink, act, context) => {
     return Object.keys(actWithLink).includes(act)
   }).map((actWithLink) => Object.values(actWithLink)[0])[0]
 
+  logger.debug('Checking if action is possible from perspective of', ssid.did)
   if (await checkAction(modelLink, actLink, ssid, { ...context, 'caseLink': caseLink })) {
     logger.info('Registering act', actLink)
     return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })
