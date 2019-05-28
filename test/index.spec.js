@@ -458,7 +458,9 @@ describe('discipl-law-reg', () => {
 
       let modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
         '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
-          'IS:' + belanghebbendeSsid.did
+          'IS:' + belanghebbendeSsid.did,
+        '[wetgevende macht]':
+          'IS:' + bestuursorgaanSsid.did
       })
 
       let retrievedModel = await core.get(modelLink)
@@ -488,9 +490,8 @@ describe('discipl-law-reg', () => {
         if (typeof fact === 'string') {
           // interested party
           return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
-            fact === '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]' ||
-            // temporary shortcut
-            fact === '[wetgevende macht]'
+            // preconditions
+            fact === '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]'
         }
         return false
       }
