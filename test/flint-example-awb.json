@@ -184,6 +184,15 @@
     },
     {
       "explanation": "",
+      "fact": "[wetgevende macht]",
+      "function": "[]",
+      "reference": "",
+      "version": "",
+      "juriconnect": "",
+      "sourcetext": "Added, because it was missing in excel"
+    },
+    {
+      "explanation": "",
       "fact": "[besluit]",
       "function": "[schriftelijke beslissing van een bestuursorgaan]\r\nEN\r\n[beslissing inhoudende een publiekrechtelijke rechtshandeling]",
       "reference": "art. 1:3 lid 1 Awb",
