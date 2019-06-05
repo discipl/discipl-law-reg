@@ -191,7 +191,6 @@ const checkFact = async (fact, ssid, context) => {
   logger.debug('Facts used', context.facts)
   const factLink = context.facts[fact]
   const core = abundance.getCoreAPI()
-
   logger.debug('FactLink', factLink, 'used to resolve fact')
   if (factLink) {
     const factReference = await core.get(factLink, ssid)
@@ -407,7 +406,6 @@ const take = async (ssid, caseLink, act, context) => {
   let actLink = await model.data[DISCIPL_FLINT_MODEL].acts.filter((actWithLink) => {
     return Object.keys(actWithLink).includes(act)
   }).map((actWithLink) => Object.values(actWithLink)[0])[0]
-
   if (await checkAction(modelLink, actLink, ssid, { ...context, 'caseLink': caseLink })) {
     logger.info('Registering act', actLink)
     return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })

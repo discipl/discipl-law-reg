@@ -4,7 +4,7 @@ import * as lawReg from '../src/index.js'
 import * as log from 'loglevel'
 
 import awb from './flint-example-awb'
-
+import lb from './flint-example-lerarenbeurs'
 // import { loadConnector } from '../src/connector-loader.js'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
@@ -440,7 +440,7 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    it('should be able to take an action where the object originates from another action', async () => {
+    it('should be able to take an action where the object originates from another action - AWB', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
       let lawmakerSsid = await core.newSsid('ephemeral')
@@ -506,6 +506,77 @@ describe('discipl-law-reg', () => {
         'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
       })
     })
+
+    // --------------------------------------------------------------------------------------------------------------------
+
+    it('should be able to take an action where the object originates from another action - LERARENBEURS', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let lawmakerSsid = await core.newSsid('ephemeral')
+      await core.allow(lawmakerSsid)
+
+      let belanghebbendeSsid = await core.newSsid('ephemeral')
+      await core.allow(belanghebbendeSsid)
+      let bestuursorgaanSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
+
+      let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
+          'IS:' + belanghebbendeSsid.did
+      })
+
+      let retrievedModel = await core.get(modelLink)
+
+      let needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+      let needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<indienen verzoek een besluit te nemen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      let belanghebbendeFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          return fact === '[verzoek een besluit te nemen]' ||
+            // Interested party
+            fact === '[wetgevende macht]'
+        }
+        return false
+      }
+
+      let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', { 'factResolver': belanghebbendeFactresolver })
+
+      let bestuursorgaanFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          // interested party
+          return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
+            // Should be replaced by factFunction for this actor
+            fact === '[orgaan van een rechtspersoon die krachtens publiekrecht is ingesteld]'
+        }
+        return false
+      }
+
+      let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', {
+        'factResolver': bestuursorgaanFactresolver
+      })
+
+      expect(secondActionLink).to.be.a('string')
+
+      let action = await core.get(secondActionLink, bestuursorgaanSsid)
+
+      const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
+        .filter(item => Object.keys(item).includes('<<besluiten de aanvraag niet te behandelen>>'))
+
+      expect(action.data).to.deep.equal({
+        'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+        'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+        'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
+      })
+    })
+
+    // --------------------------------------------------------------------------------------------------------------------
 
     it('should be able to fill functions of single and multiple facts', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
