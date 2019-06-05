@@ -243,13 +243,10 @@ _ "whitespace"
    * @returns {boolean}
    */
   static checkFactWithResolver (fact, ssid, context) {
-    if (context.factResolver) {
-      const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
-      const result = context.factResolver(factToCheck)
-      logger.debug('Resolving fact', fact, 'as', result, 'via', factToCheck, 'by factresolver')
-      return result === true
-    }
-    return false
+    const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
+    const result = context.factResolver(factToCheck)
+    logger.debug('Resolving fact', fact, 'as', result, 'via', factToCheck, 'by factresolver')
+    return result === true
   }
 
   /**
