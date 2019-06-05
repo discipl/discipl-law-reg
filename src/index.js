@@ -95,10 +95,6 @@ _ "whitespace"
     return this.abundance
   }
 
-  evaluateFactFunction (factfn) {
-    return this.factParser.parse(factfn)
-  }
-
   /**
    * @typedef {Object} ParsedExpression
    * @property {string} expression - The type of expression (AND/OR/NOT)

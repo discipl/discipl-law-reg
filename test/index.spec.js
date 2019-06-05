@@ -13,7 +13,7 @@ const lawReg = new LawReg()
 describe('discipl-law-reg', () => {
   describe('The discipl-law-reg library', () => {
     it('correctly parses and solves a single fact', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('[fact1]')
+      let parsedFact = lawReg.factParser.parse('[fact1]')
 
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
@@ -31,7 +31,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('correctly parses and solves a single NOT fact', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('NIET [fact1]')
+      let parsedFact = lawReg.factParser.parse('NIET [fact1]')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -49,7 +49,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('correctly parses a multiple AND construction', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('[fact1] EN [fact2] EN [fact3]')
+      let parsedFact = lawReg.factParser.parse('[fact1] EN [fact2] EN [fact3]')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -71,7 +71,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('correctly parses a multiple OR construction', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('[fact1] OF [fact2] OF [fact3]')
+      let parsedFact = lawReg.factParser.parse('[fact1] OF [fact2] OF [fact3]')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -93,7 +93,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('Does not find a match inside a multiple AND construction', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('[fact1] EN [fact2]')
+      let parsedFact = lawReg.factParser.parse('[fact1] EN [fact2]')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -114,7 +114,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('Does not find a match inside a multiple OR construction', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('[fact1] OF [fact2]')
+      let parsedFact = lawReg.factParser.parse('[fact1] OF [fact2]')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -135,7 +135,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('correctly parses and solves an OR construction with a NOT and AND construction inside', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('(NIET [fact1]) OF ([fact2] EN [fact3])')
+      let parsedFact = lawReg.factParser.parse('(NIET [fact1]) OF ([fact2] EN [fact3])')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
@@ -165,7 +165,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('correctly parses and solves an OR construction with two AND constructions and a NOT inside of it', async () => {
-      let parsedFact = lawReg.evaluateFactFunction('([fact1] EN [fact2]) OF ([fact3] EN (NIET [fact4]))')
+      let parsedFact = lawReg.factParser.parse('([fact1] EN [fact2]) OF ([fact3] EN (NIET [fact4]))')
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
 
