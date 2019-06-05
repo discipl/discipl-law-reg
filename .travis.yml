@@ -6,6 +6,7 @@ addons:
     organization: "discipl" # the key of the org you chose at step #3
 script:
   - npm run lint
+  - npm audit
   - npm test
   # other script steps might be done before running the actual analysis
 
