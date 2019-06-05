@@ -2,7 +2,7 @@ import { AbundanceService } from '@discipl/abundance-service'
 
 import * as log from 'loglevel'
 import * as peg from 'pegjs'
-import { BaseConnector } from '../../discipl-core-baseconnector'
+import { BaseConnector } from '@discipl/core-baseconnector'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
