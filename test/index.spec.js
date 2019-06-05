@@ -383,7 +383,7 @@ describe('discipl-law-reg', () => {
 
       let factResolver = (fact) => true
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', { 'factResolver': factResolver })
+      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
 
       let action = await core.get(actionLink, actorSsid)
 
@@ -430,7 +430,7 @@ describe('discipl-law-reg', () => {
         return false
       }
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<indienen verzoek een besluit te nemen>>', { 'factResolver': factResolver })
+      let actionLink = await lawReg.take(actorSsid, needLink, '<<indienen verzoek een besluit te nemen>>', factResolver)
 
       let action = await core.get(actionLink, actorSsid)
 
@@ -483,7 +483,7 @@ describe('discipl-law-reg', () => {
         return false
       }
 
-      let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', { 'factResolver': belanghebbendeFactresolver })
+      let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', belanghebbendeFactresolver)
 
       let bestuursorgaanFactresolver = (fact) => {
         if (typeof fact === 'string') {
@@ -495,9 +495,7 @@ describe('discipl-law-reg', () => {
         return false
       }
 
-      let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', {
-        'factResolver': bestuursorgaanFactresolver
-      })
+      let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', bestuursorgaanFactresolver)
 
       expect(secondActionLink).to.be.a('string')
 

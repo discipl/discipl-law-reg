@@ -201,12 +201,12 @@ _ "whitespace"
 
   /**
    * @typedef {Object} Context
+   * @property {function} factResolver - Function to resolve facts if it cannot be done another way
+   * @property {string} caseLink - Link to the current case
    * @property {object} [facts] - Parsed facts from flint model
    * @property {string} [previousFact] - last fact that was considered in the context
    * @property {boolean} [myself] - `IS:` constructions will be resolved iff it concerns the person themselves
    * @property {object} [factReference] - Map from fact names to fact links in a published FLINT model
-   * @property {function} [factResolver] - Function to resolve facts if it cannot be done another way
-   * @property {string} [caseLink] - Link to the current case
    */
   /**
    * Checks a fact by doing
@@ -405,9 +405,10 @@ _ "whitespace"
    * @param {object} ssid - Identity of the actor
    * @param {string} caseLink - Link to the case, which is either an earlier action, or a need
    * @param {string} act - description of the act to be taken
+   * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
    * @returns {Promise<*>}
    */
-  async take (ssid, caseLink, act, context) {
+  async take (ssid, caseLink, act, factResolver = () => false) {
     let core = this.abundance.getCoreAPI()
     let caseClaim = await core.get(caseLink, ssid)
 
@@ -426,7 +427,8 @@ _ "whitespace"
     }).map((actWithLink) => Object.values(actWithLink)[0])[0]
 
     logger.debug('Checking if action is possible from perspective of', ssid.did)
-    if (await this.checkAction(modelLink, actLink, ssid, { ...context, 'caseLink': caseLink })) {
+
+    if (await this.checkAction(modelLink, actLink, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })) {
       logger.info('Registering act', actLink)
       return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })
     }
