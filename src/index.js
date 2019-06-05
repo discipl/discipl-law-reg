@@ -334,41 +334,6 @@ _ "whitespace"
   }
 
   /**
-   * Given a published model, retrieves a list of acts the given actor (identified through the given did) can take at this moment or could take
-   * once their precondition would be met. For every act in this list, the precondition is evaluated and the result of
-   * this and the subresults of the parts in the boolean logic of the precondition are returned. The result thus resembles:
-   *
-   * {
-   *  acts : [
-   *    {actlink : {case : '', precondition : true, facts : [{factAlink : true}, {factBlink : true}]}, dutylink : 'enforce', ...},
-   *    {actlink : {case : 'discipl:link:ephemeral...', precondition : false, facts : [{factAlink : true}, {factBlink : false}]}, dutylink : 'fulfill', ...}
-   *  ]
-   * }
-   *
-   * the acts in the result also optionally contain links to a duty if the act is part of a duty either as enforcement act or act with
-   * which to fulfill the duty. Also every act links to a case as context, being the need created out of a starting act or need for a starting act
-   * from which a trail of (sub)needs being solved can be found
-   */
-  async get (model, did) {
-
-  }
-
-  /**
-   * Observes changes in process state (new acts that can be taken or termination of such acts for the given did)
-   * changes in process state for a given did may occur when acts within the model are taken or facts evaluating
-   * differently because of new claims of the interested party of the case (start act) or attestations of such claims
-   */
-  async observe (model, did) {
-    // abundancesvc.observe(case, did)
-    //   - of all(nested) service channels, observe actions being taken
-    //     - of all claims of the case subject with a predicate that could be required(through being mentioned in a fact in a precondition), observe attestations thereof
-
-    // {
-    //   match()
-    // }
-  }
-
-  /**
    * Denotes a given act in the context of a case as taken, optionally supplying / denoting the object(s)
    * which the action is taken upon or with. The given ssid must be applicable to the actor the action must be taken by
    */
