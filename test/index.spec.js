@@ -344,7 +344,7 @@ describe('discipl-law-reg', () => {
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
             'interested-party': '[overheid]',
-            'preconditions': '',
+            'preconditions': '[]',
             'create': '<verwelkomen>',
             'terminate': '',
             'reference': 'art 2.1',
@@ -398,7 +398,6 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to take an action dependent on recursive facts', async () => {
-      // log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
 
       let lawmakerSsid = await core.newSsid('ephemeral')
@@ -599,7 +598,7 @@ describe('discipl-law-reg', () => {
           'actor': '[aanvrager]',
           'object': '[verwelkomst]',
           'interested-party': '[overheid]',
-          'preconditions': '',
+          'preconditions': '[]',
           'create': '<verwelkomen>',
           'terminate': '',
           'reference': 'art 2.1',

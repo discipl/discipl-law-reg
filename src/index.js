@@ -3,6 +3,7 @@ import * as abundance from '@discipl/abundance-service'
 
 import * as log from 'loglevel'
 import * as peg from 'pegjs'
+import { BaseConnector } from '../../discipl-core-baseconnector'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -12,6 +13,8 @@ const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
 const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
 const DISCIPL_FLINT_PREVIOUS_CASE = 'DISCIPL_FLINT_PREVIOUS_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
+
+const DISCIPL_IS_MARKER = 'IS:'
 
 const logger = log.getLogger('disciplLawReg')
 
@@ -118,9 +121,6 @@ _ "whitespace"
 `
 )
 
-/**
- * evaluates a fact function
- */
 const evaluateFactFunction = (factfn) => {
   return factParser.parse(factfn)
 }
@@ -158,24 +158,20 @@ const checkExpression = async (fact, ssid, context) => {
     default:
       logger.debug('Switch case: default')
       if (fact) {
-        return checkFactWithResolver(fact, ssid, context)
+        return checkFact(fact, ssid, context)
       }
 
       throw new Error('Undefined fact')
   }
 }
 
-/**
- * Splits a given string from the first ':' to extract the did from the total.
- *
- * @param {string} functionRef - Total string what you want to split
- * @returns {array} array with two items, first is for what it is for and the second is the DID
- */
-const splitFunction = (functionRef) => {
-  let position = functionRef.indexOf(':')
-  let arr = functionRef.split(':', 2)
-  arr.push(functionRef.substring(position + 1))
-  return arr
+const extractDidFromIsConstruction = (functionRef) => {
+  if (functionRef.startsWith(DISCIPL_IS_MARKER)) {
+    const possibleDid = functionRef.replace('IS:', '')
+    if (BaseConnector.isDid(possibleDid)) {
+      return possibleDid
+    }
+  }
 }
 
 async function checkFactLink (factLink, fact, ssid, context) {
@@ -189,74 +185,53 @@ async function checkFactLink (factLink, fact, ssid, context) {
     return result
   }
 
-  if (functionRef !== '' && functionRef !== '[]') {
-    logger.debug('Using functionRef', functionRef, 'to resolve fact')
-    let splitted = splitFunction(functionRef)
-    logger.debug('Splitted functionRef', functionRef)
-    logger.debug('Ssid for comparison', ssid)
-
-    if (ssid.did === splitted[2] || !context.myself) {
-      logger.debug('Resolving fact', fact, 'as true by', context.myself ? 'did-identification' : 'the concerned being someone else')
-      return true
-    } else {
-      logger.debug('FunctionRef', functionRef, 'cannot be resolved by identification')
-      let result = await checkExpression(evaluateFactFunction(functionRef), ssid, context)
-      logger.debug('Resolving fact', fact, 'as', result, 'by recursion')
-      return result
-    }
-  } else {
-    throw new Error('Not a useful functionRef')
+  const did = extractDidFromIsConstruction(functionRef)
+  if (did != null) {
+    const result = ssid.did === did || !context.myself
+    logger.debug('Resolving fact', fact, 'as', result, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
+    return result
   }
-}
 
+  return checkFact(functionRef, ssid, { ...context, previousFact: fact })
+}
 /**
- * Checks if the fact did is equal to the did of the ssid. So you can know that someone is allowed to do an action.
+ * @typedef {Object} Context
+ * @property {object} [facts] - Parsed facts from flint model
+ * @property {string} previousFact - last fact that was considered in the context
+ */
+/**
+ * Checks a fact by doing
+ * 1. A lookup in the fact reference
+ * 2. Checking if it is an expression, and parsing it
+ *   a. If it is a simple expression, pass to the factResolver
+ *   b. If it is a complex expression, parse it and evaluate it by parts
  *
  * @param {string} fact - fact name
- * @param {object} ssid - ssid from who wants to make a claim
- * @param {object} context - context is an object for the status of an act and the factreference
- * @returns {Promise<*>} boolean of the result for comparing the did's
+ * @param {object} ssid - ssid representing the actor
+ * @param {Context} context -
+ * @returns {Promise<boolean>} - result of the fact
  */
-const checkFact = async (fact, ssid, context) => {
+async function checkFact (fact, ssid, context) {
   logger.debug('Checking fact', fact)
-  if (fact === '') {
-    logger.debug('Resolving empty fact as true')
-    return true
+  const factLink = context.facts ? context.facts[fact] : null
+
+  if (factLink) {
+    return checkFactLink(factLink, fact, ssid, context)
   }
 
-  const factLink = context.facts[fact]
-
-  logger.debug('FactLink', factLink, 'used to resolve fact')
-  if (factLink) {
-    try {
-      return await checkFactLink(factLink, fact, ssid, context)
-    } catch (e) {
-      const result = context.factResolver(fact)
-      logger.debug('Resolving fact', fact, 'as', result, 'by factresolver after link failed')
-      return result === true
-    }
+  let parsedFact = factParser.parse(fact)
+  if (typeof parsedFact === 'string') {
+    return checkFactWithResolver(parsedFact, ssid, context)
   } else {
-    return checkExpression(evaluateFactFunction(fact), ssid, context)
+    return checkExpression(parsedFact, ssid, context)
   }
 }
 
 const checkFactWithResolver = async (fact, ssid, context) => {
-  const factLink = context.facts ? context.facts[fact] : null
-
-  if (factLink) {
-    logger.debug('Deferring to factLink', fact)
-    try {
-      return await checkFactLink(factLink, fact, ssid, context)
-    } catch (e) {
-      const result = context.factResolver(fact)
-      logger.debug('Resolving fact', fact, 'as', result, 'by factresolver after link failed')
-      return result === true
-    }
-  }
-
   if (context.factResolver) {
-    const result = context.factResolver(fact)
-    logger.debug('Resolving fact', fact, 'as', result, 'by factresolver')
+    const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
+    const result = context.factResolver(factToCheck)
+    logger.debug('Resolving fact', fact, 'as', result, 'via', factToCheck, 'by factresolver')
     return result === true
   }
   return false
@@ -319,10 +294,14 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
 
   const checkedInterestedParty = await checkFact(interestedParty, ssid, { ...context, 'facts': factReference })
 
-  const checkedPreConditions = await checkFact(actReference.data['DISCIPL_FLINT_ACT'].preconditions, ssid, { ...context, 'facts': factReference })
+  const preconditions = actReference.data['DISCIPL_FLINT_ACT'].preconditions
+
+  logger.debug('Original preconditions', preconditions)
+  // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
+  const checkedPreConditions = preconditions !== '[]' && preconditions != null ? await checkFact(preconditions, ssid, { ...context, 'facts': factReference }) : true
 
   if (checkedActor && checkedPreConditions && checkedObject && checkedInterestedParty) {
-    logger.info('Preconditions for act', actLink, 'have been verified')
+    logger.info('Prerequisites for act', actLink, 'have been verified')
     return true
   }
 
@@ -344,7 +323,7 @@ const checkAction = async (modelLink, actLink, ssid, context) => {
     failureMode += ' interestedParty'
   }
 
-  logger.info('Preconditions failed for', failureMode)
+  logger.info('Pre-act check failed for', failureMode)
   return false
 }
 
@@ -450,8 +429,8 @@ const take = async (ssid, caseLink, act, context) => {
 export {
   getAbundanceService,
   checkAction,
-  evaluateFactFunction,
   checkExpression,
+  evaluateFactFunction,
   publish,
   get,
   observe,
