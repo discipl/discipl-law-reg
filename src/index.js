@@ -99,6 +99,21 @@ _ "whitespace"
     return this.factParser.parse(factfn)
   }
 
+  /**
+   * @typedef {Object} ParsedExpression
+   * @property {string} expression - The type of expression (AND/OR/NOT)
+   * @property {Array.<ParsedExpression|string>} [operands] - Operands of an AND/OR
+   * @property {ParsedExpression|string} [operand] - Operand of a NOT
+   */
+
+  /**
+   * Checks a parsed expression by considering the atomic parts and evaluating them
+   *
+   * @param {ParsedExpression|string} fact - Parsed fact object (might be string if the object is an atomic fact
+   * @param {object} ssid - Identity doing the checking
+   * @param {Context} context - Context of the check
+   * @returns {Promise<boolean>}
+   */
   async checkExpression (fact, ssid, context) {
     let expr = fact.expression
     switch (expr) {
@@ -131,7 +146,7 @@ _ "whitespace"
 
       default:
         logger.debug('Switch case: default')
-        if (fact) {
+        if (typeof fact === 'string') {
           return this.checkFact(fact, ssid, context)
         }
 
@@ -139,7 +154,13 @@ _ "whitespace"
     }
   }
 
-  extractDidFromIsConstruction (functionRef) {
+  /**
+   * Extract the DID being referred, if the input is an IS-construction
+   *
+   * @param {string} functionRef - String with a possible IS-construction
+   * @returns {string|undefined} - The DID being referred if it is an IS-construction, undefined otherwise
+   */
+  static extractDidFromIsConstruction (functionRef) {
     if (functionRef.startsWith(DISCIPL_IS_MARKER)) {
       const possibleDid = functionRef.replace('IS:', '')
       if (BaseConnector.isDid(possibleDid)) {
@@ -148,6 +169,15 @@ _ "whitespace"
     }
   }
 
+  /**
+   * Checks a fact link by checking created objects, `IS`-constructions and else passing the function to {@link checkFact}
+   *
+   * @param {string} factLink - Link to the fact
+   * @param {string} fact - Name of the fact
+   * @param {object} ssid - Identity of the entity performing the check
+   * @param {Context} context - Represents the context of the check
+   * @returns {Promise<boolean>}
+   */
   async checkFactLink (factLink, fact, ssid, context) {
     const core = this.abundance.getCoreAPI()
     const factReference = await core.get(factLink, ssid)
@@ -159,7 +189,7 @@ _ "whitespace"
       return result
     }
 
-    const did = this.extractDidFromIsConstruction(functionRef)
+    const did = LawReg.extractDidFromIsConstruction(functionRef)
     if (did != null) {
       const result = ssid.did === did || !context.myself
       logger.debug('Resolving fact', fact, 'as', result, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
@@ -168,10 +198,15 @@ _ "whitespace"
 
     return this.checkFact(functionRef, ssid, { ...context, previousFact: fact })
   }
+
   /**
    * @typedef {Object} Context
    * @property {object} [facts] - Parsed facts from flint model
-   * @property {string} previousFact - last fact that was considered in the context
+   * @property {string} [previousFact] - last fact that was considered in the context
+   * @property {boolean} [myself] - `IS:` constructions will be resolved iff it concerns the person themselves
+   * @property {object} [factReference] - Map from fact names to fact links in a published FLINT model
+   * @property {function} [factResolver] - Function to resolve facts if it cannot be done another way
+   * @property {string} [caseLink] - Link to the current case
    */
   /**
    * Checks a fact by doing
@@ -195,13 +230,23 @@ _ "whitespace"
 
     let parsedFact = this.factParser.parse(fact)
     if (typeof parsedFact === 'string') {
-      return this.checkFactWithResolver(parsedFact, ssid, context)
+      return LawReg.checkFactWithResolver(parsedFact, ssid, context)
     } else {
       return this.checkExpression(parsedFact, ssid, context)
     }
   }
 
-  async checkFactWithResolver (fact, ssid, context) {
+  /**
+   * Checks a fact by using the callback provided as factResolver
+   * If an empty fact is to be checked, this is because a reference was followed. in this case we fall back
+   * to the previousFact, which likely contains information that can be used to resolve this.
+   *
+   * @param {string} fact - Description of the fact, surrounded with []
+   * @param {object} ssid - Identity of entity doing the checking
+   * @param {Context} context - context of the checking
+   * @returns {boolean}
+   */
+  static checkFactWithResolver (fact, ssid, context) {
     if (context.factResolver) {
       const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
       const result = context.factResolver(factToCheck)
@@ -211,6 +256,14 @@ _ "whitespace"
     return false
   }
 
+  /**
+   * Checks a fact by checking if it has been created in a prior act
+   *
+   * @param {string} fact - Description of the fact, surrounded with []
+   * @param {object} ssid - Identity of entity doing the checking
+   * @param {Context} context - context of the checking
+   * @returns {boolean}
+   */
   async checkCreatedFact (fact, ssid, context) {
     const core = this.abundance.getCoreAPI()
     let actionLink = context.caseLink
@@ -240,13 +293,26 @@ _ "whitespace"
    * @returns {object} object instead of the given array
    */
   arrayToObject (arr) {
-    var obj = {}
+    let obj = {}
     Object.keys(arr).forEach(element => {
       Object.assign(obj, arr[element])
     })
     return obj
   }
 
+  /**
+   * Checks if an action is allowed by checking if:
+   * 1. The ssid can be the relevant actor
+   * 2. The object exists
+   * 3. The interested party exists
+   * 4. The pre-conditions are fulfilled
+   *
+   * @param {string} modelLink - Link to a published FLINT model
+   * @param {string} actLink - Link to the respective act
+   * @param {object} ssid - Identity of intended actor
+   * @param {Context} context - Context of the action
+   * @returns {Promise<boolean>}
+   */
   async checkAction (modelLink, actLink, ssid, context) {
     logger.debug('Checking action', actLink)
     let core = this.abundance.getCoreAPI()
@@ -334,8 +400,12 @@ _ "whitespace"
   }
 
   /**
-   * Denotes a given act in the context of a case as taken, optionally supplying / denoting the object(s)
-   * which the action is taken upon or with. The given ssid must be applicable to the actor the action must be taken by
+   * Denotes a given act in the context of a case as taken, if it is possible. See {@link checkAction} is used to check the conditions
+   *
+   * @param {object} ssid - Identity of the actor
+   * @param {string} caseLink - Link to the case, which is either an earlier action, or a need
+   * @param {string} act - description of the act to be taken
+   * @returns {Promise<*>}
    */
   async take (ssid, caseLink, act, context) {
     let core = this.abundance.getCoreAPI()
