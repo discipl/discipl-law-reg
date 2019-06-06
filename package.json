@@ -36,23 +36,24 @@
   },
   "homepage": "https://github.com/discipl/discipl-law-reg#readme",
   "dependencies": {
-    "@discipl/abundance-service": "^0.4.1",
-    "loglevel": "^1.6.1",
-    "pegjs": "^0.10.0"
+    "@discipl/abundance-service": "0.5.0",
+    "@discipl/core-baseconnector": "0.2.1",
+    "loglevel": "1.6.1",
+    "pegjs": "0.10.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.3.3",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/register": "^7.0.0",
-    "@discipl/core-ephemeral": "^0.6.0",
-    "babel-eslint": "^10.0.1",
-    "babel-plugin-dynamic-import-node": "^2.2.0",
-    "chai": "^4.2.0",
-    "codecov": "^3.2.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.1.0",
-    "sinon": "^7.2.4",
-    "standard": "^12.0.1"
+    "@babel/cli": "7.4.4",
+    "@babel/core": "7.4.5",
+    "@babel/preset-env": "7.4.5",
+    "@babel/register": "7.4.4",
+    "@discipl/core-ephemeral": "0.6.2",
+    "babel-eslint": "10.0.1",
+    "babel-plugin-dynamic-import-node": "2.2.0",
+    "chai": "4.2.0",
+    "codecov": "3.5.0",
+    "mocha": "5.2.0",
+    "nyc": "14.1.1",
+    "sinon": "7.2.4",
+    "standard": "12.0.1"
   }
 }
