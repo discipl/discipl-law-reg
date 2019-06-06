@@ -574,7 +574,7 @@ describe('discipl-law-reg', () => {
         'DISCIPL_FLINT_GLOBAL_CASE': needLink,
         'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
       })
-    })
+    }).timeout(5000)
 
     it('should be able to fill functions of single and multiple facts', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
