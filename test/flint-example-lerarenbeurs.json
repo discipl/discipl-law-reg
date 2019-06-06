@@ -811,6 +811,24 @@
             "reference": "art. 23 lid 2 Sbl",
             "juriconnect": "",
             "sourcetext": ""
+        },
+        {
+            "explanation": "",
+            "fact": "[orgaan]",
+            "function": "[]",
+            "reference": "",
+            "version": "",
+            "juriconnect": "",
+            "sourcetext": "Added, because it was missing in excel"
+        },
+        {
+            "explanation": "",
+            "fact": "[rechtspersoon die krachtens publiekrecht is ingesteld]",
+            "function": "[]",
+            "reference": "",
+            "version": "",
+            "juriconnect": "",
+            "sourcetext": "Added, because it was missing in excel"
         }
     ],
     "duties": [

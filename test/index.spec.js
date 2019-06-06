@@ -5,7 +5,6 @@ import * as log from 'loglevel'
 
 import awb from './flint-example-awb'
 import lb from './flint-example-lerarenbeurs'
-// import { loadConnector } from '../src/connector-loader.js'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
 log.getLogger('disciplLawReg').setLevel('warn')
@@ -478,9 +477,7 @@ describe('discipl-law-reg', () => {
 
       let belanghebbendeFactresolver = (fact) => {
         if (typeof fact === 'string') {
-          return fact === '[verzoek een besluit te nemen]' ||
-            // Interested party
-            fact === '[wetgevende macht]'
+          return fact === '[verzoek een besluit te nemen]'
         }
         return false
       }
@@ -526,7 +523,11 @@ describe('discipl-law-reg', () => {
 
       let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
         '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
-          'IS:' + belanghebbendeSsid.did
+          'IS:' + belanghebbendeSsid.did,
+        '[orgaan]':
+          'IS:' + bestuursorgaanSsid.did,
+        '[rechtspersoon die krachtens publiekrecht is ingesteld]':
+          'IS:' + bestuursorgaanSsid.did
       })
 
       let retrievedModel = await core.get(modelLink)
@@ -543,9 +544,7 @@ describe('discipl-law-reg', () => {
 
       let belanghebbendeFactresolver = (fact) => {
         if (typeof fact === 'string') {
-          return fact === '[verzoek een besluit te nemen]' ||
-            // Interested party
-            fact === '[orgaan]' || fact === '[rechtspersoon die krachtens publiekrecht is ingesteld]'
+          return fact === '[verzoek een besluit te nemen]'
         }
         return false
       }
@@ -555,7 +554,6 @@ describe('discipl-law-reg', () => {
       let bestuursorgaanFactresolver = (fact) => {
         if (typeof fact === 'string') {
           return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
-            fact === '[orgaan]' || fact === '[rechtspersoon die krachtens publiekrecht is ingesteld]' ||
             fact === '[aanvrager heeft de gelegenheid gehad de aanvraag aan te vullen]' ||
             fact === '[besluit om de aanvraag niet te behandelen wordt aan de aanvrager bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken]'
         }
