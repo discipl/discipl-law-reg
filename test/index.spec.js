@@ -4,6 +4,7 @@ import { LawReg } from '../src/index.js'
 import * as log from 'loglevel'
 
 import awb from './flint-example-awb'
+import lb from './flint-example-lerarenbeurs'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
 log.getLogger('disciplLawReg').setLevel('warn')
@@ -407,7 +408,7 @@ describe('discipl-law-reg', () => {
 
       let modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
         '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
-        'IS:' + actorSsid.did
+          'IS:' + actorSsid.did
       })
 
       let retrievedModel = await core.get(modelLink)
@@ -444,7 +445,7 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    it('should be able to take an action where the object originates from another action', async () => {
+    it('should be able to take an action where the object originates from another action - AWB', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
       let lawmakerSsid = await core.newSsid('ephemeral')
@@ -476,9 +477,7 @@ describe('discipl-law-reg', () => {
 
       let belanghebbendeFactresolver = (fact) => {
         if (typeof fact === 'string') {
-          return fact === '[verzoek een besluit te nemen]' ||
-            // Interested party
-            fact === '[wetgevende macht]'
+          return fact === '[verzoek een besluit te nemen]'
         }
         return false
       }
@@ -510,6 +509,72 @@ describe('discipl-law-reg', () => {
         'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
       })
     })
+
+    it('should be able to take an action where the object originates from another action - LERARENBEURS', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let lawmakerSsid = await core.newSsid('ephemeral')
+      await core.allow(lawmakerSsid)
+
+      let belanghebbendeSsid = await core.newSsid('ephemeral')
+      await core.allow(belanghebbendeSsid)
+      let bestuursorgaanSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
+
+      let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
+          'IS:' + belanghebbendeSsid.did,
+        '[orgaan]':
+          'IS:' + bestuursorgaanSsid.did,
+        '[rechtspersoon die krachtens publiekrecht is ingesteld]':
+          'IS:' + bestuursorgaanSsid.did
+      })
+
+      let retrievedModel = await core.get(modelLink)
+
+      let needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+      let needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<indienen verzoek een besluit te nemen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      let belanghebbendeFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          return fact === '[verzoek een besluit te nemen]'
+        }
+        return false
+      }
+
+      let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', belanghebbendeFactresolver)
+
+      let bestuursorgaanFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
+            fact === '[aanvrager heeft de gelegenheid gehad de aanvraag aan te vullen]' ||
+            fact === '[besluit om de aanvraag niet te behandelen wordt aan de aanvrager bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken]'
+        }
+        return false
+      }
+
+      let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', bestuursorgaanFactresolver)
+
+      expect(secondActionLink).to.be.a('string')
+
+      let action = await core.get(secondActionLink, bestuursorgaanSsid)
+
+      const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
+        .filter(item => Object.keys(item).includes('<<besluiten de aanvraag niet te behandelen>>'))
+
+      expect(action.data).to.deep.equal({
+        'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+        'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+        'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
+      })
+    }).timeout(5000)
 
     it('should be able to fill functions of single and multiple facts', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()

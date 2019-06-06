@@ -219,11 +219,9 @@ _ "whitespace"
   async checkFact (fact, ssid, context) {
     logger.debug('Checking fact', fact)
     const factLink = context.facts ? context.facts[fact] : null
-
     if (factLink) {
       return this.checkFactLink(factLink, fact, ssid, context)
     }
-
     let parsedFact = this.factParser.parse(fact)
     if (typeof parsedFact === 'string') {
       return LawReg.checkFactWithResolver(parsedFact, ssid, context)
@@ -258,6 +256,7 @@ _ "whitespace"
    * @returns {boolean}
    */
   async checkCreatedFact (fact, ssid, context) {
+    logger.debug('Checking if', fact, 'was created')
     const core = this.abundance.getCoreAPI()
     let actionLink = context.caseLink
 
@@ -268,6 +267,7 @@ _ "whitespace"
 
       if (actLink != null) {
         let act = await core.get(actLink, ssid)
+        logger.debug('Found earlier act', act)
 
         if (typeof act.data[DISCIPL_FLINT_ACT].create === 'string' && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
           return true
@@ -321,10 +321,12 @@ _ "whitespace"
 
     const object = actReference.data[DISCIPL_FLINT_ACT].object
 
+    logger.debug('Original object', object)
+
     const checkedObject = await this.checkFact(object, ssid, { ...context, 'facts': factReference })
 
     const interestedParty = actReference.data[DISCIPL_FLINT_ACT]['interested-party']
-
+    logger.debug('Original interestedparty', interestedParty)
     const checkedInterestedParty = await this.checkFact(interestedParty, ssid, { ...context, 'facts': factReference })
 
     const preconditions = actReference.data['DISCIPL_FLINT_ACT'].preconditions
