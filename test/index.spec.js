@@ -513,8 +513,6 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    // --------------------------------------------------------------------------------------------------------------------
-
     it('should be able to take an action where the object originates from another action - LERARENBEURS', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
@@ -547,26 +545,24 @@ describe('discipl-law-reg', () => {
         if (typeof fact === 'string') {
           return fact === '[verzoek een besluit te nemen]' ||
             // Interested party
-            fact === '[wetgevende macht]'
+            fact === '[orgaan]' || fact === '[rechtspersoon die krachtens publiekrecht is ingesteld]'
         }
         return false
       }
 
-      let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', { 'factResolver': belanghebbendeFactresolver })
+      let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', belanghebbendeFactresolver)
 
       let bestuursorgaanFactresolver = (fact) => {
         if (typeof fact === 'string') {
-          // interested party
           return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
-            // Should be replaced by factFunction for this actor
-            fact === '[orgaan van een rechtspersoon die krachtens publiekrecht is ingesteld]'
+            fact === '[orgaan]' || fact === '[rechtspersoon die krachtens publiekrecht is ingesteld]' ||
+            fact === '[aanvrager heeft de gelegenheid gehad de aanvraag aan te vullen]' ||
+            fact === '[besluit om de aanvraag niet te behandelen wordt aan de aanvrager bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken]'
         }
         return false
       }
 
-      let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', {
-        'factResolver': bestuursorgaanFactresolver
-      })
+      let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', bestuursorgaanFactresolver)
 
       expect(secondActionLink).to.be.a('string')
 
@@ -581,8 +577,6 @@ describe('discipl-law-reg', () => {
         'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
       })
     })
-
-    // --------------------------------------------------------------------------------------------------------------------
 
     it('should be able to fill functions of single and multiple facts', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()

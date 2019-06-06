@@ -18,7 +18,7 @@ const DISCIPL_IS_MARKER = 'IS:'
 const logger = log.getLogger('disciplLawReg')
 
 class LawReg {
-  constructor(abundanceService = new AbundanceService()) {
+  constructor (abundanceService = new AbundanceService()) {
     this.abundance = abundanceService
     this.factParser = peg.generate(`
 start
@@ -91,7 +91,7 @@ _ "whitespace"
     )
   }
 
-  getAbundanceService() {
+  getAbundanceService () {
     return this.abundance
   }
 
@@ -110,7 +110,7 @@ _ "whitespace"
    * @param {Context} context - Context of the check
    * @returns {Promise<boolean>}
    */
-  async checkExpression(fact, ssid, context) {
+  async checkExpression (fact, ssid, context) {
     let expr = fact.expression
     switch (expr) {
       case 'OR':
@@ -156,7 +156,7 @@ _ "whitespace"
    * @param {string} functionRef - String with a possible IS-construction
    * @returns {string|undefined} - The DID being referred if it is an IS-construction, undefined otherwise
    */
-  static extractDidFromIsConstruction(functionRef) {
+  static extractDidFromIsConstruction (functionRef) {
     if (functionRef.startsWith(DISCIPL_IS_MARKER)) {
       const possibleDid = functionRef.replace('IS:', '')
       if (BaseConnector.isDid(possibleDid)) {
@@ -174,7 +174,7 @@ _ "whitespace"
    * @param {Context} context - Represents the context of the check
    * @returns {Promise<boolean>}
    */
-  async checkFactLink(factLink, fact, ssid, context) {
+  async checkFactLink (factLink, fact, ssid, context) {
     const core = this.abundance.getCoreAPI()
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
@@ -216,14 +216,12 @@ _ "whitespace"
    * @param {Context} context -
    * @returns {Promise<boolean>} - result of the fact
    */
-  async checkFact(fact, ssid, context) {
+  async checkFact (fact, ssid, context) {
     logger.debug('Checking fact', fact)
     const factLink = context.facts ? context.facts[fact] : null
-
     if (factLink) {
       return this.checkFactLink(factLink, fact, ssid, context)
     }
-
     let parsedFact = this.factParser.parse(fact)
     if (typeof parsedFact === 'string') {
       return LawReg.checkFactWithResolver(parsedFact, ssid, context)
@@ -242,7 +240,7 @@ _ "whitespace"
    * @param {Context} context - context of the checking
    * @returns {boolean}
    */
-  static checkFactWithResolver(fact, ssid, context) {
+  static checkFactWithResolver (fact, ssid, context) {
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
     const result = context.factResolver(factToCheck)
     logger.debug('Resolving fact', fact, 'as', result, 'via', factToCheck, 'by factresolver')
@@ -257,7 +255,8 @@ _ "whitespace"
    * @param {Context} context - context of the checking
    * @returns {boolean}
    */
-  async checkCreatedFact(fact, ssid, context) {
+  async checkCreatedFact (fact, ssid, context) {
+    logger.debug('Checking if', fact, 'was created')
     const core = this.abundance.getCoreAPI()
     let actionLink = context.caseLink
 
@@ -268,6 +267,7 @@ _ "whitespace"
 
       if (actLink != null) {
         let act = await core.get(actLink, ssid)
+        logger.debug('Found earlier act', act)
 
         if (typeof act.data[DISCIPL_FLINT_ACT].create === 'string' && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
           return true
@@ -285,7 +285,7 @@ _ "whitespace"
    * @param {array} arr - array with objects in it
    * @returns {object} object instead of the given array
    */
-  arrayToObject(arr) {
+  arrayToObject (arr) {
     let obj = {}
     Object.keys(arr).forEach(element => {
       Object.assign(obj, arr[element])
@@ -306,7 +306,7 @@ _ "whitespace"
    * @param {Context} context - Context of the action
    * @returns {Promise<boolean>}
    */
-  async checkAction(modelLink, actLink, ssid, context) {
+  async checkAction (modelLink, actLink, ssid, context) {
     logger.debug('Checking action', actLink)
     let core = this.abundance.getCoreAPI()
     let modelReference = await core.get(modelLink, ssid)
@@ -321,10 +321,12 @@ _ "whitespace"
 
     const object = actReference.data[DISCIPL_FLINT_ACT].object
 
+    logger.debug('Original object', object)
+
     const checkedObject = await this.checkFact(object, ssid, { ...context, 'facts': factReference })
 
     const interestedParty = actReference.data[DISCIPL_FLINT_ACT]['interested-party']
-
+    logger.debug('Original interestedparty', interestedParty)
     const checkedInterestedParty = await this.checkFact(interestedParty, ssid, { ...context, 'facts': factReference })
 
     const preconditions = actReference.data['DISCIPL_FLINT_ACT'].preconditions
@@ -366,7 +368,7 @@ _ "whitespace"
    * Returns a list to the claim holding the whole model with links to individual claims
    * Note that references within the model are not translated into links.
    */
-  async publish(ssid, flintModel, factFunctions = {}) {
+  async publish (ssid, flintModel, factFunctions = {}) {
     logger.debug('Publishing model')
     let core = this.abundance.getCoreAPI()
     let result = { model: flintModel.model, acts: [], facts: [], duties: [] }
@@ -401,7 +403,7 @@ _ "whitespace"
    * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
    * @returns {Promise<*>}
    */
-  async take(ssid, caseLink, act, factResolver = () => false) {
+  async take (ssid, caseLink, act, factResolver = () => false) {
     let core = this.abundance.getCoreAPI()
     let caseClaim = await core.get(caseLink, ssid)
 
