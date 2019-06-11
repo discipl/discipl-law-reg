@@ -611,6 +611,42 @@ describe('discipl-law-reg', () => {
       expect(allowedActs).to.deep.equal(['<<indienen verzoek een besluit te nemen>>'])
     }).timeout(5000)
 
+    it('should be able to determine potentially available actions', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let lawmakerSsid = await core.newSsid('ephemeral')
+      await core.allow(lawmakerSsid)
+
+      let belanghebbendeSsid = await core.newSsid('ephemeral')
+      await core.allow(belanghebbendeSsid)
+      let bestuursorgaanSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
+
+      let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
+          'IS:' + belanghebbendeSsid.did,
+        '[orgaan]':
+          'IS:' + bestuursorgaanSsid.did,
+        '[rechtspersoon die krachtens publiekrecht is ingesteld]':
+          'IS:' + bestuursorgaanSsid.did
+      })
+
+      let needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+      let needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<indienen verzoek een besluit te nemen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      log.getLogger('disciplLawReg').setLevel('debug')
+      let allowedActs = await lawReg.getPotentialActs(needLink, belanghebbendeSsid, ['[verzoek een besluit te nemen]'])
+
+      expect(allowedActs).to.deep.equal([])
+    }).timeout(5000)
+
     it('should be able to fill functions of single and multiple facts', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
       let ssid = await core.newSsid('ephemeral')
