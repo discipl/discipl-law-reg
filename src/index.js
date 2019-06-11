@@ -14,6 +14,7 @@ const DISCIPL_FLINT_PREVIOUS_CASE = 'DISCIPL_FLINT_PREVIOUS_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
 const DISCIPL_IS_MARKER = 'IS:'
+const DISCIPL_ANYONE_MARKER = 'ANYONE'
 
 const logger = log.getLogger('disciplLawReg')
 
@@ -185,6 +186,11 @@ _ "whitespace"
       return result
     }
 
+    if (functionRef === DISCIPL_ANYONE_MARKER) {
+      logger.debug('Resolving fact', fact, 'as true, because anyone can be this')
+      return true
+    }
+
     const did = LawReg.extractDidFromIsConstruction(functionRef)
     if (did != null) {
       const result = ssid.did === did || !context.myself
@@ -319,47 +325,128 @@ _ "whitespace"
 
     const checkedActor = await this.checkFact(actor, ssid, { ...context, 'facts': factReference, 'myself': true })
 
+    if (!checkedActor) {
+      log.info('Pre-act check failed due to actor')
+      return false
+    }
+
     const object = actReference.data[DISCIPL_FLINT_ACT].object
 
     logger.debug('Original object', object)
 
     const checkedObject = await this.checkFact(object, ssid, { ...context, 'facts': factReference })
 
+    if (!checkedObject) {
+      log.info('Pre-act check failed due to object')
+      return false
+    }
+
     const interestedParty = actReference.data[DISCIPL_FLINT_ACT]['interested-party']
     logger.debug('Original interestedparty', interestedParty)
     const checkedInterestedParty = await this.checkFact(interestedParty, ssid, { ...context, 'facts': factReference })
+
+    if (!checkedInterestedParty) {
+      log.info('Pre-act check failed due to interested party')
+      return false
+    }
 
     const preconditions = actReference.data['DISCIPL_FLINT_ACT'].preconditions
 
     logger.debug('Original preconditions', preconditions)
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
-    const checkedPreConditions = preconditions !== '[]' && preconditions != null ? await this.checkFact(preconditions, ssid, { ...context, 'facts': factReference }) : true
+    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...context, 'facts': factReference }) : true
+
+    if (!checkedPreConditions) {
+      log.info('Pre-act check failed due to pre-conditions')
+      return false
+    }
 
     if (checkedActor && checkedPreConditions && checkedObject && checkedInterestedParty) {
       logger.info('Prerequisites for act', actLink, 'have been verified')
       return true
     }
 
-    let failureMode = ''
+    throw new Error('checkAction had no early exit, but still was not true')
+  }
 
-    if (!checkedActor) {
-      failureMode += ' actor'
+  /**
+   * Returns the names of all acts that can be taken, given the current caseLink, ssid of the actor and a list of facts
+   *
+   * @param {string} caseLink - Link to the case, last action that was taken
+   * @param {object} ssid - Identifies the actor
+   * @param {string[]} facts - Array of true facts
+   * @returns {Promise<Array>}
+   */
+  async getAvailableActs (caseLink, ssid, facts) {
+    const core = this.abundance.getCoreAPI()
+
+    const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
+    const modelLink = await this._getModelLink(firstCaseLink, ssid)
+
+    const model = await core.get(modelLink, ssid)
+
+    const acts = await model.data[DISCIPL_FLINT_MODEL].acts
+
+    const factResolver = (fact) => {
+      return facts.includes(fact)
     }
 
-    if (!checkedPreConditions) {
-      failureMode += ' preconditions'
+    const allowedActs = []
+    logger.debug('Checking', acts, 'for available acts')
+    for (let actWithLink of acts) {
+      logger.debug('Checking whether', actWithLink, 'is an available option')
+
+      const link = Object.values(actWithLink)[0]
+
+      if (await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })) {
+        allowedActs.push(Object.keys(actWithLink)[0])
+      }
     }
 
-    if (!checkedObject) {
-      failureMode += ' object'
+    return allowedActs
+  }
+
+  /**
+   * Returns the names of all acts that could be taken, given the current caseLink, ssid of the actor and a list of facts,
+   * if possibly more facts are supplied
+   *
+   * @param {string} caseLink - Link to the case, last action that was taken
+   * @param {object} ssid - Identifies the actor
+   * @param {string[]} facts - Array of true facts
+   * @returns {Promise<Array>}
+   */
+  async getPotentialActs (caseLink, ssid, facts) {
+    const core = this.abundance.getCoreAPI()
+
+    const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
+    const modelLink = await this._getModelLink(firstCaseLink, ssid)
+
+    const model = await core.get(modelLink, ssid)
+
+    const acts = await model.data[DISCIPL_FLINT_MODEL].acts
+
+    const allowedActs = []
+    logger.debug('Checking', acts, 'for available acts')
+    for (let actWithLink of acts) {
+      let missingFact = false
+      const factResolver = (fact) => {
+        if (facts.includes(fact)) {
+          return true
+        }
+        logger.debug('Missing fact', fact, 'during checking of act', Object.keys(actWithLink)[0])
+        missingFact = true
+        return false
+      }
+      logger.debug('Checking whether', actWithLink, 'is an available option')
+
+      const link = Object.values(actWithLink)[0]
+
+      if (!await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink }) && missingFact) {
+        allowedActs.push(Object.keys(actWithLink)[0])
+      }
     }
 
-    if (!checkedInterestedParty) {
-      failureMode += ' interestedParty'
-    }
-
-    logger.info('Pre-act check failed for', failureMode)
-    return false
+    return allowedActs
   }
 
   /**
@@ -405,15 +492,9 @@ _ "whitespace"
    */
   async take (ssid, caseLink, act, factResolver = () => false) {
     let core = this.abundance.getCoreAPI()
-    let caseClaim = await core.get(caseLink, ssid)
 
-    logger.debug('Obtained caseClaim', caseClaim)
-
-    let isFirstActionInCase = !Object.keys(caseClaim.data).includes(DISCIPL_FLINT_ACT_TAKEN)
-    let firstCaseLink = isFirstActionInCase ? caseLink : caseClaim.data[DISCIPL_FLINT_GLOBAL_CASE]
-    let firstCase = await core.get(firstCaseLink, ssid)
-
-    let modelLink = firstCase.data['need'][DISCIPL_FLINT_MODEL_LINK]
+    let firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
+    let modelLink = await this._getModelLink(firstCaseLink, ssid)
 
     let model = await core.get(modelLink, ssid)
 
@@ -429,6 +510,24 @@ _ "whitespace"
     }
 
     throw new Error('Action is not allowed')
+  }
+
+  async _getModelLink (firstCaseLink, ssid) {
+    let core = this.abundance.getCoreAPI()
+    let firstCase = await core.get(firstCaseLink, ssid)
+
+    let modelLink = firstCase.data['need'][DISCIPL_FLINT_MODEL_LINK]
+    logger.debug('Determined model link to be', modelLink)
+    return modelLink
+  }
+
+  async _getFirstCaseLink (caseLink, ssid) {
+    let core = this.abundance.getCoreAPI()
+    let caseClaim = await core.get(caseLink, ssid)
+    let isFirstActionInCase = !Object.keys(caseClaim.data).includes(DISCIPL_FLINT_ACT_TAKEN)
+    let firstCaseLink = isFirstActionInCase ? caseLink : caseClaim.data[DISCIPL_FLINT_GLOBAL_CASE]
+    logger.debug('Determined first case link to be', firstCaseLink)
+    return firstCaseLink
   }
 }
 
