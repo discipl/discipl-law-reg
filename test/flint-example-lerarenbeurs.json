@@ -808,7 +808,25 @@
         },
         {
             "explanation": "",
+            "fact": "[persoon]",
+            "function": "[]",
+            "reference": "",
+            "version": "",
+            "juriconnect": "",
+            "sourcetext": "Added, because it was missing in excel"
+        },
+        {
+            "explanation": "",
             "fact": "[rechtspersoon die krachtens publiekrecht is ingesteld]",
+            "function": "[]",
+            "reference": "",
+            "version": "",
+            "juriconnect": "",
+            "sourcetext": "Added, because it was missing in excel"
+        },
+        {
+            "explanation": "",
+            "fact": "[met enig openbaar gezag bekleed]",
             "function": "[]",
             "reference": "",
             "version": "",

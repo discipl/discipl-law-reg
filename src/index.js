@@ -14,6 +14,7 @@ const DISCIPL_FLINT_PREVIOUS_CASE = 'DISCIPL_FLINT_PREVIOUS_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
 const DISCIPL_IS_MARKER = 'IS:'
+const DISCIPL_ANYONE_MARKER = 'ANYONE'
 
 const logger = log.getLogger('disciplLawReg')
 
@@ -183,6 +184,11 @@ _ "whitespace"
       let result = await this.checkCreatedFact(fact, ssid, context)
       logger.debug('Resolving fact', fact, 'as', result, 'by determining earlier creation')
       return result
+    }
+
+    if (functionRef === DISCIPL_ANYONE_MARKER) {
+      logger.debug('Resolving fact', fact, 'as true, because anyone can be this')
+      return true
     }
 
     const did = LawReg.extractDidFromIsConstruction(functionRef)

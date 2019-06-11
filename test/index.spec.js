@@ -628,7 +628,10 @@ describe('discipl-law-reg', () => {
         '[orgaan]':
           'IS:' + bestuursorgaanSsid.did,
         '[rechtspersoon die krachtens publiekrecht is ingesteld]':
-          'IS:' + bestuursorgaanSsid.did
+          'IS:' + bestuursorgaanSsid.did,
+        '[met enig openbaar gezag bekleed]':
+          'IS:' + bestuursorgaanSsid.did,
+        '[persoon]': 'ANYONE'
       })
 
       let needSsid = await core.newSsid('ephemeral')
