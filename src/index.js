@@ -362,6 +362,14 @@ _ "whitespace"
     return false
   }
 
+  /**
+   * Returns the names of all acts that can be taken, given the current caseLink, ssid of the actor and a list of facts
+   *
+   * @param {string} caseLink - Link to the case, last action that was taken
+   * @param {object} ssid - Identifies the actor
+   * @param {string[]} facts - Array of true facts
+   * @returns {Promise<Array>}
+   */
   async getAvailableActs (caseLink, ssid, facts) {
     const core = this.abundance.getCoreAPI()
 
