@@ -643,7 +643,6 @@ describe('discipl-law-reg', () => {
         }
       })
 
-      log.getLogger('disciplLawReg').setLevel('debug')
       let allowedActs = await lawReg.getPotentialActs(needLink, belanghebbendeSsid, [])
 
       expect(allowedActs).to.deep.equal([
@@ -654,7 +653,7 @@ describe('discipl-law-reg', () => {
         '<<leraar overlegt bewijsstuk waaruit blijkt dat hij collegegeld heeft betaald>>',
         '<<inleveren of verzenden ingevulde aanvraagformulier lerarenbeurs>>'
       ])
-    }).timeout(5000)
+    }).timeout(10000)
 
     it('should be able to fill functions of single and multiple facts', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
