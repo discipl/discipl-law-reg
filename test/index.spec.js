@@ -623,14 +623,13 @@ describe('discipl-law-reg', () => {
       await core.allow(bestuursorgaanSsid)
 
       let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
-        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
-          'IS:' + belanghebbendeSsid.did,
-        '[orgaan]':
-          'IS:' + bestuursorgaanSsid.did,
-        '[rechtspersoon die krachtens publiekrecht is ingesteld]':
-          'IS:' + bestuursorgaanSsid.did,
-        '[met enig openbaar gezag bekleed]':
-          'IS:' + bestuursorgaanSsid.did,
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'IS:' + belanghebbendeSsid.did,
+        '[leraar]': 'IS:' + belanghebbendeSsid.did,
+        '[orgaan]': 'IS:' + bestuursorgaanSsid.did,
+        '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'IS:' + bestuursorgaanSsid.did,
+        '[met enig openbaar gezag bekleed]': 'IS:' + bestuursorgaanSsid.did,
+        '[bevoegd gezag]': 'IS:' + bestuursorgaanSsid.did,
+        '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did,
         '[persoon]': 'ANYONE'
       })
 
@@ -645,9 +644,16 @@ describe('discipl-law-reg', () => {
       })
 
       log.getLogger('disciplLawReg').setLevel('debug')
-      let allowedActs = await lawReg.getPotentialActs(needLink, belanghebbendeSsid, ['[verzoek een besluit te nemen]'])
+      let allowedActs = await lawReg.getPotentialActs(needLink, belanghebbendeSsid, [])
 
-      expect(allowedActs).to.deep.equal([])
+      expect(allowedActs).to.deep.equal([
+        '<<indienen verzoek een besluit te nemen>>',
+        '<<leraar vraagt subsidie voor studiekosten aan>>',
+        '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>',
+        '<<leraar overlegt bewijsstuk waaruit blijkt dat hij ten minste vijftien studiepunten heeft gehaald>>',
+        '<<leraar overlegt bewijsstuk waaruit blijkt dat hij collegegeld heeft betaald>>',
+        '<<inleveren of verzenden ingevulde aanvraagformulier lerarenbeurs>>'
+      ])
     }).timeout(5000)
 
     it('should be able to fill functions of single and multiple facts', async () => {
