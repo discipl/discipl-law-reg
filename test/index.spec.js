@@ -819,7 +819,7 @@ describe('discipl-law-reg', () => {
       expect(result).to.equal(true)
     })
 
-    it('should perform multiple acts for a happy flow', async () => {
+    it('should perform multiple acts for a happy flow in the context of Lerarenbeurs', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
       let lawmakerSsid = await core.newSsid('ephemeral')
