@@ -651,7 +651,7 @@ describe('discipl-law-reg', () => {
         '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>',
         '<<leraar overlegt bewijsstuk waaruit blijkt dat hij ten minste vijftien studiepunten heeft gehaald>>',
         '<<leraar overlegt bewijsstuk waaruit blijkt dat hij collegegeld heeft betaald>>',
-        '<<inleveren of verzenden ingevulde aanvraagformulier lerarenbeurs>>'
+        '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>'
       ])
     }).timeout(10000)
 
@@ -849,7 +849,7 @@ describe('discipl-law-reg', () => {
       let belanghebbendeFactresolver = (fact) => {
         if (typeof fact === 'string') {
           return fact === '[subsidie voor studiekosten]' ||
-            fact === '[ingevulde aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]'
+            fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]'
         }
         return false
       }
