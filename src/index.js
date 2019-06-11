@@ -482,6 +482,41 @@ _ "whitespace"
   }
 
   /**
+   * @typedef ActionInformation
+   * @property {string} act - Name of the act taken
+   * @property {string} link - Link to the action
+   */
+  /**
+   * Returns all the actions that have been taken in a case so far
+   *
+   * @param {string} caseLink - Link to the last action in the case
+   * @param {object} ssid - Identity used to get access to information
+   * @returns {Promise<ActionInformation[]>}
+   */
+  async getActions (caseLink, ssid) {
+    const core = this.abundance.getCoreAPI()
+    let actionLink = caseLink
+
+    let acts = []
+
+    while (actionLink != null) {
+      const lastAction = await core.get(actionLink, ssid)
+      const actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
+
+      if (actLink != null) {
+        const act = await core.get(actLink, ssid)
+
+        if (typeof act.data[DISCIPL_FLINT_ACT].act === 'string') {
+          acts.unshift({ 'act': act.data[DISCIPL_FLINT_ACT].act, 'link': actionLink })
+        }
+      }
+      actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
+    }
+
+    return acts
+  }
+
+  /**
    * Denotes a given act in the context of a case as taken, if it is possible. See {@link checkAction} is used to check the conditions
    *
    * @param {object} ssid - Identity of the actor
