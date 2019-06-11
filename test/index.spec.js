@@ -654,7 +654,7 @@ describe('discipl-law-reg', () => {
         '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>',
         '<<leraar overlegt bewijsstuk waaruit blijkt dat hij ten minste vijftien studiepunten heeft gehaald>>',
         '<<leraar overlegt bewijsstuk waaruit blijkt dat hij collegegeld heeft betaald>>',
-        '<<inleveren of verzenden ingevulde aanvraagformulier lerarenbeurs>>'
+        '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>'
       ])
     }).timeout(10000)
 
@@ -821,5 +821,77 @@ describe('discipl-law-reg', () => {
 
       expect(result).to.equal(true)
     })
+
+    it('should perform multiple acts for a happy flow in the context of Lerarenbeurs', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let lawmakerSsid = await core.newSsid('ephemeral')
+      await core.allow(lawmakerSsid)
+
+      let belanghebbendeSsid = await core.newSsid('ephemeral')
+      await core.allow(belanghebbendeSsid)
+      let bestuursorgaanSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
+
+      let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
+        '[leraar]': 'IS:' + belanghebbendeSsid.did,
+        '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did
+      })
+
+      let retrievedModel = await core.get(modelLink)
+      let needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+      let needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<leraar vraagt subsidie voor studiekosten aan>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      let belanghebbendeFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          return fact === '[subsidie voor studiekosten]' ||
+            fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]'
+        }
+        return false
+      }
+
+      let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
+
+      let bestuursorgaanFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          return fact === '[subsidie lerarenbeurs]' ||
+            fact === '[subsidie voor bacheloropleiding leraar]' ||
+            fact === '[leraar voldoet aan bevoegdheidseisen]' ||
+            fact === '[leraar voldoet aan de subsidiecriteria]' ||
+            fact === '[leraar werkt bij een of meer bekostigde onderwijsinstellingen]' ||
+            fact === '[leraar die bij aanvang van het studiejaar waarvoor de subsidie bestemd de graad Bachelor mag voeren]' ||
+            fact === '[leraar die op het moment van de subsidieaanvraag in dienst is bij een werkgever]' ||
+            fact === '[leraar werkt bij een of meer bekostigde onderwijsinstellingen]' ||
+            fact === '[leraar die voor minimaal twintig procent van zijn werktijd is belast met lesgebonden taken]' ||
+            fact === '[leraar die pedagogisch-didactisch verantwoordelijk is voor het onderwijs]' ||
+            fact === '[leraar die ingeschreven staat in registerleraar.nl]' ||
+            fact === '[subsidie wordt verstrekt voor één studiejaar en voor één opleiding]' ||
+            fact === '[minister verdeelt het beschikbare bedrag per doelgroep over de aanvragen]'
+        }
+        return false
+      }
+
+      let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+
+      expect(secondActionLink).to.be.a('string')
+
+      let action = await core.get(secondActionLink, bestuursorgaanSsid)
+
+      const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
+        .filter(item => Object.keys(item).includes('<<minister verstrekt subsidie lerarenbeurs aan leraar>>'))
+
+      expect(action.data).to.deep.equal({
+        'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+        'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+        'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
+      })
+    }).timeout(5000)
   })
 })
