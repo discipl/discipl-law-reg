@@ -356,17 +356,13 @@ _ "whitespace"
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
     const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...context, 'facts': factReference }) : true
 
-    if (!checkedPreConditions) {
-      log.info('Pre-act check failed due to pre-conditions')
-      return false
-    }
-
     if (checkedActor && checkedPreConditions && checkedObject && checkedInterestedParty) {
       logger.info('Prerequisites for act', actLink, 'have been verified')
       return true
     }
 
-    throw new Error('checkAction had no early exit, but still was not true')
+    log.info('Pre-act check failed due to pre-conditions')
+    return false
   }
 
   /**
@@ -479,6 +475,41 @@ _ "whitespace"
       result.duties.push({ [duty.duty]: link })
     }
     return core.claim(ssid, { [DISCIPL_FLINT_MODEL]: result })
+  }
+
+  /**
+   * @typedef ActionInformation
+   * @property {string} act - Name of the act taken
+   * @property {string} link - Link to the action
+   */
+  /**
+   * Returns all the actions that have been taken in a case so far
+   *
+   * @param {string} caseLink - Link to the last action in the case
+   * @param {object} ssid - Identity used to get access to information
+   * @returns {Promise<ActionInformation[]>}
+   */
+  async getActions (caseLink, ssid) {
+    const core = this.abundance.getCoreAPI()
+    let actionLink = caseLink
+
+    let acts = []
+
+    while (actionLink != null) {
+      const lastAction = await core.get(actionLink, ssid)
+      const actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
+
+      if (actLink != null) {
+        const act = await core.get(actLink, ssid)
+
+        if (typeof act.data[DISCIPL_FLINT_ACT].act === 'string') {
+          acts.unshift({ 'act': act.data[DISCIPL_FLINT_ACT].act, 'link': actionLink })
+        }
+      }
+      actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
+    }
+
+    return acts
   }
 
   /**

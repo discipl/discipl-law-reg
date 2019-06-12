@@ -574,6 +574,9 @@ describe('discipl-law-reg', () => {
         'DISCIPL_FLINT_GLOBAL_CASE': needLink,
         'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
       })
+
+      let takenActs = await lawReg.getActions(secondActionLink, belanghebbendeSsid)
+      expect(takenActs).to.deep.equal([{ 'act': '<<indienen verzoek een besluit te nemen>>', 'link': actionLink }, { 'act': '<<besluiten de aanvraag niet te behandelen>>', 'link': secondActionLink }])
     }).timeout(5000)
 
     it('should be able to determine available actions', async () => {
