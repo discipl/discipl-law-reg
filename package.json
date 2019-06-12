@@ -1,5 +1,5 @@
 {
-  "name": "discipl-law-reg",
+  "name": "@discipl/law-reg",
   "version": "0.1.0",
   "description": "Discipl Law and Regulation Compliance Library",
   "main": "dist/index.js",
@@ -12,7 +12,7 @@
     "/dist"
   ],
   "scripts": {
-    "build": "babel src/ --out-dir dist",
+    "prepack": "babel src/ --out-dir dist",
     "test": "nyc --reporter=html --reporter=text ./node_modules/.bin/mocha --require @babel/register ./test/**/*.spec.js",
     "lint": "./node_modules/standard/bin/cmd.js --parser babel-eslint",
     "lint-fix": "./node_modules/standard/bin/cmd.js --parser babel-eslint --fix",
