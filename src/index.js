@@ -356,17 +356,13 @@ _ "whitespace"
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
     const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...context, 'facts': factReference }) : true
 
-    if (!checkedPreConditions) {
-      log.info('Pre-act check failed due to pre-conditions')
-      return false
-    }
-
     if (checkedActor && checkedPreConditions && checkedObject && checkedInterestedParty) {
       logger.info('Prerequisites for act', actLink, 'have been verified')
       return true
     }
 
-    throw new Error('checkAction had no early exit, but still was not true')
+    log.info('Pre-act check failed due to pre-conditions')
+    return false
   }
 
   /**
