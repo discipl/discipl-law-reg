@@ -611,7 +611,9 @@ describe('discipl-law-reg', () => {
 
       let allowedActs = await lawReg.getAvailableActs(needLink, belanghebbendeSsid, ['[verzoek een besluit te nemen]'])
 
-      expect(allowedActs).to.deep.equal(['<<indienen verzoek een besluit te nemen>>'])
+      let allowedActNames = allowedActs.map((act) => act.act)
+
+      expect(allowedActNames).to.deep.equal(['<<indienen verzoek een besluit te nemen>>'])
     }).timeout(5000)
 
     it('should be able to determine potentially available actions', async () => {
@@ -648,7 +650,9 @@ describe('discipl-law-reg', () => {
 
       let allowedActs = await lawReg.getPotentialActs(needLink, belanghebbendeSsid, [])
 
-      expect(allowedActs).to.deep.equal([
+      let allowedActNames = allowedActs.map((act) => act.act)
+
+      expect(allowedActNames).to.deep.equal([
         '<<indienen verzoek een besluit te nemen>>',
         '<<leraar vraagt subsidie voor studiekosten aan>>',
         '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>',
