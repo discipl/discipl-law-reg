@@ -288,13 +288,13 @@ describe('discipl-law-reg', () => {
       let factsLink = modelReference.data['DISCIPL_FLINT_MODEL'].facts[2]['[betrokkene]']
       let dutiesLink = modelReference.data['DISCIPL_FLINT_MODEL'].duties[0]['<verwelkomen binnen 14 dagen na aanvragen>']
 
-      let actReference = await core.get(actsLink, ssid)
+      let actDetails = await lawReg.getActDetails(actsLink, ssid)
       let factReference = await core.get(factsLink, ssid)
       let dutyReference = await core.get(dutiesLink, ssid)
 
       expect(Object.keys(modelReference.data['DISCIPL_FLINT_MODEL'])).to.have.members(['model', 'acts', 'facts', 'duties'])
 
-      expect(actReference.data['DISCIPL_FLINT_ACT']).to.deep.equal(
+      expect(actDetails).to.deep.equal(
         {
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'action': '[aanvragen]',
