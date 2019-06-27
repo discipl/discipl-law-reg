@@ -897,7 +897,6 @@ describe('discipl-law-reg', () => {
     }).timeout(5000)
 
     it('should perform an extended happy flow in the context of Lerarenbeurs', async () => {
-      log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
 
       let lawmakerSsid = await core.newSsid('ephemeral')
