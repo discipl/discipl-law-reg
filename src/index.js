@@ -300,6 +300,19 @@ _ "whitespace"
   }
 
   /**
+   * Returns details of an act, as registered in the model
+   *
+   * @param {string} actLink - Link to the particular act
+   * @param {object} ssid - Identity requesting the information
+   * @returns {object}
+   */
+  async getActDetails (actLink, ssid) {
+    let core = this.abundance.getCoreAPI()
+    let claimData = await core.get(actLink, ssid)
+    return claimData.data[DISCIPL_FLINT_ACT]
+  }
+
+  /**
    * Checks if an action is allowed by checking if:
    * 1. The ssid can be the relevant actor
    * 2. The object exists
@@ -370,7 +383,7 @@ _ "whitespace"
    *
    * @param {string} caseLink - Link to the case, last action that was taken
    * @param {object} ssid - Identifies the actor
-   * @param {string[]} facts - Array of true facts
+   * @param {ActionInformation[]} facts - Array of true facts
    * @returns {Promise<Array>}
    */
   async getAvailableActs (caseLink, ssid, facts) {
@@ -395,7 +408,11 @@ _ "whitespace"
       const link = Object.values(actWithLink)[0]
 
       if (await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })) {
-        allowedActs.push(Object.keys(actWithLink)[0])
+        const actionInformation = {
+          'act': Object.keys(actWithLink)[0],
+          'link': Object.values(actWithLink)[0]
+        }
+        allowedActs.push(actionInformation)
       }
     }
 
@@ -408,7 +425,7 @@ _ "whitespace"
    *
    * @param {string} caseLink - Link to the case, last action that was taken
    * @param {object} ssid - Identifies the actor
-   * @param {string[]} facts - Array of true facts
+   * @param {ActionInformation[]} facts - Array of true facts
    * @returns {Promise<Array>}
    */
   async getPotentialActs (caseLink, ssid, facts) {
@@ -438,7 +455,11 @@ _ "whitespace"
       const link = Object.values(actWithLink)[0]
 
       if (!await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink }) && missingFact) {
-        allowedActs.push(Object.keys(actWithLink)[0])
+        const actionInformation = {
+          'act': Object.keys(actWithLink)[0],
+          'link': Object.values(actWithLink)[0]
+        }
+        allowedActs.push(actionInformation)
       }
     }
 
