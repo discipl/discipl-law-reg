@@ -893,6 +893,7 @@ describe('discipl-law-reg', () => {
     }).timeout(5000)
 
     it('should perform an extended happy flow in the context of Lerarenbeurs', async () => {
+      log.getLogger('disciplLawReg').setLevel('debug')
       let core = lawReg.getAbundanceService().getCoreAPI()
 
       let lawmakerSsid = await core.newSsid('ephemeral')
@@ -926,18 +927,7 @@ describe('discipl-law-reg', () => {
         if (typeof fact === 'string') {
           return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
             fact === '[schriftelijke beslissing van een bestuursorgaan]' ||
-            fact === '[beslissing inhoudende een publiekrechtelijke rechtshandeling]'
-        }
-        return false
-      }
-
-      let actionLink = await lawReg.take(bestuursorgaanSsid, needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
-
-      let belanghebbendeFactresolver = (fact) => {
-        if (typeof fact === 'string') {
-          return fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
-            fact === '[inleveren]' ||
-            fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]' ||
+            fact === '[beslissing inhoudende een publiekrechtelijke rechtshandeling]' ||
             fact === '[subsidie lerarenbeurs]' ||
             fact === '[subsidie voor bacheloropleiding leraar]' ||
             fact === '[leraar voldoet aan bevoegdheidseisen]' ||
@@ -954,10 +944,21 @@ describe('discipl-law-reg', () => {
         return false
       }
 
+      let actionLink = await lawReg.take(bestuursorgaanSsid, needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
+
+      let belanghebbendeFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          return fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
+            fact === '[inleveren]' ||
+            fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]'
+        }
+        return false
+      }
+
       let secondActionLink = await lawReg.take(belanghebbendeSsid, actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
       let thirdActionLink = await lawReg.take(belanghebbendeSsid, secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-      let fourthActionLink = await lawReg.take(bestuursorgaanSsid, thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', belanghebbendeFactresolver)
-      let fifthActionLink = await lawReg.take(bestuursorgaanSsid, fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', belanghebbendeFactresolver)
+      let fourthActionLink = await lawReg.take(bestuursorgaanSsid, thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+      let fifthActionLink = await lawReg.take(bestuursorgaanSsid, fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
       let sixthActionLink = await lawReg.take(bestuursorgaanSsid, fifthActionLink, '<<bekendmaken van een besluit>>', bestuursorgaanFactresolver)
 
       expect(sixthActionLink).to.be.a('string')
@@ -1019,18 +1020,7 @@ describe('discipl-law-reg', () => {
         if (typeof fact === 'string') {
           return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
             fact === '[schriftelijke beslissing van een bestuursorgaan]' ||
-            fact === '[beslissing inhoudende een publiekrechtelijke rechtshandeling]'
-        }
-        return false
-      }
-
-      let actionLink = await lawReg.take(bestuursorgaanSsid, needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
-
-      let belanghebbendeFactresolver = (fact) => {
-        if (typeof fact === 'string') {
-          return fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
-            fact === '[inleveren]' ||
-            fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]' ||
+            fact === '[beslissing inhoudende een publiekrechtelijke rechtshandeling]' ||
             fact === '[subsidie lerarenbeurs]' ||
             fact === '[subsidie voor bacheloropleiding leraar]' ||
             fact === '[leraar voldoet aan bevoegdheidseisen]' ||
@@ -1042,7 +1032,18 @@ describe('discipl-law-reg', () => {
             fact === '[leraar die ingeschreven staat in registerleraar.nl]' ||
             fact === '[subsidie wordt verstrekt voor één studiejaar en voor één opleiding]' ||
             fact === '[minister verdeelt het beschikbare bedrag per doelgroep over de aanvragen]' ||
-            fact === '[hoogte van de subsidie voor studiekosten]' ||
+            fact === '[hoogte van de subsidie voor studiekosten]'
+        }
+        return false
+      }
+
+      let actionLink = await lawReg.take(bestuursorgaanSsid, needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
+
+      let belanghebbendeFactresolver = (fact) => {
+        if (typeof fact === 'string') {
+          return fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
+            fact === '[inleveren]' ||
+            fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]' ||
             fact === '[binnen twee maanden na het verstrekken van de subsidie]'
         }
         return false
@@ -1050,8 +1051,8 @@ describe('discipl-law-reg', () => {
 
       let secondActionLink = await lawReg.take(belanghebbendeSsid, actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
       let thirdActionLink = await lawReg.take(belanghebbendeSsid, secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-      let fourthActionLink = await lawReg.take(bestuursorgaanSsid, thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', belanghebbendeFactresolver)
-      let fifthActionLink = await lawReg.take(bestuursorgaanSsid, fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', belanghebbendeFactresolver)
+      let fourthActionLink = await lawReg.take(bestuursorgaanSsid, thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+      let fifthActionLink = await lawReg.take(bestuursorgaanSsid, fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
       let sixthActionLink = await lawReg.take(bestuursorgaanSsid, fifthActionLink, '<<bekendmaken van een besluit>>', bestuursorgaanFactresolver)
       let seventhActionLink = await lawReg.take(belanghebbendeSsid, sixthActionLink, '<<leraar trekt aanvraag subsidie voor studieverlof in>>', belanghebbendeFactresolver)
 
@@ -1069,7 +1070,7 @@ describe('discipl-law-reg', () => {
       })
     }).timeout(5000)
 
-    it('should perform an extended flow where minister refuses the request in the context of Lerarenbeurs', async () => {
+    it('should perform an extended flow where minister refuses the request because they already got financing in the context of Lerarenbeurs', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
       let lawmakerSsid = await core.newSsid('ephemeral')
@@ -1098,7 +1099,9 @@ describe('discipl-law-reg', () => {
 
       let bestuursorgaanFactresolver = (fact) => {
         if (typeof fact === 'string') {
-          return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]'
+          return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
+            fact === '[leraar ontvangt van de minister een tegemoetkoming in de studiekosten voor het volgen van de opleiding]' ||
+            fact === '[subsidieverlening aan een leraar]'
         }
         return false
       }
@@ -1109,16 +1112,14 @@ describe('discipl-law-reg', () => {
         if (typeof fact === 'string') {
           return fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
             fact === '[inleveren]' ||
-            fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]' ||
-            fact === '[subsidieverlening aan een leraar]' ||
-            fact === '[leraar ontvangt van de minister een tegemoetkoming in de studiekosten voor het volgen van de opleiding]'
+            fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]'
         }
         return false
       }
 
       let secondActionLink = await lawReg.take(belanghebbendeSsid, actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
       let thirdActionLink = await lawReg.take(belanghebbendeSsid, secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-      let fourthActionLink = await lawReg.take(bestuursorgaanSsid, thirdActionLink, '<<minister van OCW weigert subsidieverlening aan een leraar>>', belanghebbendeFactresolver)
+      let fourthActionLink = await lawReg.take(bestuursorgaanSsid, thirdActionLink, '<<minister van OCW weigert subsidieverlening aan een leraar>>', bestuursorgaanFactresolver)
 
       expect(fourthActionLink).to.be.a('string')
 
