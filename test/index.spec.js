@@ -614,7 +614,7 @@ describe('discipl-law-reg', () => {
       let allowedActNames = allowedActs.map((act) => act.act)
 
       expect(allowedActNames).to.deep.equal(['<<indienen verzoek een besluit te nemen>>'])
-    }).timeout(5000)
+    }).timeout(10000)
 
     it('should be able to determine potentially available actions', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
@@ -823,7 +823,7 @@ describe('discipl-law-reg', () => {
 
       let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
-      expect(result).to.equal(true)
+      expect(result.valid).to.equal(true)
     })
 
     it('should perform multiple acts for a happy flow in the context of Lerarenbeurs', async () => {
