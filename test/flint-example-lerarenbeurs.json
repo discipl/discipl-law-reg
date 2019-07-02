@@ -322,7 +322,7 @@
             "action": "[weigeren]",
             "object": "[subsidieverlening aan een leraar]",
             "interested-party": "[leraar]",
-            "preconditions": "[besluit tot verlenen subsidie voor kosten in verband met het verlenen van studieverlof aan de leraar]",
+            "preconditions": "[aanvraag]",
             "create": "",
             "terminate": "[aanvraag]",
             "version": "",

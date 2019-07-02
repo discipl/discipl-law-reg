@@ -587,7 +587,7 @@ _ "whitespace"
       return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })
     }
 
-    throw new Error('Action is not allowed')
+    throw new Error('Action ' + act + ' is not allowed')
   }
 
   async _getModelLink (firstCaseLink, ssid) {
