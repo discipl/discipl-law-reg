@@ -248,7 +248,7 @@ _ "whitespace"
    */
   static checkFactWithResolver (fact, ssid, context) {
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
-    const result = context.factResolver(factToCheck)
+    const result = context.factResolver(factToCheck, context.flintItem)
     logger.debug('Resolving fact', fact, 'as', result, 'via', factToCheck, 'by factresolver')
     return result === true
   }
@@ -313,6 +313,11 @@ _ "whitespace"
   }
 
   /**
+   * @typedef {object} CheckActionResult
+   * @property {boolean} valid - True iff the action can be taken
+   * @property {string[]} invalidReasons - Flint items that were resolved as false
+   */
+  /**
    * Checks if an action is allowed by checking if:
    * 1. The ssid can be the relevant actor
    * 2. The object exists
@@ -323,7 +328,7 @@ _ "whitespace"
    * @param {string} actLink - Link to the respective act
    * @param {object} ssid - Identity of intended actor
    * @param {Context} context - Context of the action
-   * @returns {Promise<boolean>}
+   * @returns {Promise<CheckActionResult>}
    */
   async checkAction (modelLink, actLink, ssid, context) {
     logger.debug('Checking action', actLink)
@@ -336,46 +341,55 @@ _ "whitespace"
 
     const actor = actReference.data[DISCIPL_FLINT_ACT].actor
 
-    const checkedActor = await this.checkFact(actor, ssid, { ...context, 'facts': factReference, 'myself': true })
-
-    if (!checkedActor) {
-      log.info('Pre-act check failed due to actor')
-      return false
-    }
+    const checkedActor = await this.checkFact(actor, ssid, { ...context, 'facts': factReference, 'myself': true, 'flintItem': 'actor' })
 
     const object = actReference.data[DISCIPL_FLINT_ACT].object
 
     logger.debug('Original object', object)
 
-    const checkedObject = await this.checkFact(object, ssid, { ...context, 'facts': factReference })
-
-    if (!checkedObject) {
-      log.info('Pre-act check failed due to object')
-      return false
-    }
+    const checkedObject = await this.checkFact(object, ssid, { ...context, 'facts': factReference, 'flintItem': 'object' })
 
     const interestedParty = actReference.data[DISCIPL_FLINT_ACT]['interested-party']
     logger.debug('Original interestedparty', interestedParty)
-    const checkedInterestedParty = await this.checkFact(interestedParty, ssid, { ...context, 'facts': factReference })
-
-    if (!checkedInterestedParty) {
-      log.info('Pre-act check failed due to interested party')
-      return false
-    }
+    const checkedInterestedParty = await this.checkFact(interestedParty, ssid, { ...context, 'facts': factReference, 'flintItem': 'interested-party' })
 
     const preconditions = actReference.data['DISCIPL_FLINT_ACT'].preconditions
 
     logger.debug('Original preconditions', preconditions)
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
-    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...context, 'facts': factReference }) : true
+    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...context, 'facts': factReference, 'flintItem': 'preconditions' }) : true
 
     if (checkedActor && checkedPreConditions && checkedObject && checkedInterestedParty) {
       logger.info('Prerequisites for act', actLink, 'have been verified')
-      return true
+      return {
+        'valid': true,
+        'invalidReasons': []
+      }
     }
 
-    log.info('Pre-act check failed due to pre-conditions')
-    return false
+    const invalidReasons = []
+
+    if (!checkedActor) {
+      invalidReasons.push('actor')
+    }
+
+    if (!checkedObject) {
+      invalidReasons.push('object')
+    }
+
+    if (!checkedInterestedParty) {
+      invalidReasons.push('interested-party')
+    }
+
+    if (!checkedPreConditions) {
+      invalidReasons.push('preconditions')
+    }
+
+    log.info('Pre-act check failed due to', invalidReasons)
+    return {
+      'valid': false,
+      'invalidReasons': invalidReasons
+    }
   }
 
   /**
@@ -407,7 +421,9 @@ _ "whitespace"
 
       const link = Object.values(actWithLink)[0]
 
-      if (await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })) {
+      let checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
+
+      if (checkActionInfo.valid) {
         const actionInformation = {
           'act': Object.keys(actWithLink)[0],
           'link': Object.values(actWithLink)[0]
@@ -441,20 +457,26 @@ _ "whitespace"
     const allowedActs = []
     logger.debug('Checking', acts, 'for available acts')
     for (let actWithLink of acts) {
-      let missingFact = false
-      const factResolver = (fact) => {
+      let unknownItems = []
+      const factResolver = (fact, flintItem) => {
         if (facts.includes(fact)) {
           return true
         }
         logger.debug('Missing fact', fact, 'during checking of act', Object.keys(actWithLink)[0])
-        missingFact = true
+
+        if (!unknownItems.includes(flintItem)) {
+          unknownItems.push(flintItem)
+        }
+
         return false
       }
       logger.debug('Checking whether', actWithLink, 'is an available option')
 
       const link = Object.values(actWithLink)[0]
-
-      if (!await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink }) && missingFact) {
+      const checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
+      logger.debug('Unknown items', unknownItems)
+      const allInvaliditiesHaveAnUnknown = checkActionInfo.invalidReasons.filter((item) => !unknownItems.includes(item)).length === 0
+      if (!checkActionInfo.valid && allInvaliditiesHaveAnUnknown) {
         const actionInformation = {
           'act': Object.keys(actWithLink)[0],
           'link': Object.values(actWithLink)[0]
@@ -555,13 +577,13 @@ _ "whitespace"
     }).map((actWithLink) => Object.values(actWithLink)[0])[0]
 
     logger.debug('Checking if action is possible from perspective of', ssid.did)
-
-    if (await this.checkAction(modelLink, actLink, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })) {
+    let checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
+    if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
       return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })
     }
 
-    throw new Error('Action is not allowed')
+    throw new Error('Action ' + act + ' is not allowed')
   }
 
   async _getModelLink (firstCaseLink, ssid) {

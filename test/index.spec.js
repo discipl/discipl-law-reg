@@ -614,7 +614,7 @@ describe('discipl-law-reg', () => {
       let allowedActNames = allowedActs.map((act) => act.act)
 
       expect(allowedActNames).to.deep.equal(['<<indienen verzoek een besluit te nemen>>'])
-    }).timeout(5000)
+    }).timeout(10000)
 
     it('should be able to determine potentially available actions', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
@@ -626,6 +626,8 @@ describe('discipl-law-reg', () => {
       await core.allow(belanghebbendeSsid)
       let bestuursorgaanSsid = await core.newSsid('ephemeral')
       await core.allow(bestuursorgaanSsid)
+      let bevoegdGezagSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
 
       let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
         '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'IS:' + belanghebbendeSsid.did,
@@ -633,7 +635,7 @@ describe('discipl-law-reg', () => {
         '[orgaan]': 'IS:' + bestuursorgaanSsid.did,
         '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'IS:' + bestuursorgaanSsid.did,
         '[met enig openbaar gezag bekleed]': 'IS:' + bestuursorgaanSsid.did,
-        '[bevoegd gezag]': 'IS:' + bestuursorgaanSsid.did,
+        '[bevoegd gezag]': 'IS:' + bevoegdGezagSsid.did,
         '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did,
         '[persoon]': 'ANYONE'
       })
@@ -659,6 +661,55 @@ describe('discipl-law-reg', () => {
         '<<leraar overlegt bewijsstuk waaruit blijkt dat hij ten minste vijftien studiepunten heeft gehaald>>',
         '<<leraar overlegt bewijsstuk waaruit blijkt dat hij collegegeld heeft betaald>>',
         '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>'
+      ])
+    }).timeout(10000)
+
+    it('should be able to determine potentially available actions from another perspective', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let lawmakerSsid = await core.newSsid('ephemeral')
+      await core.allow(lawmakerSsid)
+
+      let belanghebbendeSsid = await core.newSsid('ephemeral')
+      await core.allow(belanghebbendeSsid)
+      let bestuursorgaanSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
+      let bevoegdGezagSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
+
+      let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'IS:' + belanghebbendeSsid.did,
+        '[leraar]': 'IS:' + belanghebbendeSsid.did,
+        '[orgaan]': 'IS:' + bestuursorgaanSsid.did,
+        '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'IS:' + bestuursorgaanSsid.did,
+        '[met enig openbaar gezag bekleed]': 'IS:' + bestuursorgaanSsid.did,
+        '[bevoegd gezag]': 'IS:' + bevoegdGezagSsid.did,
+        '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did,
+        '[persoon]': 'ANYONE'
+      })
+
+      let needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+      let needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<indienen verzoek een besluit te nemen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      let allowedActs = await lawReg.getPotentialActs(needLink, bestuursorgaanSsid, [])
+
+      let allowedActNames = allowedActs.map((act) => act.act)
+
+      expect(allowedActNames).to.deep.equal([
+        '<<vaststellen formulier voor verstrekken van gegevens>>',
+        '<<minister laat een of meer bepalingen van de subsidieregeling lerarenbeurs buiten toepassing>>',
+        '<<minister wijkt af van een of meer bepalingen van de subsidieregeling lerarenbeurs>>',
+        '<<minister van OCW verdeelt het beschikbare bedrag voor de subsidieregeling lerarenbeurs per doelgroep>>',
+        '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>',
+        '<<minister van OCW berekent de hoogte van de subsidie voor studieverlof>>',
+        '<<aanvraagformulieren lerarenbeurs verstrekken>>'
       ])
     }).timeout(10000)
 
@@ -823,7 +874,7 @@ describe('discipl-law-reg', () => {
 
       let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
-      expect(result).to.equal(true)
+      expect(result.valid).to.equal(true)
     })
 
     it('should perform multiple acts for a happy flow in the context of Lerarenbeurs', async () => {
