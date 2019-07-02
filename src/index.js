@@ -488,10 +488,6 @@ _ "whitespace"
     return allowedActs
   }
 
-  areAllContained (superArray, subArray) {
-
-  }
-
   /**
    * Publishes the FLINT model (as JSON) in linked verifiable claims (vc's)
    * in the channel of the given ssid. Each act, fact and duty is stored in a separate vc.
