@@ -626,6 +626,8 @@ describe('discipl-law-reg', () => {
       await core.allow(belanghebbendeSsid)
       let bestuursorgaanSsid = await core.newSsid('ephemeral')
       await core.allow(bestuursorgaanSsid)
+      let bevoegdGezagSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
 
       let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
         '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'IS:' + belanghebbendeSsid.did,
@@ -633,7 +635,7 @@ describe('discipl-law-reg', () => {
         '[orgaan]': 'IS:' + bestuursorgaanSsid.did,
         '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'IS:' + bestuursorgaanSsid.did,
         '[met enig openbaar gezag bekleed]': 'IS:' + bestuursorgaanSsid.did,
-        '[bevoegd gezag]': 'IS:' + bestuursorgaanSsid.did,
+        '[bevoegd gezag]': 'IS:' + bevoegdGezagSsid.did,
         '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did,
         '[persoon]': 'ANYONE'
       })
@@ -672,6 +674,8 @@ describe('discipl-law-reg', () => {
       await core.allow(belanghebbendeSsid)
       let bestuursorgaanSsid = await core.newSsid('ephemeral')
       await core.allow(bestuursorgaanSsid)
+      let bevoegdGezagSsid = await core.newSsid('ephemeral')
+      await core.allow(bestuursorgaanSsid)
 
       let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
         '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'IS:' + belanghebbendeSsid.did,
@@ -679,7 +683,7 @@ describe('discipl-law-reg', () => {
         '[orgaan]': 'IS:' + bestuursorgaanSsid.did,
         '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'IS:' + bestuursorgaanSsid.did,
         '[met enig openbaar gezag bekleed]': 'IS:' + bestuursorgaanSsid.did,
-        '[bevoegd gezag]': 'IS:' + bestuursorgaanSsid.did,
+        '[bevoegd gezag]': 'IS:' + bevoegdGezagSsid.did,
         '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did,
         '[persoon]': 'ANYONE'
       })
@@ -699,6 +703,13 @@ describe('discipl-law-reg', () => {
       let allowedActNames = allowedActs.map((act) => act.act)
 
       expect(allowedActNames).to.deep.equal([
+        '<<vaststellen formulier voor verstrekken van gegevens>>',
+        '<<minister laat een of meer bepalingen van de subsidieregeling lerarenbeurs buiten toepassing>>',
+        '<<minister wijkt af van een of meer bepalingen van de subsidieregeling lerarenbeurs>>',
+        '<<minister van OCW verdeelt het beschikbare bedrag voor de subsidieregeling lerarenbeurs per doelgroep>>',
+        '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>',
+        '<<minister van OCW berekent de hoogte van de subsidie voor studieverlof>>',
+        '<<aanvraagformulieren lerarenbeurs verstrekken>>'
       ])
     }).timeout(10000)
 
