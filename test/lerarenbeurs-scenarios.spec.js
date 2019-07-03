@@ -11,7 +11,18 @@ log.getLogger('disciplLawReg').setLevel('warn')
 const lawReg = new LawReg()
 const core = lawReg.getAbundanceService().getCoreAPI()
 
-const setupModel = async (factFunctionSpec) => {
+const factFunctionSpec = {
+  '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
+  '[leraar]': 'belanghebbende',
+  '[orgaan]': 'bestuursorgaan',
+  '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan',
+  '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
+  '[bevoegd gezag]': 'bevoegdGezag',
+  '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
+  '[persoon]': 'ANYONE'
+}
+
+const setupModel = async () => {
   const actors = ['lawmaker', 'belanghebbende', 'bestuursorgaan', 'bevoegdGezag']
   const ssids = {}
 
@@ -36,12 +47,7 @@ const setupModel = async (factFunctionSpec) => {
 
 describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   it('should be able to take an action where the object originates from another action - LERARENBEURS', async () => {
-    const factFunctionSpec = {
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
-      '[orgaan]': 'bestuursorgaan',
-      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan'
-    }
-    let { ssids, modelLink } = await setupModel(factFunctionSpec)
+    let { ssids, modelLink } = await setupModel()
 
     let retrievedModel = await core.get(modelLink)
 
@@ -93,12 +99,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should be able to determine available actions', async () => {
-    const factFunctionSpec = {
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
-      '[orgaan]': 'bestuursorgaan',
-      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan'
-    }
-    let { ssids, modelLink } = await setupModel(factFunctionSpec)
+    let { ssids, modelLink } = await setupModel()
 
     let needSsid = await core.newSsid('ephemeral')
 
@@ -118,17 +119,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(10000)
 
   it('should be able to determine potentially available actions', async () => {
-    const factFunctionSpec = {
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
-      '[leraar]': 'belanghebbende',
-      '[orgaan]': 'bestuursorgaan',
-      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan',
-      '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
-      '[bevoegd gezag]': 'bevoegdGezag',
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
-      '[persoon]': 'ANYONE'
-    }
-    let { ssids, modelLink } = await setupModel(factFunctionSpec)
+    let { ssids, modelLink } = await setupModel()
 
     let needSsid = await core.newSsid('ephemeral')
 
@@ -155,17 +146,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(10000)
 
   it('should be able to determine potentially available actions from another perspective', async () => {
-    const factFunctionSpec = {
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
-      '[leraar]': 'belanghebbende',
-      '[orgaan]': 'bestuursorgaan',
-      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan',
-      '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
-      '[bevoegd gezag]': 'bevoegdGezag',
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
-      '[persoon]': 'ANYONE'
-    }
-    let { ssids, modelLink } = await setupModel(factFunctionSpec)
+    let { ssids, modelLink } = await setupModel()
 
     let needSsid = await core.newSsid('ephemeral')
 
@@ -193,11 +174,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(10000)
 
   it('should perform multiple acts for a happy flow in the context of Lerarenbeurs', async () => {
-    const factFunctionSpec = {
-      '[leraar]': 'belanghebbende',
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan'
-    }
-    let { ssids, modelLink } = await setupModel(factFunctionSpec)
+    let { ssids, modelLink } = await setupModel()
 
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
@@ -254,14 +231,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended happy flow in the context of Lerarenbeurs', async () => {
-    const factFunctionSpec = {
-      '[leraar]': 'belanghebbende',
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
-      '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
-      '[persoon]': 'ANYONE'
-    }
-    let { ssids, modelLink } = await setupModel(factFunctionSpec)
+    let { ssids, modelLink } = await setupModel()
 
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
@@ -338,14 +308,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended flow where teacher withdraws request in the context of Lerarenbeurs', async () => {
-    const factFunctionSpec = {
-      '[leraar]': 'belanghebbende',
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
-      '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
-      '[persoon]': 'ANYONE'
-    }
-    let { ssids, modelLink } = await setupModel(factFunctionSpec)
+    let { ssids, modelLink } = await setupModel()
 
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
@@ -413,11 +376,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended flow where minister refuses the request because they already got financing in the context of Lerarenbeurs', async () => {
-    const factFunctionSpec = {
-      '[leraar]': 'belanghebbende',
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan'
-    }
-    let { ssids, modelLink } = await setupModel(factFunctionSpec)
+    let { ssids, modelLink } = await setupModel()
 
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
