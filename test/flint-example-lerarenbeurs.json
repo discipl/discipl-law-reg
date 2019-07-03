@@ -952,6 +952,24 @@
         },
         {
             "explanation": "",
+            "fact": "[verzoek tot bewijs van het behalen van ten minste vijftien studiepunten]",
+            "function": "<<>>",
+            "reference": "",
+            "version": "",
+            "juriconnect": "",
+            "sourcetext": "Added, because it was missing in excel"
+        },
+        {
+            "explanation": "",
+            "fact": "[verzoek tot bewijs van betaling van collegegeld]",
+            "function": "<<>>",
+            "reference": "",
+            "version": "",
+            "juriconnect": "",
+            "sourcetext": "Added, because it was missing in excel"
+        },
+        {
+            "explanation": "",
             "fact": "[terugvordering]",
             "function": "<<>>",
             "reference": "",

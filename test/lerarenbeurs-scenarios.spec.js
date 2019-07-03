@@ -140,8 +140,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       '<<indienen verzoek een besluit te nemen>>',
       '<<leraar vraagt subsidie voor studiekosten aan>>',
       '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>',
-      '<<leraar overlegt bewijsstuk waaruit blijkt dat hij ten minste vijftien studiepunten heeft gehaald>>',
-      '<<leraar overlegt bewijsstuk waaruit blijkt dat hij collegegeld heeft betaald>>',
       '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>'
     ])
   }).timeout(10000)
@@ -415,7 +413,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     let secondActionLink = await lawReg.take(ssids['belanghebbende'], actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
     let thirdActionLink = await lawReg.take(ssids['belanghebbende'], secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-    log.getLogger('disciplLawReg').setLevel('debug')
     let fourthActionLink = await lawReg.take(ssids['bestuursorgaan'], thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
 
     let fifthActionLink = await lawReg.take(ssids['bestuursorgaan'], fourthActionLink, '<<minister van OCW weigert subsidieverlening aan een leraar>>', bestuursorgaanFactresolver)
