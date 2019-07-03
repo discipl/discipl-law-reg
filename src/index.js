@@ -385,7 +385,7 @@ _ "whitespace"
       invalidReasons.push('preconditions')
     }
 
-    log.info('Pre-act check failed due to', invalidReasons)
+    logger.info('Pre-act check failed due to', invalidReasons)
     return {
       'valid': false,
       'invalidReasons': invalidReasons

@@ -9,27 +9,39 @@ import lb from './flint-example-lerarenbeurs'
 log.getLogger('disciplLawReg').setLevel('warn')
 
 const lawReg = new LawReg()
+const core = lawReg.getAbundanceService().getCoreAPI()
+
+const setupModel = async (factFunctionSpec) => {
+  const actors = ['lawmaker', 'belanghebbende', 'bestuursorgaan', 'bevoegdGezag']
+  const ssids = {}
+
+  for (let actor of actors) {
+    ssids[actor] = await core.newSsid('ephemeral')
+    await core.allow(ssids[actor])
+  }
+
+  const factFunctions = Object.keys(factFunctionSpec).reduce((factFunctions, fact) => {
+    if (actors.includes(factFunctionSpec[fact])) {
+      factFunctions[fact] = 'IS:' + ssids[factFunctionSpec[fact]].did
+    } else {
+      factFunctions[fact] = factFunctionSpec[fact]
+    }
+    return factFunctions
+  }, {})
+
+  let modelLink = await lawReg.publish(ssids['lawmaker'], { ...lb, 'model': 'LB' }, factFunctions)
+
+  return { 'ssids': ssids, 'modelLink': modelLink }
+}
 
 describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   it('should be able to take an action where the object originates from another action - LERARENBEURS', async () => {
-    let core = lawReg.getAbundanceService().getCoreAPI()
-
-    let lawmakerSsid = await core.newSsid('ephemeral')
-    await core.allow(lawmakerSsid)
-
-    let belanghebbendeSsid = await core.newSsid('ephemeral')
-    await core.allow(belanghebbendeSsid)
-    let bestuursorgaanSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-
-    let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
-        'IS:' + belanghebbendeSsid.did,
-      '[orgaan]':
-        'IS:' + bestuursorgaanSsid.did,
-      '[rechtspersoon die krachtens publiekrecht is ingesteld]':
-        'IS:' + bestuursorgaanSsid.did
-    })
+    const factFunctionSpec = {
+      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
+      '[orgaan]': 'bestuursorgaan',
+      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan'
+    }
+    let { ssids, modelLink } = await setupModel(factFunctionSpec)
 
     let retrievedModel = await core.get(modelLink)
 
@@ -50,7 +62,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', belanghebbendeFactresolver)
+    let actionLink = await lawReg.take(ssids['belanghebbende'], needLink, '<<indienen verzoek een besluit te nemen>>', belanghebbendeFactresolver)
 
     let bestuursorgaanFactresolver = (fact) => {
       if (typeof fact === 'string') {
@@ -61,11 +73,11 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', bestuursorgaanFactresolver)
+    let secondActionLink = await lawReg.take(ssids['bestuursorgaan'], actionLink, '<<besluiten de aanvraag niet te behandelen>>', bestuursorgaanFactresolver)
 
     expect(secondActionLink).to.be.a('string')
 
-    let action = await core.get(secondActionLink, bestuursorgaanSsid)
+    let action = await core.get(secondActionLink, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<besluiten de aanvraag niet te behandelen>>'))
@@ -76,29 +88,17 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
     })
 
-    let takenActs = await lawReg.getActions(secondActionLink, belanghebbendeSsid)
+    let takenActs = await lawReg.getActions(secondActionLink, ssids['belanghebbende'])
     expect(takenActs).to.deep.equal([{ 'act': '<<indienen verzoek een besluit te nemen>>', 'link': actionLink }, { 'act': '<<besluiten de aanvraag niet te behandelen>>', 'link': secondActionLink }])
   }).timeout(5000)
 
   it('should be able to determine available actions', async () => {
-    let core = lawReg.getAbundanceService().getCoreAPI()
-
-    let lawmakerSsid = await core.newSsid('ephemeral')
-    await core.allow(lawmakerSsid)
-
-    let belanghebbendeSsid = await core.newSsid('ephemeral')
-    await core.allow(belanghebbendeSsid)
-    let bestuursorgaanSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-
-    let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
-        'IS:' + belanghebbendeSsid.did,
-      '[orgaan]':
-        'IS:' + bestuursorgaanSsid.did,
-      '[rechtspersoon die krachtens publiekrecht is ingesteld]':
-        'IS:' + bestuursorgaanSsid.did
-    })
+    const factFunctionSpec = {
+      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
+      '[orgaan]': 'bestuursorgaan',
+      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan'
+    }
+    let { ssids, modelLink } = await setupModel(factFunctionSpec)
 
     let needSsid = await core.newSsid('ephemeral')
 
@@ -110,7 +110,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       }
     })
 
-    let allowedActs = await lawReg.getAvailableActs(needLink, belanghebbendeSsid, ['[verzoek een besluit te nemen]'])
+    let allowedActs = await lawReg.getAvailableActs(needLink, ssids['belanghebbende'], ['[verzoek een besluit te nemen]'])
 
     let allowedActNames = allowedActs.map((act) => act.act)
 
@@ -118,28 +118,17 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(10000)
 
   it('should be able to determine potentially available actions', async () => {
-    let core = lawReg.getAbundanceService().getCoreAPI()
-
-    let lawmakerSsid = await core.newSsid('ephemeral')
-    await core.allow(lawmakerSsid)
-
-    let belanghebbendeSsid = await core.newSsid('ephemeral')
-    await core.allow(belanghebbendeSsid)
-    let bestuursorgaanSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-    let bevoegdGezagSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-
-    let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'IS:' + belanghebbendeSsid.did,
-      '[leraar]': 'IS:' + belanghebbendeSsid.did,
-      '[orgaan]': 'IS:' + bestuursorgaanSsid.did,
-      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'IS:' + bestuursorgaanSsid.did,
-      '[met enig openbaar gezag bekleed]': 'IS:' + bestuursorgaanSsid.did,
-      '[bevoegd gezag]': 'IS:' + bevoegdGezagSsid.did,
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did,
+    const factFunctionSpec = {
+      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
+      '[leraar]': 'belanghebbende',
+      '[orgaan]': 'bestuursorgaan',
+      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan',
+      '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
+      '[bevoegd gezag]': 'bevoegdGezag',
+      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
       '[persoon]': 'ANYONE'
-    })
+    }
+    let { ssids, modelLink } = await setupModel(factFunctionSpec)
 
     let needSsid = await core.newSsid('ephemeral')
 
@@ -151,7 +140,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       }
     })
 
-    let allowedActs = await lawReg.getPotentialActs(needLink, belanghebbendeSsid, [])
+    let allowedActs = await lawReg.getPotentialActs(needLink, ssids['belanghebbende'], [])
 
     let allowedActNames = allowedActs.map((act) => act.act)
 
@@ -166,28 +155,17 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(10000)
 
   it('should be able to determine potentially available actions from another perspective', async () => {
-    let core = lawReg.getAbundanceService().getCoreAPI()
-
-    let lawmakerSsid = await core.newSsid('ephemeral')
-    await core.allow(lawmakerSsid)
-
-    let belanghebbendeSsid = await core.newSsid('ephemeral')
-    await core.allow(belanghebbendeSsid)
-    let bestuursorgaanSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-    let bevoegdGezagSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-
-    let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'IS:' + belanghebbendeSsid.did,
-      '[leraar]': 'IS:' + belanghebbendeSsid.did,
-      '[orgaan]': 'IS:' + bestuursorgaanSsid.did,
-      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'IS:' + bestuursorgaanSsid.did,
-      '[met enig openbaar gezag bekleed]': 'IS:' + bestuursorgaanSsid.did,
-      '[bevoegd gezag]': 'IS:' + bevoegdGezagSsid.did,
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did,
+    const factFunctionSpec = {
+      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
+      '[leraar]': 'belanghebbende',
+      '[orgaan]': 'bestuursorgaan',
+      '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan',
+      '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
+      '[bevoegd gezag]': 'bevoegdGezag',
+      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
       '[persoon]': 'ANYONE'
-    })
+    }
+    let { ssids, modelLink } = await setupModel(factFunctionSpec)
 
     let needSsid = await core.newSsid('ephemeral')
 
@@ -199,7 +177,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       }
     })
 
-    let allowedActs = await lawReg.getPotentialActs(needLink, bestuursorgaanSsid, [])
+    let allowedActs = await lawReg.getPotentialActs(needLink, ssids['bestuursorgaan'], [])
 
     let allowedActNames = allowedActs.map((act) => act.act)
 
@@ -215,20 +193,11 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(10000)
 
   it('should perform multiple acts for a happy flow in the context of Lerarenbeurs', async () => {
-    let core = lawReg.getAbundanceService().getCoreAPI()
-
-    let lawmakerSsid = await core.newSsid('ephemeral')
-    await core.allow(lawmakerSsid)
-
-    let belanghebbendeSsid = await core.newSsid('ephemeral')
-    await core.allow(belanghebbendeSsid)
-    let bestuursorgaanSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-
-    let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
-      '[leraar]': 'IS:' + belanghebbendeSsid.did,
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did
-    })
+    const factFunctionSpec = {
+      '[leraar]': 'belanghebbende',
+      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan'
+    }
+    let { ssids, modelLink } = await setupModel(factFunctionSpec)
 
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
@@ -249,7 +218,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
+    let actionLink = await lawReg.take(ssids['belanghebbende'], needLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
 
     let bestuursorgaanFactresolver = (fact) => {
       if (typeof fact === 'string') {
@@ -268,11 +237,11 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+    let secondActionLink = await lawReg.take(ssids['bestuursorgaan'], actionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
 
     expect(secondActionLink).to.be.a('string')
 
-    let action = await core.get(secondActionLink, bestuursorgaanSsid)
+    let action = await core.get(secondActionLink, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<minister verstrekt subsidie lerarenbeurs aan leraar>>'))
@@ -285,23 +254,14 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended happy flow in the context of Lerarenbeurs', async () => {
-    let core = lawReg.getAbundanceService().getCoreAPI()
-
-    let lawmakerSsid = await core.newSsid('ephemeral')
-    await core.allow(lawmakerSsid)
-
-    let belanghebbendeSsid = await core.newSsid('ephemeral')
-    await core.allow(belanghebbendeSsid)
-    let bestuursorgaanSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-
-    let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
-      '[leraar]': 'IS:' + belanghebbendeSsid.did,
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did,
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'IS:' + belanghebbendeSsid.did,
-      '[met enig openbaar gezag bekleed]': 'IS:' + bestuursorgaanSsid.did,
+    const factFunctionSpec = {
+      '[leraar]': 'belanghebbende',
+      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
+      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
+      '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
       '[persoon]': 'ANYONE'
-    })
+    }
+    let { ssids, modelLink } = await setupModel(factFunctionSpec)
 
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
@@ -335,7 +295,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let actionLink = await lawReg.take(bestuursorgaanSsid, needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
+    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
 
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
@@ -346,20 +306,20 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let secondActionLink = await lawReg.take(belanghebbendeSsid, actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
-    let thirdActionLink = await lawReg.take(belanghebbendeSsid, secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-    let fourthActionLink = await lawReg.take(bestuursorgaanSsid, thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
-    let fifthActionLink = await lawReg.take(bestuursorgaanSsid, fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
-    let sixthActionLink = await lawReg.take(bestuursorgaanSsid, fifthActionLink, '<<bekendmaken van een besluit>>', bestuursorgaanFactresolver)
+    let secondActionLink = await lawReg.take(ssids['belanghebbende'], actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
+    let thirdActionLink = await lawReg.take(ssids['belanghebbende'], secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
+    let fourthActionLink = await lawReg.take(ssids['bestuursorgaan'], thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+    let fifthActionLink = await lawReg.take(ssids['bestuursorgaan'], fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
+    let sixthActionLink = await lawReg.take(ssids['bestuursorgaan'], fifthActionLink, '<<bekendmaken van een besluit>>', bestuursorgaanFactresolver)
 
     expect(sixthActionLink).to.be.a('string')
 
-    let thirdAction = await core.get(thirdActionLink, bestuursorgaanSsid)
+    let thirdAction = await core.get(thirdActionLink, ssids['bestuursorgaan'])
 
     const expectedThirdActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<leraar vraagt subsidie voor studiekosten aan>>'))
 
-    let lastAction = await core.get(sixthActionLink, bestuursorgaanSsid)
+    let lastAction = await core.get(sixthActionLink, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<bekendmaken van een besluit>>'))
@@ -378,23 +338,14 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended flow where teacher withdraws request in the context of Lerarenbeurs', async () => {
-    let core = lawReg.getAbundanceService().getCoreAPI()
-
-    let lawmakerSsid = await core.newSsid('ephemeral')
-    await core.allow(lawmakerSsid)
-
-    let belanghebbendeSsid = await core.newSsid('ephemeral')
-    await core.allow(belanghebbendeSsid)
-    let bestuursorgaanSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-
-    let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
-      '[leraar]': 'IS:' + belanghebbendeSsid.did,
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did,
-      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'IS:' + belanghebbendeSsid.did,
-      '[met enig openbaar gezag bekleed]': 'IS:' + bestuursorgaanSsid.did,
+    const factFunctionSpec = {
+      '[leraar]': 'belanghebbende',
+      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
+      '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
+      '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
       '[persoon]': 'ANYONE'
-    })
+    }
+    let { ssids, modelLink } = await setupModel(factFunctionSpec)
 
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
@@ -428,7 +379,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let actionLink = await lawReg.take(bestuursorgaanSsid, needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
+    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
 
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
@@ -440,16 +391,16 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let secondActionLink = await lawReg.take(belanghebbendeSsid, actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
-    let thirdActionLink = await lawReg.take(belanghebbendeSsid, secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-    let fourthActionLink = await lawReg.take(bestuursorgaanSsid, thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
-    let fifthActionLink = await lawReg.take(bestuursorgaanSsid, fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
-    let sixthActionLink = await lawReg.take(bestuursorgaanSsid, fifthActionLink, '<<bekendmaken van een besluit>>', bestuursorgaanFactresolver)
-    let seventhActionLink = await lawReg.take(belanghebbendeSsid, sixthActionLink, '<<leraar trekt aanvraag subsidie voor studieverlof in>>', belanghebbendeFactresolver)
+    let secondActionLink = await lawReg.take(ssids['belanghebbende'], actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
+    let thirdActionLink = await lawReg.take(ssids['belanghebbende'], secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
+    let fourthActionLink = await lawReg.take(ssids['bestuursorgaan'], thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+    let fifthActionLink = await lawReg.take(ssids['bestuursorgaan'], fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
+    let sixthActionLink = await lawReg.take(ssids['bestuursorgaan'], fifthActionLink, '<<bekendmaken van een besluit>>', bestuursorgaanFactresolver)
+    let seventhActionLink = await lawReg.take(ssids['belanghebbende'], sixthActionLink, '<<leraar trekt aanvraag subsidie voor studieverlof in>>', belanghebbendeFactresolver)
 
     expect(seventhActionLink).to.be.a('string')
 
-    let lastAction = await core.get(seventhActionLink, bestuursorgaanSsid)
+    let lastAction = await core.get(seventhActionLink, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<leraar trekt aanvraag subsidie voor studieverlof in>>'))
@@ -462,20 +413,11 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended flow where minister refuses the request because they already got financing in the context of Lerarenbeurs', async () => {
-    let core = lawReg.getAbundanceService().getCoreAPI()
-
-    let lawmakerSsid = await core.newSsid('ephemeral')
-    await core.allow(lawmakerSsid)
-
-    let belanghebbendeSsid = await core.newSsid('ephemeral')
-    await core.allow(belanghebbendeSsid)
-    let bestuursorgaanSsid = await core.newSsid('ephemeral')
-    await core.allow(bestuursorgaanSsid)
-
-    let modelLink = await lawReg.publish(lawmakerSsid, { ...lb, 'model': 'LB' }, {
-      '[leraar]': 'IS:' + belanghebbendeSsid.did,
-      '[minister van Onderwijs, Cultuur en Wetenschap]': 'IS:' + bestuursorgaanSsid.did
-    })
+    const factFunctionSpec = {
+      '[leraar]': 'belanghebbende',
+      '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan'
+    }
+    let { ssids, modelLink } = await setupModel(factFunctionSpec)
 
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
@@ -497,7 +439,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let actionLink = await lawReg.take(bestuursorgaanSsid, needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
+    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
 
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
@@ -508,13 +450,13 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let secondActionLink = await lawReg.take(belanghebbendeSsid, actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
-    let thirdActionLink = await lawReg.take(belanghebbendeSsid, secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-    let fourthActionLink = await lawReg.take(bestuursorgaanSsid, thirdActionLink, '<<minister van OCW weigert subsidieverlening aan een leraar>>', bestuursorgaanFactresolver)
+    let secondActionLink = await lawReg.take(ssids['belanghebbende'], actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
+    let thirdActionLink = await lawReg.take(ssids['belanghebbende'], secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
+    let fourthActionLink = await lawReg.take(ssids['bestuursorgaan'], thirdActionLink, '<<minister van OCW weigert subsidieverlening aan een leraar>>', bestuursorgaanFactresolver)
 
     expect(fourthActionLink).to.be.a('string')
 
-    let lastAction = await core.get(fourthActionLink, bestuursorgaanSsid)
+    let lastAction = await core.get(fourthActionLink, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<minister van OCW weigert subsidieverlening aan een leraar>>'))
