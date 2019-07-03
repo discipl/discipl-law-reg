@@ -45,10 +45,13 @@ const setupModel = async () => {
   return { 'ssids': ssids, 'modelLink': modelLink }
 }
 
-describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
-  it('should be able to take an action where the object originates from another action - LERARENBEURS', async () => {
-    let { ssids, modelLink } = await setupModel()
+let ssids, modelLink
 
+describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
+  before(async () => {
+    ({ ssids, modelLink } = await setupModel())
+  })
+  it('should be able to take an action where the object originates from another action - LERARENBEURS', async () => {
     let retrievedModel = await core.get(modelLink)
 
     let needSsid = await core.newSsid('ephemeral')
@@ -99,8 +102,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should be able to determine available actions', async () => {
-    let { ssids, modelLink } = await setupModel()
-
     let needSsid = await core.newSsid('ephemeral')
 
     await core.allow(needSsid)
@@ -146,8 +147,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(10000)
 
   it('should be able to determine potentially available actions from another perspective', async () => {
-    let { ssids, modelLink } = await setupModel()
-
     let needSsid = await core.newSsid('ephemeral')
 
     await core.allow(needSsid)
@@ -174,8 +173,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(10000)
 
   it('should perform multiple acts for a happy flow in the context of Lerarenbeurs', async () => {
-    let { ssids, modelLink } = await setupModel()
-
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
 
@@ -231,8 +228,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended happy flow in the context of Lerarenbeurs', async () => {
-    let { ssids, modelLink } = await setupModel()
-
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
 
@@ -308,8 +303,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended flow where teacher withdraws request in the context of Lerarenbeurs', async () => {
-    let { ssids, modelLink } = await setupModel()
-
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
 
@@ -376,8 +369,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended flow where minister refuses the request because they already got financing in the context of Lerarenbeurs', async () => {
-    let { ssids, modelLink } = await setupModel()
-
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
 
