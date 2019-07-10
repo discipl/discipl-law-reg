@@ -397,10 +397,11 @@ _ "whitespace"
    *
    * @param {string} caseLink - Link to the case, last action that was taken
    * @param {object} ssid - Identifies the actor
-   * @param {ActionInformation[]} facts - Array of true facts
+   * @param {string[]} facts - Array of true facts
+   * @param {string[]} nonFacts - Array of false facts
    * @returns {Promise<Array>}
    */
-  async getAvailableActs (caseLink, ssid, facts) {
+  async getAvailableActs (caseLink, ssid, facts = [], nonFacts = []) {
     const core = this.abundance.getCoreAPI()
 
     const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
@@ -411,7 +412,16 @@ _ "whitespace"
     const acts = await model.data[DISCIPL_FLINT_MODEL].acts
 
     const factResolver = (fact) => {
-      return facts.includes(fact)
+      if (facts.includes(fact)) {
+        return true
+      }
+
+      if (nonFacts.includes(fact)) {
+        return false
+      }
+
+      logger.info('Assuming fact', fact, 'to be false by default in getAvailableActs')
+      return false
     }
 
     const allowedActs = []
@@ -441,10 +451,11 @@ _ "whitespace"
    *
    * @param {string} caseLink - Link to the case, last action that was taken
    * @param {object} ssid - Identifies the actor
-   * @param {ActionInformation[]} facts - Array of true facts
+   * @param {string[]} facts - Array of true facts
+   * @param {string[]} nonFacts - Array of false facts
    * @returns {Promise<Array>}
    */
-  async getPotentialActs (caseLink, ssid, facts) {
+  async getPotentialActs (caseLink, ssid, facts = [], nonFacts = []) {
     const core = this.abundance.getCoreAPI()
 
     const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
@@ -462,6 +473,11 @@ _ "whitespace"
         if (facts.includes(fact)) {
           return true
         }
+
+        if (nonFacts.includes(fact)) {
+          return false
+        }
+
         logger.debug('Missing fact', fact, 'during checking of act', Object.keys(actWithLink)[0])
 
         if (!unknownItems.includes(flintItem)) {
