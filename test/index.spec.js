@@ -6,7 +6,7 @@ import * as log from 'loglevel'
 import awb from './flint-example-awb'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
-log.getLogger('disciplLawReg').setLevel('warn')
+log.getLogger('disciplLawReg').setLevel('debug')
 
 const lawReg = new LawReg()
 
@@ -59,6 +59,31 @@ describe('discipl-law-reg', () => {
       let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
 
       expect(result).to.equal(true)
+
+      expect(parsedFact).to.deep.equal({
+        'expression': 'AND',
+        'operands': [
+          '[fact1]',
+          '[fact2]',
+          '[fact3]'
+        ]
+      })
+    })
+
+    it('correctly parses a multiple AND construction with undefined', async () => {
+      let parsedFact = lawReg.factParser.parse('[fact1] EN [fact2] EN [fact3]')
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let ssid = await core.newSsid('ephemeral')
+
+      const factResolver = (fact) => {
+        if (fact === '[fact1]' || fact === '[fact2]') {
+          return true
+        }
+      }
+      let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
+
+      // eslint-disable-next-line no-unused-expressions
+      expect(result).to.be.undefined
 
       expect(parsedFact).to.deep.equal({
         'expression': 'AND',
