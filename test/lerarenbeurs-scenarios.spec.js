@@ -119,6 +119,24 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(allowedActNames).to.deep.equal(['<<indienen verzoek een besluit te nemen>>'])
   }).timeout(10000)
 
+  it('should be able to determine available actions with nonfacts', async () => {
+    let needSsid = await core.newSsid('ephemeral')
+
+    await core.allow(needSsid)
+    let needLink = await core.claim(needSsid, {
+      'need': {
+        'act': '<<indienen verzoek een besluit te nemen>>',
+        'DISCIPL_FLINT_MODEL_LINK': modelLink
+      }
+    })
+
+    let allowedActs = await lawReg.getAvailableActs(needLink, ssids['belanghebbende'], [], ['[verzoek een besluit te nemen]'])
+
+    let allowedActNames = allowedActs.map((act) => act.act)
+
+    expect(allowedActNames).to.deep.equal([])
+  }).timeout(10000)
+
   it('should be able to determine potentially available actions', async () => {
     let { ssids, modelLink } = await setupModel()
 
@@ -138,6 +156,30 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     expect(allowedActNames).to.deep.equal([
       '<<indienen verzoek een besluit te nemen>>',
+      '<<leraar vraagt subsidie voor studiekosten aan>>',
+      '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>',
+      '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>'
+    ])
+  }).timeout(10000)
+
+  it('should be able to determine potentially available actions with non-facts', async () => {
+    let { ssids, modelLink } = await setupModel()
+
+    let needSsid = await core.newSsid('ephemeral')
+
+    await core.allow(needSsid)
+    let needLink = await core.claim(needSsid, {
+      'need': {
+        'act': '<<indienen verzoek een besluit te nemen>>',
+        'DISCIPL_FLINT_MODEL_LINK': modelLink
+      }
+    })
+
+    let allowedActs = await lawReg.getPotentialActs(needLink, ssids['belanghebbende'], [], ['[verzoek een besluit te nemen]'])
+
+    let allowedActNames = allowedActs.map((act) => act.act)
+
+    expect(allowedActNames).to.deep.equal([
       '<<leraar vraagt subsidie voor studiekosten aan>>',
       '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>',
       '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>'

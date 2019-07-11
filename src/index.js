@@ -112,6 +112,7 @@ _ "whitespace"
    * @returns {Promise<boolean>}
    */
   async checkExpression (fact, ssid, context) {
+    let hasUndefined = false
     let expr = fact.expression
     switch (expr) {
       case 'OR':
@@ -122,9 +123,15 @@ _ "whitespace"
             logger.debug('Resolved OR as true, because', op, 'is true')
             return true
           }
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
         }
-        logger.debug('Resolved OR as false')
-        return false
+
+        let result = hasUndefined ? undefined : false
+        logger.debug('Resolved OR as', result)
+        return result
       case 'AND':
         logger.debug('Switch case: AND')
         for (let op of fact.operands) {
@@ -134,13 +141,18 @@ _ "whitespace"
             logger.debug('Resolved AND as false, because', op, 'is false')
             return false
           }
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
         }
-        logger.debug('Resolved AND as true')
-        return true
+        let andResult = hasUndefined ? undefined : true
+        logger.debug('Resolved AND as', andResult)
+        return andResult
       case 'NOT':
         logger.debug('Switch case: NOT')
-        return !await this.checkExpression(fact.operand, ssid, context)
-
+        let value = await this.checkExpression(fact.operand, ssid, context)
+        return typeof value === 'boolean' ? !value : undefined
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {
@@ -250,7 +262,7 @@ _ "whitespace"
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
     const result = context.factResolver(factToCheck, context.flintItem)
     logger.debug('Resolving fact', fact, 'as', result, 'via', factToCheck, 'by factresolver')
-    return result === true
+    return result
   }
 
   /**
@@ -314,7 +326,7 @@ _ "whitespace"
 
   /**
    * @typedef {object} CheckActionResult
-   * @property {boolean} valid - True iff the action can be taken
+   * @property {boolean|*} valid - True iff the action can be taken, undefined if undefined facts would need to be provided to be sure
    * @property {string[]} invalidReasons - Flint items that were resolved as false
    */
   /**
@@ -385,9 +397,13 @@ _ "whitespace"
       invalidReasons.push('preconditions')
     }
 
-    logger.info('Pre-act check failed due to', invalidReasons)
+    let definitivelyNotPossible = checkedActor === false || checkedObject === false || checkedInterestedParty === false || checkedPreConditions === false
+
+    let validity = definitivelyNotPossible ? false : undefined
+
+    logger.info('Pre-act check failed due to', invalidReasons, definitivelyNotPossible ? 'It is impossible.' : 'It might work with more information')
     return {
-      'valid': false,
+      'valid': validity,
       'invalidReasons': invalidReasons
     }
   }
@@ -397,10 +413,11 @@ _ "whitespace"
    *
    * @param {string} caseLink - Link to the case, last action that was taken
    * @param {object} ssid - Identifies the actor
-   * @param {ActionInformation[]} facts - Array of true facts
+   * @param {string[]} facts - Array of true facts
+   * @param {string[]} nonFacts - Array of false facts
    * @returns {Promise<Array>}
    */
-  async getAvailableActs (caseLink, ssid, facts) {
+  async getAvailableActs (caseLink, ssid, facts = [], nonFacts = []) {
     const core = this.abundance.getCoreAPI()
 
     const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
@@ -411,7 +428,16 @@ _ "whitespace"
     const acts = await model.data[DISCIPL_FLINT_MODEL].acts
 
     const factResolver = (fact) => {
-      return facts.includes(fact)
+      if (facts.includes(fact)) {
+        return true
+      }
+
+      if (nonFacts.includes(fact)) {
+        return false
+      }
+
+      logger.info('Assuming fact', fact, 'to be false by default in getAvailableActs')
+      return false
     }
 
     const allowedActs = []
@@ -441,10 +467,11 @@ _ "whitespace"
    *
    * @param {string} caseLink - Link to the case, last action that was taken
    * @param {object} ssid - Identifies the actor
-   * @param {ActionInformation[]} facts - Array of true facts
+   * @param {string[]} facts - Array of true facts
+   * @param {string[]} nonFacts - Array of false facts
    * @returns {Promise<Array>}
    */
-  async getPotentialActs (caseLink, ssid, facts) {
+  async getPotentialActs (caseLink, ssid, facts = [], nonFacts = []) {
     const core = this.abundance.getCoreAPI()
 
     const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
@@ -462,21 +489,17 @@ _ "whitespace"
         if (facts.includes(fact)) {
           return true
         }
-        logger.debug('Missing fact', fact, 'during checking of act', Object.keys(actWithLink)[0])
 
-        if (!unknownItems.includes(flintItem)) {
-          unknownItems.push(flintItem)
+        if (nonFacts.includes(fact)) {
+          return false
         }
-
-        return false
       }
       logger.debug('Checking whether', actWithLink, 'is an available option')
 
       const link = Object.values(actWithLink)[0]
       const checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
       logger.debug('Unknown items', unknownItems)
-      const allInvaliditiesHaveAnUnknown = checkActionInfo.invalidReasons.filter((item) => !unknownItems.includes(item)).length === 0
-      if (!checkActionInfo.valid && allInvaliditiesHaveAnUnknown) {
+      if (typeof checkActionInfo.valid === 'undefined') {
         const actionInformation = {
           'act': Object.keys(actWithLink)[0],
           'link': Object.values(actWithLink)[0]
