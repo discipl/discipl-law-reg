@@ -266,7 +266,7 @@ _ "whitespace"
   }
 
   /**
-   * Checks a fact by checking if it has been created in a prior act
+   * Checks a fact by checking if it has been created in a prior act, and has not been terminated since
    *
    * @param {string} fact - Description of the fact, surrounded with []
    * @param {object} ssid - Identity of entity doing the checking
@@ -289,6 +289,10 @@ _ "whitespace"
 
         if (typeof act.data[DISCIPL_FLINT_ACT].create === 'string' && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
           return true
+        }
+
+        if (typeof act.data[DISCIPL_FLINT_ACT].terminate === 'string' && act.data[DISCIPL_FLINT_ACT].terminate.includes(fact)) {
+          return false
         }
       }
       actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
