@@ -117,6 +117,30 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('correctly parses a multiple OR construction with undefined short-circuited', async () => {
+      let parsedFact = lawReg.factParser.parse('[fact1] OF [fact2] OF [fact3]')
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let ssid = await core.newSsid('ephemeral')
+
+      const factResolver = (fact) => {
+        if (fact === '[fact2]') {
+          return true
+        }
+      }
+      let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.equal(true)
+
+      expect(parsedFact).to.deep.equal({
+        'expression': 'OR',
+        'operands': [
+          '[fact1]',
+          '[fact2]',
+          '[fact3]'
+        ]
+      })
+    })
+
     it('Does not find a match inside a multiple AND construction', async () => {
       let parsedFact = lawReg.factParser.parse('[fact1] EN [fact2]')
       let core = lawReg.getAbundanceService().getCoreAPI()
