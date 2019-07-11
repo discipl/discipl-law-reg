@@ -273,19 +273,18 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     let thirdActionLink = await lawReg.take(ssids['belanghebbende'], secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
     let fourthActionLink = await lawReg.take(ssids['bestuursorgaan'], thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
     let fifthActionLink = await lawReg.take(ssids['bestuursorgaan'], fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
-    let sixthActionLink = await lawReg.take(ssids['bestuursorgaan'], fifthActionLink, '<<bekendmaken van een besluit>>', bestuursorgaanFactresolver)
 
-    expect(sixthActionLink).to.be.a('string')
+    expect(fifthActionLink).to.be.a('string')
 
     let thirdAction = await core.get(thirdActionLink, ssids['bestuursorgaan'])
 
     const expectedThirdActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<leraar vraagt subsidie voor studiekosten aan>>'))
 
-    let lastAction = await core.get(sixthActionLink, ssids['bestuursorgaan'])
+    let lastAction = await core.get(fifthActionLink, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
-      .filter(item => Object.keys(item).includes('<<bekendmaken van een besluit>>'))
+      .filter(item => Object.keys(item).includes('<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>'))
 
     expect(thirdAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedThirdActLink[0])[0],
@@ -296,7 +295,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-      'DISCIPL_FLINT_PREVIOUS_CASE': fifthActionLink
+      'DISCIPL_FLINT_PREVIOUS_CASE': fourthActionLink
     })
   }).timeout(5000)
 
@@ -347,14 +346,11 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     let secondActionLink = await lawReg.take(ssids['belanghebbende'], actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
     let thirdActionLink = await lawReg.take(ssids['belanghebbende'], secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-    let fourthActionLink = await lawReg.take(ssids['bestuursorgaan'], thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
-    let fifthActionLink = await lawReg.take(ssids['bestuursorgaan'], fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
-    let sixthActionLink = await lawReg.take(ssids['bestuursorgaan'], fifthActionLink, '<<bekendmaken van een besluit>>', bestuursorgaanFactresolver)
-    let seventhActionLink = await lawReg.take(ssids['belanghebbende'], sixthActionLink, '<<leraar trekt aanvraag subsidie voor studieverlof in>>', belanghebbendeFactresolver)
+    let fourthActionLink = await lawReg.take(ssids['belanghebbende'], thirdActionLink, '<<leraar trekt aanvraag subsidie voor studieverlof in>>', belanghebbendeFactresolver)
 
-    expect(seventhActionLink).to.be.a('string')
+    expect(fourthActionLink).to.be.a('string')
 
-    let lastAction = await core.get(seventhActionLink, ssids['bestuursorgaan'])
+    let lastAction = await core.get(fourthActionLink, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<leraar trekt aanvraag subsidie voor studieverlof in>>'))
@@ -362,7 +358,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-      'DISCIPL_FLINT_PREVIOUS_CASE': sixthActionLink
+      'DISCIPL_FLINT_PREVIOUS_CASE': thirdActionLink
     })
   }).timeout(5000)
 
