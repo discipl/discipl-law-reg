@@ -603,6 +603,10 @@ _ "whitespace"
       return Object.keys(actWithLink).includes(act)
     }).map((actWithLink) => Object.values(actWithLink)[0])[0]
 
+    if (actLink == null) {
+      throw new Error('Act not found ' + act)
+    }
+
     logger.debug('Checking if action is possible from perspective of', ssid.did)
     let checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
     if (checkActionInfo.valid) {
