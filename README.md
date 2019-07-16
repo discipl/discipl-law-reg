@@ -4,7 +4,7 @@ Library capable of interpreting published FLINT models of official law and regul
 
 This library creates self-sovereign ids in relation to needs automatically and stores key information at a discipl-core supported platform (probably some local or private distributed wallet as you want to keep this private)
 
-Enable possibility to escalate towards an escalation process (convergent facilitation) if any actor does not agree with the automated process and logic or decisions of other actors.
+This library also enables the possibility to escalate towards an escalation process (convergent facilitation) if any actor does not agree with the automated process and logic or decisions of other actors.
 
 discipl-law-reg includes a specification for a FLINT model expressed as linked data. For now it is published as verifiable claim with the whole model as a JSON object. The subject of this claim can be used to verify whether the model is official. The model is closely tied to official law and regulations using official jurisdictional references. A FLINT model is created by hand though with a formal method called Calculemus and specific tooling this can be made straightforward and possibly automated to a certain extend (ongoing research).
 
