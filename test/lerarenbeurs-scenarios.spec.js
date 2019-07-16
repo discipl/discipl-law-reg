@@ -157,8 +157,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(allowedActNames).to.deep.equal([
       '<<indienen verzoek een besluit te nemen>>',
       '<<leraar vraagt subsidie voor studiekosten aan>>',
-      '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>',
-      '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>'
+      '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>'
     ])
   }).timeout(10000)
 
@@ -181,8 +180,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     expect(allowedActNames).to.deep.equal([
       '<<leraar vraagt subsidie voor studiekosten aan>>',
-      '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>',
-      '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>'
+      '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>'
     ])
   }).timeout(10000)
 
@@ -208,7 +206,8 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       '<<minister van OCW verdeelt het beschikbare bedrag voor de subsidieregeling lerarenbeurs per doelgroep>>',
       '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>',
       '<<minister van OCW berekent de hoogte van de subsidie voor studieverlof>>',
-      '<<aanvraagformulieren lerarenbeurs verstrekken>>'
+      '<<aanvraagformulieren verstrekken voor subsidie studiekosten op de website van de DUO>>',
+      '<<aanvraagformulieren verstrekken voor subsidie studieverlof op de website van de DUO>>'
     ])
   }).timeout(10000)
 
@@ -281,7 +280,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     let bestuursorgaanFactresolver = (fact) => {
       if (typeof fact === 'string') {
-        return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
+        return fact === '[template voor aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
           fact === '[schriftelijke beslissing van een bestuursorgaan]' ||
           fact === '[beslissing inhoudende een publiekrechtelijke rechtshandeling]' ||
           fact === '[subsidie lerarenbeurs]' ||
@@ -300,11 +299,12 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
+    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren verstrekken voor subsidie studiekosten op de website van de DUO>>', bestuursorgaanFactresolver)
 
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
-        return fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
+        return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
+          fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
           fact === '[inleveren]' ||
           fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]'
       }
@@ -355,7 +355,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     let bestuursorgaanFactresolver = (fact) => {
       if (typeof fact === 'string') {
-        return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
+        return fact === '[template voor aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
           fact === '[schriftelijke beslissing van een bestuursorgaan]' ||
           fact === '[beslissing inhoudende een publiekrechtelijke rechtshandeling]' ||
           fact === '[subsidie lerarenbeurs]' ||
@@ -374,11 +374,12 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
+    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren verstrekken voor subsidie studiekosten op de website van de DUO>>', bestuursorgaanFactresolver)
 
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
-        return fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
+        return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
+        fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
           fact === '[inleveren]' ||
           fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]' ||
           fact === '[binnen twee maanden na het verstrekken van de subsidie]'
@@ -418,7 +419,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     let bestuursorgaanFactresolver = (fact) => {
       if (typeof fact === 'string') {
-        return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
+        return fact === '[template voor aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
           fact === '[schriftelijke beslissing van een bestuursorgaan]' ||
           fact === '[beslissing inhoudende een publiekrechtelijke rechtshandeling]' ||
           fact === '[subsidie lerarenbeurs]' ||
@@ -438,7 +439,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren lerarenbeurs verstrekken>>', bestuursorgaanFactresolver)
+    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren verstrekken voor subsidie studiekosten op de website van de DUO>>', bestuursorgaanFactresolver)
 
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {

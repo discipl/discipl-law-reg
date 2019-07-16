@@ -6,7 +6,7 @@ import * as log from 'loglevel'
 import awb from './flint-example-awb'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
-log.getLogger('disciplLawReg').setLevel('debug')
+log.getLogger('disciplLawReg').setLevel('warn')
 
 const lawReg = new LawReg()
 
@@ -102,6 +102,30 @@ describe('discipl-law-reg', () => {
 
       const factResolver = (fact) => {
         return fact === '[fact2]'
+      }
+      let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.equal(true)
+
+      expect(parsedFact).to.deep.equal({
+        'expression': 'OR',
+        'operands': [
+          '[fact1]',
+          '[fact2]',
+          '[fact3]'
+        ]
+      })
+    })
+
+    it('correctly parses a multiple OR construction with undefined short-circuited', async () => {
+      let parsedFact = lawReg.factParser.parse('[fact1] OF [fact2] OF [fact3]')
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let ssid = await core.newSsid('ephemeral')
+
+      const factResolver = (fact) => {
+        if (fact === '[fact2]') {
+          return true
+        }
       }
       let result = await lawReg.checkExpression(parsedFact, ssid, { 'factResolver': factResolver })
 
