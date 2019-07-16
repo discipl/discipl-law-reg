@@ -342,7 +342,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   }).timeout(5000)
 
   it('should perform an extended flow where teacher withdraws request in the context of Lerarenbeurs', async () => {
-    log.getLogger('disciplLawReg').setLevel('debug')
     let retrievedModel = await core.get(modelLink)
     let needSsid = await core.newSsid('ephemeral')
 
