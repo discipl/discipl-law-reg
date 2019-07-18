@@ -516,6 +516,86 @@ _ "whitespace"
   }
 
   /**
+   * @typedef DutyInformation
+   * @property {string} duty - name of the duty
+   * @property {string} link - link to the duty in the model
+   */
+
+  /**
+   * Returns the active duties that apply in the given case for the given ssid
+   *
+   * @param {string} caseLink - link to the current state of the case
+   * @param {object} ssid - identity to find duties for
+   * @returns {Promise<DutyInformation[]>}
+   */
+  async getActiveDuties (caseLink, ssid) {
+    const core = this.abundance.getCoreAPI()
+    let firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
+    let modelLink = await this._getModelLink(firstCaseLink, ssid)
+
+    let model = await core.get(modelLink, ssid)
+
+    const duties = this.arrayToObject(model.data[DISCIPL_FLINT_MODEL].duties)
+
+    const factReference = this.arrayToObject(model.data[DISCIPL_FLINT_MODEL].facts)
+
+    let actionLink = caseLink
+
+    const terminatedDuties = []
+    const activeDuties = []
+
+    while (actionLink != null) {
+      let lastAction = await core.get(actionLink, ssid)
+
+      let actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
+
+      if (actLink != null) {
+        let act = await core.get(actLink, ssid)
+        logger.debug('Found earlier act', act)
+
+        if (typeof act.data[DISCIPL_FLINT_ACT].create === 'string') {
+          const matches = act.data[DISCIPL_FLINT_ACT].create.match(/<[^>]+>/g) || []
+          // If the duty is terminated, we should not include it as active
+          activeDuties.push(...matches.filter(duty => !terminatedDuties.includes(duty)))
+        }
+
+        if (typeof act.data[DISCIPL_FLINT_ACT].terminate === 'string') {
+          const matches = act.data[DISCIPL_FLINT_ACT].terminate.match(/<[^>]+>/g) || []
+          terminatedDuties.push(...matches)
+        }
+      }
+      actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
+    }
+
+    logger.debug('Active duties', activeDuties, '. Checking ownership now.')
+    const ownedDuties = []
+
+    for (let duty of activeDuties) {
+      const dutyLink = duties[duty]
+
+      if (dutyLink != null) {
+        const dutyInformation = (await core.get(dutyLink, ssid))['data'][DISCIPL_FLINT_DUTY]
+
+        const dutyHolder = dutyInformation['duty-holder']
+
+        if (dutyHolder != null) {
+          logger.debug('Checking duty-holder')
+          let checkActor = await this.checkFact(dutyHolder, ssid, { 'facts': factReference, 'myself': true, 'flintItem': 'actor', 'caseLink': caseLink })
+          if (checkActor) {
+            logger.info('Duty', duty, 'is held by', dutyHolder)
+            ownedDuties.push({
+              'duty': duty,
+              'link': dutyLink
+            })
+          }
+        }
+      }
+    }
+
+    return ownedDuties
+  }
+
+  /**
    * Publishes the FLINT model (as JSON) in linked verifiable claims (vc's)
    * in the channel of the given ssid. Each act, fact and duty is stored in a separate vc.
    * Returns a list to the claim holding the whole model with links to individual claims
