@@ -346,7 +346,7 @@ _ "whitespace"
    * @param {Context} context - Context of the action
    * @returns {Promise<CheckActionResult>}
    */
-  async checkAction (modelLink, actLink, ssid, context) {
+  async checkAction (modelLink, actLink, ssid, context, earlyEscape = false) {
     logger.debug('Checking action', actLink)
     let core = this.abundance.getCoreAPI()
     let modelReference = await core.get(modelLink, ssid)
@@ -357,7 +357,19 @@ _ "whitespace"
 
     const actor = actReference.data[DISCIPL_FLINT_ACT].actor
 
+    const invalidReasons = []
+
     const checkedActor = await this.checkFact(actor, ssid, { ...context, 'facts': factReference, 'myself': true, 'flintItem': 'actor' })
+
+    if (!checkedActor) {
+      invalidReasons.push('actor')
+      if (earlyEscape) {
+        return {
+          'valid': false,
+          'invalidReasons': invalidReasons
+        }
+      }
+    }
 
     const object = actReference.data[DISCIPL_FLINT_ACT].object
 
@@ -365,9 +377,29 @@ _ "whitespace"
 
     const checkedObject = await this.checkFact(object, ssid, { ...context, 'facts': factReference, 'flintItem': 'object' })
 
+    if (!checkedObject) {
+      invalidReasons.push('object')
+      if (earlyEscape) {
+        return {
+          'valid': false,
+          'invalidReasons': invalidReasons
+        }
+      }
+    }
+
     const interestedParty = actReference.data[DISCIPL_FLINT_ACT]['interested-party']
     logger.debug('Original interestedparty', interestedParty)
     const checkedInterestedParty = await this.checkFact(interestedParty, ssid, { ...context, 'facts': factReference, 'flintItem': 'interested-party' })
+
+    if (!checkedInterestedParty) {
+      invalidReasons.push('interested-party')
+      if (earlyEscape) {
+        return {
+          'valid': false,
+          'invalidReasons': invalidReasons
+        }
+      }
+    }
 
     const preconditions = actReference.data['DISCIPL_FLINT_ACT'].preconditions
 
@@ -375,30 +407,22 @@ _ "whitespace"
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
     const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...context, 'facts': factReference, 'flintItem': 'preconditions' }) : true
 
+    if (!checkedObject) {
+      invalidReasons.push('preconditions')
+      if (earlyEscape) {
+        return {
+          'valid': false,
+          'invalidReasons': invalidReasons
+        }
+      }
+    }
+
     if (checkedActor && checkedPreConditions && checkedObject && checkedInterestedParty) {
       logger.info('Prerequisites for act', actLink, 'have been verified')
       return {
         'valid': true,
         'invalidReasons': []
       }
-    }
-
-    const invalidReasons = []
-
-    if (!checkedActor) {
-      invalidReasons.push('actor')
-    }
-
-    if (!checkedObject) {
-      invalidReasons.push('object')
-    }
-
-    if (!checkedInterestedParty) {
-      invalidReasons.push('interested-party')
-    }
-
-    if (!checkedPreConditions) {
-      invalidReasons.push('preconditions')
     }
 
     let definitivelyNotPossible = checkedActor === false || checkedObject === false || checkedInterestedParty === false || checkedPreConditions === false
@@ -688,7 +712,7 @@ _ "whitespace"
     }
 
     logger.debug('Checking if action is possible from perspective of', ssid.did)
-    let checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
+    let checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': factResolver, 'caseLink': caseLink }, true)
     if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
       return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })

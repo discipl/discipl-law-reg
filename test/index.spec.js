@@ -1,5 +1,7 @@
 /* eslint-env mocha */
 import { expect } from 'chai'
+
+import sinon from 'sinon'
 import { LawReg } from '../src/index.js'
 import * as log from 'loglevel'
 
@@ -812,76 +814,78 @@ describe('discipl-law-reg', () => {
       expect(retrievedSecondFact).to.deep.equal('IS:did:discipl:ephemeral:1234')
     })
 
+    const checkActionModel = {
+      'acts': [{
+        'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+        'action': '[aanvragen]',
+        'actor': '[aanvrager]',
+        'object': '[verwelkomst]',
+        'interested-party': '[overheid]',
+        'preconditions': '[]',
+        'create': '<verwelkomen>',
+        'terminate': '',
+        'reference': 'art 2.1',
+        'sourcetext': '',
+        'explanation': '',
+        'version': '2-[19980101]-[jjjjmmdd]',
+        'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+      }],
+      'facts': [{
+        'explanation': '',
+        'fact': '[belanghebbende]',
+        'function': '[persoon wiens belang rechtstreeks bij een besluit is betrokken]',
+        'reference': 'art. 1:2 lid 1 Awb',
+        'version': '2-[19940101]-[jjjjmmdd]',
+        'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10',
+        'sourcetext': '{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}'
+      }, {
+        'explanation': '',
+        'fact': '[aanvrager]',
+        'function': '[]',
+        'reference': 'art 3:41 lid 1 Awb',
+        'version': '',
+        'juriconnect': '',
+        'sourcetext': ''
+      }, {
+        'explanation': '',
+        'fact': '[toezending besluit aan aanvrager]',
+        'function': '[]',
+        'reference': 'art 3:41 lid 1 Awb',
+        'version': '',
+        'juriconnect': '',
+        'sourcetext': ''
+      }, {
+        'explanation': '',
+        'fact': '[toezending besluit aan meer belanghebbenden]',
+        'function': '[]',
+        'reference': 'art 3:41 lid 1 Awb',
+        'version': '',
+        'juriconnect': '',
+        'sourcetext': ''
+      }, {
+        'explanation': '',
+        'fact': '[uitreiking besluit aan aanvrager]',
+        'function': '[]',
+        'reference': 'art 3:41 lid 1 Awb',
+        'version': '',
+        'juriconnect': '',
+        'sourcetext': ''
+      }, {
+        'explanation': '',
+        'fact': '[uitreiking besluit aan meer belanghebbenden]',
+        'function': '[]',
+        'reference': 'art 3:41 lid 1 Awb',
+        'version': '',
+        'juriconnect': '',
+        'sourcetext': ''
+      }],
+      'duties': []
+    }
+
     it('should perform a checkAction', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
-      let model = {
-        'acts': [{
-          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
-          'action': '[aanvragen]',
-          'actor': '[aanvrager]',
-          'object': '[verwelkomst]',
-          'interested-party': '[overheid]',
-          'preconditions': '[]',
-          'create': '<verwelkomen>',
-          'terminate': '',
-          'reference': 'art 2.1',
-          'sourcetext': '',
-          'explanation': '',
-          'version': '2-[19980101]-[jjjjmmdd]',
-          'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
-        }],
-        'facts': [{
-          'explanation': '',
-          'fact': '[belanghebbende]',
-          'function': '[persoon wiens belang rechtstreeks bij een besluit is betrokken]',
-          'reference': 'art. 1:2 lid 1 Awb',
-          'version': '2-[19940101]-[jjjjmmdd]',
-          'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10',
-          'sourcetext': '{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}'
-        }, {
-          'explanation': '',
-          'fact': '[aanvrager]',
-          'function': '[]',
-          'reference': 'art 3:41 lid 1 Awb',
-          'version': '',
-          'juriconnect': '',
-          'sourcetext': ''
-        }, {
-          'explanation': '',
-          'fact': '[toezending besluit aan aanvrager]',
-          'function': '[]',
-          'reference': 'art 3:41 lid 1 Awb',
-          'version': '',
-          'juriconnect': '',
-          'sourcetext': ''
-        }, {
-          'explanation': '',
-          'fact': '[toezending besluit aan meer belanghebbenden]',
-          'function': '[]',
-          'reference': 'art 3:41 lid 1 Awb',
-          'version': '',
-          'juriconnect': '',
-          'sourcetext': ''
-        }, {
-          'explanation': '',
-          'fact': '[uitreiking besluit aan aanvrager]',
-          'function': '[]',
-          'reference': 'art 3:41 lid 1 Awb',
-          'version': '',
-          'juriconnect': '',
-          'sourcetext': ''
-        }, {
-          'explanation': '',
-          'fact': '[uitreiking besluit aan meer belanghebbenden]',
-          'function': '[]',
-          'reference': 'art 3:41 lid 1 Awb',
-          'version': '',
-          'juriconnect': '',
-          'sourcetext': ''
-        }],
-        'duties': []
-      }
+      let model = checkActionModel
 
       let ssid = await core.newSsid('ephemeral')
       let modelLink = await lawReg.publish(ssid, model, {
@@ -898,7 +902,72 @@ describe('discipl-law-reg', () => {
 
       let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
-      expect(result.valid).to.equal(true)
+      expect(result).to.deep.equal({
+        'invalidReasons': [
+        ],
+        'valid': true
+      })
+    })
+
+    it('should perform a checkAction with false result', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let model = checkActionModel
+
+      let ssid = await core.newSsid('ephemeral')
+      let modelLink = await lawReg.publish(ssid, model, {
+        '[aanvrager]':
+          'IS:' + ssid.did
+      })
+      let modelRef = await core.get(modelLink, ssid)
+
+      let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
+
+      const factResolver = (fact) => {
+        return false
+      }
+
+      let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.deep.equal({
+        'invalidReasons': [
+          'object',
+          'interested-party',
+          'preconditions'
+        ],
+        'valid': false
+      })
+    })
+
+    it('should short-circuit a checkAction if needed', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let model = checkActionModel
+
+      let ssid = await core.newSsid('ephemeral')
+      let modelLink = await lawReg.publish(ssid, model, {
+        '[aanvrager]':
+          'IS:' + ssid.did
+      })
+      let modelRef = await core.get(modelLink, ssid)
+
+      let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
+
+      const factResolver = sinon.stub()
+
+      factResolver.returns(false)
+
+      let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver }, true)
+
+      expect(result).to.deep.equal({
+        'invalidReasons': [
+          'object'
+        ],
+        'valid': false
+      })
+
+      expect(factResolver.callCount).to.equal(1)
+      expect(factResolver.args[0]).to.deep.equal(['[verwelkomst]', 'object'])
     })
   })
 })
