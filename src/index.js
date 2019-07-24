@@ -439,9 +439,6 @@ _ "whitespace"
       if (nonFacts.includes(fact)) {
         return false
       }
-
-      logger.info('Assuming fact', fact, 'to be false by default in getAvailableActs')
-      return false
     }
 
     const allowedActs = []
