@@ -932,8 +932,7 @@ describe('discipl-law-reg', () => {
       expect(result).to.deep.equal({
         'invalidReasons': [
           'object',
-          'interested-party',
-          'preconditions'
+          'interested-party'
         ],
         'valid': false
       })
