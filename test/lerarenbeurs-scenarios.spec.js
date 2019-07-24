@@ -112,7 +112,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       }
     })
 
-    let allowedActs = await lawReg.getAvailableActs(needLink, ssids['belanghebbende'], ['[verzoek een besluit te nemen]'])
+    let allowedActs = await lawReg.getAvailableActs(needLink, ssids['belanghebbende'], ['[verzoek een besluit te nemen]'], ['[bij wettelijk voorschrift is anders bepaald]'])
 
     let allowedActNames = allowedActs.map((act) => act.act)
 
