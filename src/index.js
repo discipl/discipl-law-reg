@@ -407,7 +407,7 @@ _ "whitespace"
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
     const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...context, 'facts': factReference, 'flintItem': 'preconditions' }) : true
 
-    if (!checkedObject) {
+    if (!checkedPreConditions) {
       invalidReasons.push('preconditions')
       if (earlyEscape) {
         return {
