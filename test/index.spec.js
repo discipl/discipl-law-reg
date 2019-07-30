@@ -1029,6 +1029,33 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should perform a checkAction with async factResolver', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      let model = checkActionModel
+
+      let ssid = await core.newSsid('ephemeral')
+      let modelLink = await lawReg.publish(ssid, model, {
+        '[aanvrager]':
+          'IS:' + ssid.did
+      })
+      let modelRef = await core.get(modelLink, ssid)
+
+      let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
+
+      const factResolver = async (fact) => {
+        return true
+      }
+
+      let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
+
+      expect(result).to.deep.equal({
+        'invalidReasons': [
+        ],
+        'valid': true
+      })
+    })
+
     it('should perform a checkAction with false result', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
