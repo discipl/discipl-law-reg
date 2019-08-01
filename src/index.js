@@ -258,11 +258,12 @@ _ "whitespace"
    * @param {Context} context - context of the checking
    * @returns {boolean}
    */
-  static checkFactWithResolver (fact, ssid, context) {
+  static async checkFactWithResolver (fact, ssid, context) {
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
     const result = context.factResolver(factToCheck, context.flintItem)
-    logger.debug('Resolving fact', fact, 'as', result, 'via', factToCheck, 'by factresolver')
-    return result
+    const resolvedResult = Promise.resolve(result)
+    logger.debug('Resolving fact', fact, 'as', resolvedResult, 'via', factToCheck, 'by factresolver')
+    return resolvedResult
   }
 
   /**
@@ -344,6 +345,7 @@ _ "whitespace"
    * @param {string} actLink - Link to the respective act
    * @param {object} ssid - Identity of intended actor
    * @param {Context} context - Context of the action
+   * @param {boolean} earlyEscape - If true, will return a result as ssoon as one of the flint items is detrmined to be false
    * @returns {Promise<CheckActionResult>}
    */
   async checkAction (modelLink, actLink, ssid, context, earlyEscape = false) {
