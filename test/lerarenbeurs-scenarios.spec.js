@@ -155,9 +155,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     let allowedActNames = allowedActs.map((act) => act.act)
 
     expect(allowedActNames).to.deep.equal([
-      '<<indienen verzoek een besluit te nemen>>',
-      '<<leraar vraagt subsidie voor studiekosten aan>>',
-      '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>'
+      '<<indienen verzoek een besluit te nemen>>'
     ])
   }).timeout(10000)
 
@@ -178,10 +176,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     let allowedActNames = allowedActs.map((act) => act.act)
 
-    expect(allowedActNames).to.deep.equal([
-      '<<leraar vraagt subsidie voor studiekosten aan>>',
-      '<<leraar vraagt subsidie voor studieverlof voor het bevoegd gezag>>'
-    ])
+    expect(allowedActNames).to.deep.equal([])
   }).timeout(10000)
 
   it('should be able to determine potentially available actions from another perspective', async () => {
@@ -226,12 +221,11 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
         return fact === '[subsidie voor studiekosten]' ||
-          fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]'
+          fact === '[ingevuld aanvraagformulier studiekosten op de website van de Dienst Uitvoering Onderwijs]' ||
+          fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]'
       }
       return false
     }
-
-    let actionLink = await lawReg.take(ssids['belanghebbende'], needLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
 
     let bestuursorgaanFactresolver = (fact) => {
       if (typeof fact === 'string') {
@@ -245,16 +239,19 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
           fact === '[leraar die pedagogisch-didactisch verantwoordelijk is voor het onderwijs]' ||
           fact === '[leraar die ingeschreven staat in registerleraar.nl]' ||
           fact === '[subsidie wordt verstrekt voor één studiejaar en voor één opleiding]' ||
-          fact === '[minister verdeelt het beschikbare bedrag per doelgroep over de aanvragen]'
+          fact === '[minister verdeelt het beschikbare bedrag per doelgroep over de aanvragen]' ||
+          fact === '[template voor aanvraagformulieren studiekosten]'
       }
       return false
     }
 
-    let secondActionLink = await lawReg.take(ssids['bestuursorgaan'], actionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+    let actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren verstrekken voor subsidie studiekosten op de website van de DUO>>', bestuursorgaanFactresolver)
 
-    expect(secondActionLink).to.be.a('string')
+    let actionLink2 = await lawReg.take(ssids['belanghebbende'], actionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
 
-    let action = await core.get(secondActionLink, ssids['bestuursorgaan'])
+    let actionLink3 = await lawReg.take(ssids['bestuursorgaan'], actionLink2, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+
+    let action = await core.get(actionLink3, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<minister verstrekt subsidie lerarenbeurs aan leraar>>'))
@@ -262,7 +259,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(action.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-      'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
+      'DISCIPL_FLINT_PREVIOUS_CASE': actionLink2
     })
   }).timeout(5000)
 
@@ -294,7 +291,8 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
           fact === '[leraar die ingeschreven staat in registerleraar.nl]' ||
           fact === '[subsidie wordt verstrekt voor één studiejaar en voor één opleiding]' ||
           fact === '[minister verdeelt het beschikbare bedrag per doelgroep over de aanvragen]' ||
-          fact === '[hoogte van de subsidie voor studiekosten]'
+          fact === '[hoogte van de subsidie voor studiekosten]' ||
+          fact === '[template voor aanvraagformulieren studiekosten]'
       }
       return false
     }
@@ -304,26 +302,23 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
         return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
-          fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
+          fact === '[ingevuld aanvraagformulier studiekosten op de website van de Dienst Uitvoering Onderwijs]' ||
           fact === '[inleveren]' ||
           fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]'
       }
       return false
     }
 
-    let secondActionLink = await lawReg.take(ssids['belanghebbende'], actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
-    let thirdActionLink = await lawReg.take(ssids['belanghebbende'], secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-    let fourthActionLink = await lawReg.take(ssids['bestuursorgaan'], thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
-    let fifthActionLink = await lawReg.take(ssids['bestuursorgaan'], fourthActionLink, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
+    let actionLink2 = await lawReg.take(ssids['belanghebbende'], actionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
+    let actionLink3 = await lawReg.take(ssids['bestuursorgaan'], actionLink2, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+    let actionLink4 = await lawReg.take(ssids['bestuursorgaan'], actionLink3, '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>', bestuursorgaanFactresolver)
 
-    expect(fifthActionLink).to.be.a('string')
-
-    let thirdAction = await core.get(thirdActionLink, ssids['bestuursorgaan'])
+    let thirdAction = await core.get(actionLink2, ssids['bestuursorgaan'])
 
     const expectedThirdActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<leraar vraagt subsidie voor studiekosten aan>>'))
 
-    let lastAction = await core.get(fifthActionLink, ssids['bestuursorgaan'])
+    let lastAction = await core.get(actionLink4, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>'))
@@ -331,13 +326,13 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(thirdAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedThirdActLink[0])[0],
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-      'DISCIPL_FLINT_PREVIOUS_CASE': secondActionLink
+      'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
     })
 
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-      'DISCIPL_FLINT_PREVIOUS_CASE': fourthActionLink
+      'DISCIPL_FLINT_PREVIOUS_CASE': actionLink3
     })
   }).timeout(5000)
 
@@ -369,7 +364,8 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
           fact === '[leraar die ingeschreven staat in registerleraar.nl]' ||
           fact === '[subsidie wordt verstrekt voor één studiejaar en voor één opleiding]' ||
           fact === '[minister verdeelt het beschikbare bedrag per doelgroep over de aanvragen]' ||
-          fact === '[hoogte van de subsidie voor studiekosten]'
+          fact === '[hoogte van de subsidie voor studiekosten]' ||
+          fact === '[template voor aanvraagformulieren studiekosten]'
       }
       return false
     }
@@ -379,7 +375,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
         return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
-        fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
+        fact === '[ingevuld aanvraagformulier studiekosten op de website van de Dienst Uitvoering Onderwijs]' ||
           fact === '[inleveren]' ||
           fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]' ||
           fact === '[binnen twee maanden na het verstrekken van de subsidie]'
@@ -387,21 +383,20 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       return false
     }
 
-    let secondActionLink = await lawReg.take(ssids['belanghebbende'], actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
-    let thirdActionLink = await lawReg.take(ssids['belanghebbende'], secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-    let fourthActionLink = await lawReg.take(ssids['belanghebbende'], thirdActionLink, '<<leraar trekt aanvraag subsidie voor studieverlof in>>', belanghebbendeFactresolver)
+    let actionLink2 = await lawReg.take(ssids['belanghebbende'], actionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
+    let actionLink3 = await lawReg.take(ssids['belanghebbende'], actionLink2, '<<leraar trekt aanvraag subsidie voor studiekosten in>>', belanghebbendeFactresolver)
 
-    expect(fourthActionLink).to.be.a('string')
+    expect(actionLink3).to.be.a('string')
 
-    let lastAction = await core.get(fourthActionLink, ssids['bestuursorgaan'])
+    let lastAction = await core.get(actionLink3, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
-      .filter(item => Object.keys(item).includes('<<leraar trekt aanvraag subsidie voor studieverlof in>>'))
+      .filter(item => Object.keys(item).includes('<<leraar trekt aanvraag subsidie voor studiekosten in>>'))
 
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-      'DISCIPL_FLINT_PREVIOUS_CASE': thirdActionLink
+      'DISCIPL_FLINT_PREVIOUS_CASE': actionLink2
     })
   }).timeout(5000)
 
@@ -434,7 +429,8 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
           fact === '[subsidie wordt verstrekt voor één studiejaar en voor één opleiding]' ||
           fact === '[minister verdeelt het beschikbare bedrag per doelgroep over de aanvragen]' ||
           fact === '[hoogte van de subsidie voor studiekosten]' ||
-          fact === '[subsidieverlening aan een leraar]'
+          fact === '[subsidieverlening aan een leraar]' ||
+          fact === '[template voor aanvraagformulieren studiekosten]'
       }
       return false
     }
@@ -443,22 +439,19 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     let belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
-        return fact === '[ingevuld aanvraagformulier op de website van de Dienst Uitvoering Onderwijs]' ||
+        return fact === '[ingevuld aanvraagformulier studiekosten op de website van de Dienst Uitvoering Onderwijs]' ||
           fact === '[inleveren]' ||
           fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]'
       }
       return false
     }
 
-    let secondActionLink = await lawReg.take(ssids['belanghebbende'], actionLink, '<<inleveren of verzenden ingevuld aanvraagformulier lerarenbeurs>>', belanghebbendeFactresolver)
-    let thirdActionLink = await lawReg.take(ssids['belanghebbende'], secondActionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
-    let fourthActionLink = await lawReg.take(ssids['bestuursorgaan'], thirdActionLink, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
+    let actionLink2 = await lawReg.take(ssids['belanghebbende'], actionLink, '<<leraar vraagt subsidie voor studiekosten aan>>', belanghebbendeFactresolver)
+    let actionLink3 = await lawReg.take(ssids['bestuursorgaan'], actionLink2, '<<minister verstrekt subsidie lerarenbeurs aan leraar>>', bestuursorgaanFactresolver)
 
-    let fifthActionLink = await lawReg.take(ssids['bestuursorgaan'], fourthActionLink, '<<minister van OCW weigert subsidieverlening aan een leraar>>', bestuursorgaanFactresolver)
+    let actionLink4 = await lawReg.take(ssids['bestuursorgaan'], actionLink3, '<<minister van OCW weigert subsidieverlening aan een leraar>>', bestuursorgaanFactresolver)
 
-    expect(fifthActionLink).to.be.a('string')
-
-    let lastAction = await core.get(fifthActionLink, ssids['bestuursorgaan'])
+    let lastAction = await core.get(actionLink4, ssids['bestuursorgaan'])
 
     const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       .filter(item => Object.keys(item).includes('<<minister van OCW weigert subsidieverlening aan een leraar>>'))
@@ -466,7 +459,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-      'DISCIPL_FLINT_PREVIOUS_CASE': fourthActionLink
+      'DISCIPL_FLINT_PREVIOUS_CASE': actionLink3
     })
   }).timeout(5000)
 })
