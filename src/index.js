@@ -651,6 +651,154 @@ _ "whitespace"
   }
 
   /**
+   * @typedef ValidationError
+   * @property {string} type
+   * @property {string} item
+   * @property {string} message
+   */
+  /**
+   * Validates the model for 'obvious' errors: Parsing errors, undefined acts/facts/duties
+   *
+   * @param {object} model
+   * @return {Promise<ValidationError[]>}
+   */
+  async validate (model) {
+    const errors = []
+
+    // The defined acts are not actually used, but the syntax is checked here
+    model.acts.reduce((map, act) => {
+      if (typeof act.act === 'string' && act.act.startsWith('<<') && act.act.endsWith('>>')) {
+        map[act.act] = true
+      } else {
+        errors.push({
+          'type': 'warning',
+          'field': 'act/act',
+          'message': 'Invalid name:' + act.act.toString()
+        })
+      }
+      return map
+    }, {})
+    const definedFacts = model.facts.reduce((map, fact) => {
+      if (typeof fact.fact === 'string' && fact.fact.startsWith('[') && fact.fact.endsWith(']')) {
+        map[fact.fact] = true
+      } else {
+        errors.push({
+          'type': 'warning',
+          'field': 'fact/fact',
+          'message': 'Invalid name:' + fact.fact.toString()
+        })
+      }
+      return map
+    }, {})
+    const definedDuties = model.duties.reduce((map, duty) => {
+      if (typeof duty.duty === 'string' && duty.duty.startsWith('<') && duty.duty.endsWith('>')) {
+        map[duty.duty] = true
+      } else {
+        errors.push({
+          'type': 'warning',
+          'field': 'duty/duty',
+          'message': 'Invalid name:' + duty.duty.toString()
+        })
+      }
+      return map
+    }, {})
+
+    const validateCreateTerminate = (referenceString, field, identifier) => {
+      const createTerminateErrors = []
+      const parsedReferences = referenceString.split(';').map(item => item.trim())
+
+      for (let reference of parsedReferences) {
+        if (!definedFacts[reference] && !definedDuties[reference]) {
+          createTerminateErrors.push(
+            {
+              'type': 'warning',
+              'field': field,
+              'identifier': identifier,
+              'message': 'Undefined item: ' + reference
+            }
+          )
+        }
+      }
+
+      return createTerminateErrors
+    }
+
+    const validateAtomicFact = (fact, field, identifier) => {
+      if (!definedFacts[fact]) {
+        errors.push({
+          'type': 'warning',
+          'field': field,
+          'identifier': identifier,
+          'message': 'Undefined fact: ' + fact
+        })
+      }
+    }
+
+    const validateParsedExpression = (expression, field, identifier) => {
+      if (typeof expression === 'string') {
+        validateAtomicFact(expression, field, identifier)
+      }
+
+      if (expression.operands) {
+        for (let operand of expression.operands) {
+          validateParsedExpression(operand, field, identifier)
+        }
+      }
+
+      if (expression.operand) {
+        validateParsedExpression(expression.operand, field, identifier)
+      }
+    }
+
+    const validateExpression = (expression, field, identifier) => {
+      try {
+        let parsedFact = this.factParser.parse(expression)
+        validateParsedExpression(parsedFact, field, identifier)
+      } catch (e) {
+        if (e.name === 'SyntaxError') {
+          errors.push({
+            'type': 'error',
+            'field': field,
+            'identifier': identifier,
+            'message': "Could not parse: '" + expression + "' due to " + e.message
+
+          })
+        } else {
+          throw e
+        }
+      }
+    }
+
+    for (let act of model.acts) {
+      for (let item of ['actor', 'object', 'interested-party']) {
+        if (typeof act[item] !== 'undefined') {
+          validateAtomicFact(act[item], 'act/' + item, act.act)
+        }
+      }
+
+      if (typeof act.create === 'string') {
+        errors.push.apply(errors, validateCreateTerminate(act.create, 'act/create', act.act))
+      }
+
+      if (typeof act.terminate === 'string') {
+        errors.push.apply(errors, validateCreateTerminate(act.terminate, 'act/terminate', act.act))
+      }
+
+      if (typeof act.preconditions === 'string') {
+        validateExpression(act.preconditions, 'act/preconditions', act.act)
+      }
+    }
+
+    for (let fact of model.facts) {
+      if (typeof fact.function === 'string' && fact.function !== '' && fact.function !== '[]') {
+        validateExpression(fact.function, 'fact/function', fact.fact)
+      }
+    }
+
+    return errors
+  }
+
+  /**
    * @typedef ActionInformation
    * @property {string} act - Name of the act taken
    * @property {string} link - Link to the action

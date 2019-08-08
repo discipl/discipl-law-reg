@@ -1002,6 +1002,179 @@ describe('discipl-law-reg', () => {
       'duties': []
     }
 
+    it('should find errors with improperly named acts, facts, duties', async () => {
+      const model = {
+        'acts': [{ 'act': 'test' }, { 'act': '<<test' }, { 'act': {} }],
+        'facts': [{ 'fact': 'test' }, { 'fact': '[test' }, { 'fact': {} }],
+        'duties': [{ 'duty': 'test' }, { 'duty': '<test' }, { 'duty': {} }]
+      }
+
+      let errors = await lawReg.validate(model)
+
+      expect(errors[0]).to.deep.equal({
+        'type': 'warning',
+        'field': 'act/act',
+        'message': 'Invalid name:test'
+      })
+
+      expect(errors.length).to.equal(9)
+    })
+
+    it('should find undefined facts used in acts', async () => {
+      const model = {
+        'acts': [{ 'act': '<<act>>', 'actor': '[canary]', 'object': '[birdfood]', 'interested-party': '[cat]' }],
+        'facts': [],
+        'duties': []
+      }
+      const errors = await lawReg.validate(model)
+
+      expect(errors).to.deep.equal([{
+        'type': 'warning',
+        'field': 'act/actor',
+        'identifier': '<<act>>',
+        'message': 'Undefined fact: [canary]'
+      },
+      {
+        'type': 'warning',
+        'field': 'act/object',
+        'identifier': '<<act>>',
+        'message': 'Undefined fact: [birdfood]'
+      },
+      {
+        'type': 'warning',
+        'field': 'act/interested-party',
+        'identifier': '<<act>>',
+        'message': 'Undefined fact: [cat]'
+      }]
+      )
+    })
+
+    it('should find undefined facts and duties used in acts in create and terminate', async () => {
+      const model = {
+        'acts': [{ 'act': '<<act>>', 'create': '[cats];<dogs>', 'terminate': '[sunshine];<rain>' }],
+        'facts': [],
+        'duties': []
+      }
+      const errors = await lawReg.validate(model)
+
+      expect(errors).to.deep.equal([{
+        'type': 'warning',
+        'field': 'act/create',
+        'identifier': '<<act>>',
+        'message': 'Undefined item: [cats]'
+      },
+      {
+        'type': 'warning',
+        'field': 'act/create',
+        'identifier': '<<act>>',
+        'message': 'Undefined item: <dogs>'
+      },
+      {
+        'type': 'warning',
+        'field': 'act/terminate',
+        'identifier': '<<act>>',
+        'message': 'Undefined item: [sunshine]'
+      }, {
+        'type': 'warning',
+        'field': 'act/terminate',
+        'identifier': '<<act>>',
+        'message': 'Undefined item: <rain>'
+      }]
+      )
+    })
+
+    it('should find undefined facts used in acts in preconditions', async () => {
+      const model = {
+        'acts': [{ 'act': '<<act>>', 'preconditions': '([cats] OF [dogs]) EN [sunshine]' }],
+        'facts': [],
+        'duties': []
+      }
+      const errors = await lawReg.validate(model)
+
+      expect(errors).to.deep.equal([{
+        'type': 'warning',
+        'field': 'act/preconditions',
+        'identifier': '<<act>>',
+        'message': 'Undefined fact: [cats]'
+      },
+      {
+        'type': 'warning',
+        'field': 'act/preconditions',
+        'identifier': '<<act>>',
+        'message': 'Undefined fact: [dogs]'
+      },
+      {
+        'type': 'warning',
+        'field': 'act/preconditions',
+        'identifier': '<<act>>',
+        'message': 'Undefined fact: [sunshine]'
+      }]
+      )
+    })
+
+    it('should find invalid expressions in preconditions', async () => {
+      const model = {
+        'acts': [{ 'act': '<<act>>', 'preconditions': '(not really parsable]}' }],
+        'facts': [],
+        'duties': []
+      }
+      const errors = await lawReg.validate(model)
+
+      expect(errors).to.deep.equal([{
+        'type': 'error',
+        'field': 'act/preconditions',
+        'identifier': '<<act>>',
+        'message': "Could not parse: '(not really parsable]}' due to Expected \"(\", \"NIET\", or \"[\" but \"n\" found."
+      }]
+      )
+    })
+
+    it('should find invalid expressions in fact functions', async () => {
+      const model = {
+        'acts': [],
+        'facts': [{ 'fact': '[factname]', 'function': '(not really parsable]}' }],
+        'duties': []
+      }
+      const errors = await lawReg.validate(model)
+
+      expect(errors).to.deep.equal([{
+        'type': 'error',
+        'field': 'fact/function',
+        'identifier': '[factname]',
+        'message': "Could not parse: '(not really parsable]}' due to Expected \"(\", \"NIET\", or \"[\" but \"n\" found."
+      }]
+      )
+    })
+
+    it('should find undefined facts used in acts in fact functions', async () => {
+      const model = {
+        'acts': [],
+        'facts': [{ 'fact': '[factname]', 'function': '([cats] OF [dogs]) EN [sunshine]' }],
+        'duties': []
+      }
+      const errors = await lawReg.validate(model)
+
+      expect(errors).to.deep.equal([{
+        'type': 'warning',
+        'field': 'fact/function',
+        'identifier': '[factname]',
+        'message': 'Undefined fact: [cats]'
+      },
+      {
+        'type': 'warning',
+        'field': 'fact/function',
+        'identifier': '[factname]',
+        'message': 'Undefined fact: [dogs]'
+      },
+      {
+        'type': 'warning',
+        'field': 'fact/function',
+        'identifier': '[factname]',
+        'message': 'Undefined fact: [sunshine]'
+      }]
+      )
+    })
+
     it('should perform a checkAction', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
