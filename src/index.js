@@ -653,7 +653,8 @@ _ "whitespace"
   /**
    * @typedef ValidationError
    * @property {string} type
-   * @property {string} item
+   * @property {string} field
+   * @property {string} identifier
    * @property {string} message
    */
   /**
@@ -671,7 +672,7 @@ _ "whitespace"
         map[act.act] = true
       } else {
         errors.push({
-          'type': 'warning',
+          'type': 'error',
           'field': 'act/act',
           'message': 'Invalid name:' + act.act.toString()
         })
@@ -683,7 +684,7 @@ _ "whitespace"
         map[fact.fact] = true
       } else {
         errors.push({
-          'type': 'warning',
+          'type': 'error',
           'field': 'fact/fact',
           'message': 'Invalid name:' + fact.fact.toString()
         })
@@ -695,7 +696,7 @@ _ "whitespace"
         map[duty.duty] = true
       } else {
         errors.push({
-          'type': 'warning',
+          'type': 'error',
           'field': 'duty/duty',
           'message': 'Invalid name:' + duty.duty.toString()
         })
@@ -776,21 +777,23 @@ _ "whitespace"
         }
       }
 
-      if (typeof act.create === 'string') {
+      if (typeof act.create === 'string' && act.create !== '') {
+        // Check if facts being referred are <<>>
         errors.push.apply(errors, validateCreateTerminate(act.create, 'act/create', act.act))
       }
 
-      if (typeof act.terminate === 'string') {
+      if (typeof act.terminate === 'string' && act.terminate !== '') {
         errors.push.apply(errors, validateCreateTerminate(act.terminate, 'act/terminate', act.act))
       }
 
-      if (typeof act.preconditions === 'string') {
+      if (typeof act.preconditions === 'string' && act.preconditions.trim() !== '') {
         validateExpression(act.preconditions, 'act/preconditions', act.act)
       }
     }
 
     for (let fact of model.facts) {
-      if (typeof fact.function === 'string' && fact.function !== '' && fact.function !== '[]') {
+      // TODO: Check if fact function <<>> has referring act
+      if (typeof fact.function === 'string' && fact.function.trim() !== '' && fact.function !== '[]' && fact.function !== '<<>>') {
         validateExpression(fact.function, 'fact/function', fact.fact)
       }
     }
