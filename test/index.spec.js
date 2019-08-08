@@ -1012,7 +1012,7 @@ describe('discipl-law-reg', () => {
       let errors = await lawReg.validate(model)
 
       expect(errors[0]).to.deep.equal({
-        'type': 'warning',
+        'type': 'error',
         'field': 'act/act',
         'message': 'Invalid name:test'
       })
