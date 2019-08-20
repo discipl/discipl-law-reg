@@ -6,18 +6,34 @@ import * as log from 'loglevel'
 import lb from './flint-example-lerarenbeurs'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
-log.getLogger('disciplLawReg').setLevel('warn')
+log.getLogger('disciplLawReg').setLevel('debug')
 
 const lawReg = new LawReg()
 const core = lawReg.getAbundanceService().getCoreAPI()
 
 const factFunctionSpec = {
   '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': 'belanghebbende',
-  '[leraar]': 'belanghebbende',
+  '[degene die voldoet aan bevoegdheidseisen gesteld in]': 'belanghebbende',
+  '[artikel 3 van de Wet op het primair onderwijs]': 'belanghebbende',
+  '[artikel 3 van de Wet op de expertisecentra]': 'belanghebbende',
+  '[artikel XI van de Wet op de beroepen in het onderwijs]': 'belanghebbende',
+  '[artikel 3 van de Wet primair onderwijs BES]': 'belanghebbende',
+  '[is benoemd of tewerkgesteld zonder benoeming als bedoeld in artikel 33 van de Wet op het voortgezet onderwijs]': 'belanghebbende',
+  '[artikel 4.2.1. van de Wet educatie en beroepsonderwijs]': 'belanghebbende',
+  '[artikel 80 van de Wet voortgezet onderwijs BES]': 'belanghebbende',
+  '[artikel 4.2.1 van de Wet educatie beroepsonderwijs BES]': 'belanghebbende',
+  '[die lesgeeft in het hoger onderwijs]': 'belanghebbende',
   '[orgaan]': 'bestuursorgaan',
   '[rechtspersoon die krachtens publiekrecht is ingesteld]': 'bestuursorgaan',
   '[met enig openbaar gezag bekleed]': 'bestuursorgaan',
-  '[bevoegd gezag]': 'bevoegdGezag',
+  '[artikel 1 van de Wet op het primair onderwijs]': 'bevoegdGezag',
+  '[artikel 1 van de Wet op de expertisecentra]': 'bevoegdGezag',
+  '[artikel 1 van de Wet op het voortgezet onderwijs]': 'bevoegdGezag',
+  '[artikel 1.1.1., onderdeel w, van de Wet educatie en beroepsonderwijs]': 'bevoegdGezag',
+  '[artikel 1 van de Wet primair onderwijs BES]': 'bevoegdGezag',
+  '[artikel 1 van de Wet voortgezet onderwijs BES]': 'bevoegdGezag',
+  '[artikel 1.1.1, van de Wet educatie en beroepsonderwijs BES]': 'bevoegdGezag',
+  '[instellingsbestuur bedoeld in artikel 1.1, onderdeel j, van de Wet op het hoger onderwijs en wetenschappelijk onderzoek]': 'bevoegdGezag',
   '[minister van Onderwijs, Cultuur en Wetenschap]': 'bestuursorgaan',
   '[persoon]': 'ANYONE'
 }
@@ -77,7 +93,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       if (typeof fact === 'string') {
         return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
           fact === '[aanvrager heeft de gelegenheid gehad de aanvraag aan te vullen]' ||
-          fact === '[besluit om de aanvraag niet te behandelen wordt aan de aanvrager bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken]'
+          fact === '[de aanvraag is binnen de afgelopen 4 weken aangevuld]'
       }
       return false
     }
@@ -196,9 +212,11 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     expect(allowedActNames).to.deep.equal([
       '<<vaststellen formulier voor verstrekken van gegevens>>',
+      '<<minister treft betalingsregeling voor het terugbetalen van de subsidie voor studiekosten>>',
       '<<minister laat een of meer bepalingen van de subsidieregeling lerarenbeurs buiten toepassing>>',
       '<<minister wijkt af van een of meer bepalingen van de subsidieregeling lerarenbeurs>>',
       '<<minister van OCW verdeelt het beschikbare bedrag voor de subsidieregeling lerarenbeurs per doelgroep>>',
+      '<<minister van OCW verdeelt concreet het beschikbare budget in een studiejaar per soort onderwijs>>',
       '<<minister van OCW berekent de hoogte van de subsidie voor studiekosten>>',
       '<<minister van OCW berekent de hoogte van de subsidie voor studieverlof>>',
       '<<aanvraagformulieren verstrekken voor subsidie studiekosten op de website van de DUO>>',
