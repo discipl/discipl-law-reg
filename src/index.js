@@ -793,7 +793,7 @@ _ "whitespace"
 
     for (let fact of model.facts) {
       // TODO: Check if fact function <<>> has referring act
-      if (typeof fact.function === 'string' && fact.function.trim() !== '' && fact.function !== '[]' && fact.function !== '<<>>') {
+      if (typeof fact.function === 'string' && fact.function !== '[]' && fact.function !== '<<>>') {
         validateExpression(fact.function, 'fact/function', fact.fact)
       }
     }
