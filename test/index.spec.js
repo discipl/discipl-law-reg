@@ -1004,9 +1004,9 @@ describe('discipl-law-reg', () => {
 
     it('should find errors with improperly named acts, facts, duties', async () => {
       const model = {
-        'acts': [{ 'act': 'test' }, { 'act': '<<test' }, { 'act': {} }],
-        'facts': [{ 'fact': 'test' }, { 'fact': '[test' }, { 'fact': {} }],
-        'duties': [{ 'duty': 'test' }, { 'duty': '<test' }, { 'duty': {} }]
+        'acts': [{ 'act': 'test' }, { 'act': '<<test' }, { 'act': {} }, { 'act': '<<act>>' }],
+        'facts': [{ 'fact': 'test' }, { 'fact': '[test' }, { 'fact': {} }, { 'fact': '[fact]' }],
+        'duties': [{ 'duty': 'test' }, { 'duty': '<test' }, { 'duty': {} }, { 'duty': '<duty>' }]
       }
 
       let errors = await lawReg.validate(model)
@@ -1085,7 +1085,7 @@ describe('discipl-law-reg', () => {
 
     it('should find undefined facts used in acts in preconditions', async () => {
       const model = {
-        'acts': [{ 'act': '<<act>>', 'preconditions': '([cats] OF [dogs]) EN [sunshine]' }],
+        'acts': [{ 'act': '<<act>>', 'preconditions': '([cats] OF (NIET [dogs])) EN [sunshine]' }],
         'facts': [],
         'duties': []
       }
