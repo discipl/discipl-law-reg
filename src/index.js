@@ -170,7 +170,7 @@ _ "whitespace"
    * @returns {string|undefined} - The DID being referred if it is an IS-construction, undefined otherwise
    */
   static extractDidFromIsConstruction (functionRef) {
-    if (functionRef.startsWith(DISCIPL_IS_MARKER)) {
+    if (typeof functionRef === 'string' && functionRef.startsWith(DISCIPL_IS_MARKER)) {
       const possibleDid = functionRef.replace('IS:', '')
       if (BaseConnector.isDid(possibleDid)) {
         return possibleDid
