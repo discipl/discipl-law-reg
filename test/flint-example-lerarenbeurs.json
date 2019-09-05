@@ -6,7 +6,10 @@
       "action": "[indienen]",
       "object": "[verzoek een besluit te nemen]",
       "interested-party": "[bestuursorgaan]",
-      "preconditions": "NIET [bij wettelijk voorschrift is anders bepaald]",
+      "preconditions": {
+        "expression": "NOT",
+        "operand": "[bij wettelijk voorschrift is anders bepaald]"
+      },
       "create": "[aanvraag];\n<schriftelijk indienen aanvraag>;\n<aanvraag indienen bij bevoegd bestuursorgaan>;\n<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>;\n<verschaffen gegevens nodig om besluit te nemen>;\n<vergaren nodige kennis>;\n<besluit berust op deugdelijke motivering>;\n<beschikking geven binnen termijn>",
       "terminate": "-",
       "version": "2-[19980101]-[jjjjmmdd]",

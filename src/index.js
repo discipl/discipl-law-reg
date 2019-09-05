@@ -240,7 +240,7 @@ _ "whitespace"
     if (factLink) {
       return this.checkFactLink(factLink, fact, ssid, context)
     }
-    let parsedFact = this.factParser.parse(fact)
+    let parsedFact = typeof fact === 'string' ? this.factParser.parse(fact) : fact
     if (typeof parsedFact === 'string') {
       return LawReg.checkFactWithResolver(parsedFact, ssid, context)
     } else {
@@ -753,7 +753,7 @@ _ "whitespace"
 
     const validateExpression = (expression, field, identifier) => {
       try {
-        let parsedFact = this.factParser.parse(expression)
+        let parsedFact = typeof expression === 'string' ? this.factParser.parse(expression) : expression
         validateParsedExpression(parsedFact, field, identifier)
       } catch (e) {
         if (e.name === 'SyntaxError') {
