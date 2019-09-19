@@ -1,4 +1,5 @@
 import { AbundanceService } from '@discipl/abundance-service'
+import { ModelValidator } from './modelValidator'
 
 import * as log from 'loglevel'
 import * as peg from 'pegjs'
@@ -891,5 +892,6 @@ _ "whitespace"
 }
 
 export {
-  LawReg
+  LawReg,
+  ModelValidator
 }

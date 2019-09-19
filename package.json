@@ -38,6 +38,7 @@
   "dependencies": {
     "@discipl/abundance-service": "0.5.0",
     "@discipl/core-baseconnector": "0.2.1",
+    "jsonc-parser": "^2.1.1",
     "loglevel": "1.6.1",
     "pegjs": "0.10.0"
   },
