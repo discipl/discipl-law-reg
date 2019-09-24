@@ -34,4 +34,16 @@ describe('The Flint Model validator', () => {
       offset: definitionOffset - 1
     })
   })
+
+  it('should be able to locate all definitions for acts', () => {
+    const modelValidator = new ModelValidator(sampleModelString)
+
+    const definitionOffset = sampleModelString.indexOf('<<congratulate>>')
+
+    const allDefinitions = modelValidator.getDefinitionsForType('acts')
+    expect(allDefinitions).to.deep.equal([{
+      identifier: '<<congratulate>>',
+      offset: definitionOffset - 1
+    }])
+  })
 })

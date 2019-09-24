@@ -39,7 +39,7 @@ class ModelValidator {
      * Finds definition for identifier located at a particular offset
      *
      * @param {number} offset - Offset that is located in the identifier
-     * @return {IdentifierInfo|undefined} The identifier and offset if it exists,
+     * @return {IdentifierInfo|undefined} The identifier and offset of the definition if it exists,
      */
   getDefinitionForOffset (offset) {
     const identifier = this._extractIdentifier(offset)
@@ -51,6 +51,24 @@ class ModelValidator {
         offset: node.offset
       }
     }
+  }
+
+  /**
+   * Returns all definitions for a given type
+   *
+   * @param {('acts'|'facts'|'duties')} type
+   * @return {IdentifierInfo[]} The identifier information for all defitions of the chosen type
+   */
+  getDefinitionsForType (type) {
+    return Object.entries(this.identifierPaths).filter((identifierPath) => {
+      return identifierPath[1][0] === type
+    }).map((identifierPath) => {
+      const node = jsonc.findNodeAtLocation(this.tree, identifierPath[1])
+      return {
+        identifier: identifierPath[0],
+        offset: node.offset
+      }
+    })
   }
 
   _extractIdentifier (offset) {
