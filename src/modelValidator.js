@@ -43,9 +43,8 @@ class ModelValidator {
      */
   getDefinitionForOffset (offset) {
     const identifier = this._extractIdentifier(offset)
-
     if (this.identifierPaths[identifier]) {
-      const node = jsonc.findNodeAtLocation(this.tree, this.jsonInfo.identifierPaths[identifier])
+      const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[identifier])
 
       return {
         identifier,
