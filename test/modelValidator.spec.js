@@ -46,4 +46,21 @@ describe('The Flint Model validator', () => {
       offset: definitionOffset - 1
     }])
   })
+
+  it('should be able to locate all references for an act', () => {
+    const modelValidator = new ModelValidator(sampleModelString)
+
+    const definitionOffset = sampleModelString.indexOf('<<congratulate>>')
+    const referenceOffset = sampleModelString.indexOf('<<congratulate>>', definitionOffset + 1)
+
+    const allReferences = modelValidator.getReferencesForOffset(referenceOffset + 5)
+    expect(allReferences).to.deep.equal([{
+      identifier: '<<congratulate>>',
+      offset: definitionOffset - 1
+    },
+    {
+      identifier: '<<congratulate>>',
+      offset: referenceOffset - 1
+    }])
+  })
 })

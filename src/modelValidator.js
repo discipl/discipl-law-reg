@@ -15,6 +15,7 @@ class ModelValidator {
     // TODO check errors
 
     this.identifierPaths = {}
+    this.referencePaths = {}
 
     const identifierFields = [['acts', 'act'], ['facts', 'fact'], ['duties', 'duty']]
     for (let identifierField of identifierFields) {
@@ -24,6 +25,32 @@ class ModelValidator {
         acc[node.value] = path
         return acc
       }, this.identifierPaths)
+    }
+
+    const indexedFields = [['acts', 'act'], ['acts', 'actor'], ['acts', 'object'], ['acts', 'interested-party'],
+      ['acts', 'preconditions'], ['acts', 'create'], ['acts', 'terminate'],
+      ['facts', 'fact'], ['facts', 'function'],
+      ['duties', 'duty'], ['duties', 'duty-components'], ['duties', 'duty-holder'], ['duties', 'duty-holder'], ['duties', 'claimant'], ['duties', 'create'], ['duties', 'terminate']]
+    for (let indexField of indexedFields) {
+      this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
+        // console.log("Reducing");
+        const path = [indexField[0], index, indexField[1]]
+        const node = jsonc.findNodeAtLocation(this.tree, path)
+        if (node) {
+          const identifiers = this._extractIdentifiersFromString(node.value)
+          if (identifiers) {
+            for (let identifer of identifiers) {
+              if (acc[identifer]) {
+                acc[identifer].push(path)
+              } else {
+                acc[identifer] = [path]
+              }
+            }
+          }
+        }
+
+        return acc
+      }, this.referencePaths)
     }
   }
 
@@ -53,6 +80,22 @@ class ModelValidator {
     }
   }
 
+  _extractIdentifiersFromString (str) {
+    const regex = /(\[.*\])|(<<.*>>)|(<.*>)/g
+
+    const result = []
+    let match = regex.exec(str)
+    while (match) {
+      if (!result.includes(match[0])) {
+        result.push(match[0])
+      }
+
+      match = regex.exec(str)
+    }
+
+    return result
+  }
+
   /**
    * Returns all definitions for a given type
    *
@@ -69,6 +112,28 @@ class ModelValidator {
         offset: node.offset
       }
     })
+  }
+
+  /**
+   * Get all the references to an identifier located at the given offset
+   *
+   * @param {number} offset - offset located inside the identifier
+   * @return {IdentifierInfo[]} The identifier information for all references to the identifier
+   */
+  getReferencesForOffset (offset) {
+    const identifier = this._extractIdentifier(offset)
+    if (this.referencePaths[identifier]) {
+      return this.referencePaths[identifier].map((referencePath) => {
+        const node = jsonc.findNodeAtLocation(this.tree, referencePath)
+
+        return {
+          identifier,
+          offset: node.offset
+        }
+      })
+    }
+
+    return []
   }
 
   _extractIdentifier (offset) {
