@@ -63,4 +63,31 @@ describe('The Flint Model validator', () => {
       offset: referenceOffset - 1
     }])
   })
+
+  it('should find errors with improperly named acts, facts, duties', async () => {
+    const model = JSON.stringify({
+      'acts': [{ 'act': 'test' }, { 'act': '<<test' }, { 'act': '<<act>>' }],
+      'facts': [{ 'fact': 'test' }, { 'fact': '[test' }, { 'fact': '[fact]' }],
+      'duties': [{ 'duty': 'test' }, { 'duty': '<test' }, { 'duty': '<duty>' }]
+    })
+
+    const modelValidator = new ModelValidator(model)
+
+    const errors = modelValidator.getDiagnostics()
+
+    expect(errors[0]).to.deep.equal({
+      'code': 'LR0001',
+      'identifier': 'test',
+      'message': 'Invalid name for identifier',
+      'offset': [139, 145],
+      'path': [
+        'duties',
+        0,
+        'duty'
+      ],
+      'severity': 'ERROR'
+    })
+
+    expect(errors.length).to.equal(6)
+  })
 })

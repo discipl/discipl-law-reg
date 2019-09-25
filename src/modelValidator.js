@@ -158,6 +158,54 @@ class ModelValidator {
 
     return identifier
   }
+
+  /**
+   * @typedef {Object} ValidationError
+   * @property {string} code - Unique code to relate back to the error
+   * @property {string} message - Human readable message describing the problem
+   * @property {number} offset - Begin offset of the error
+   * @property {number} endOffset - End offset of the error
+   * @property {('ERROR'|'WARNING')} severity - Severity of the error
+   * @property {string|undefined} identifier - Identifier that relates to this error
+   * @property {Array} path - Path to the error
+   */
+
+  getDiagnostics () {
+    const actNameValidationErrors = this._checkIdentifiers('acts', 'act', /^<<.*>>$/)
+    const factNameValidationErrors = this._checkIdentifiers('facts', 'fact', /^\[.*\]$/)
+    const dutyNameValidationErrors = this._checkIdentifiers('duties', 'duty', /^<.*>$/)
+
+    return actNameValidationErrors.concat(factNameValidationErrors, dutyNameValidationErrors)
+  }
+  /**
+   *
+   * @param flintItems - Plural form of flint items to be checked
+   * @param flintItem - Signular form of flint items to be checked
+   * @param pattern - Regex that should match the identifier
+   * @return {ValidationError[]} Validation errors
+   * @private
+   */
+  _checkIdentifiers (flintItems, flintItem, pattern) {
+    const identifierValidationErrors = this.model[flintItems]
+      .filter((item) => typeof item[flintItem] !== 'string' || !item[flintItem].match(pattern))
+      .map((item) => {
+        console.log(item[flintItem])
+        const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]])
+        const beginPosition = node.offset
+        const endPosition = node.offset + node.length
+
+        return {
+          code: 'LR0001',
+          message: 'Invalid name for identifier',
+          offset: [beginPosition, endPosition],
+          severity: 'ERROR',
+          identifier: item[flintItem].toString(),
+          path: this.identifierPaths[item[flintItem]]
+        }
+      })
+
+    return identifierValidationErrors
+  }
 }
 
 export { ModelValidator }
