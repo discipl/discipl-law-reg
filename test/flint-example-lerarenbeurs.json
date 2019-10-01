@@ -6,7 +6,10 @@
       "action": "[indienen]",
       "object": "[verzoek een besluit te nemen]",
       "interested-party": "[bestuursorgaan]",
-      "preconditions": "NIET [bij wettelijk voorschrift is anders bepaald]",
+      "preconditions": {
+        "expression": "NOT",
+        "operand": "[bij wettelijk voorschrift is anders bepaald]"
+      },
       "create": "[aanvraag];\n<schriftelijk indienen aanvraag>;\n<aanvraag indienen bij bevoegd bestuursorgaan>;\n<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>;\n<verschaffen gegevens nodig om besluit te nemen>;\n<vergaren nodige kennis>;\n<besluit berust op deugdelijke motivering>;\n<beschikking geven binnen termijn>",
       "terminate": "-",
       "version": "2-[19980101]-[jjjjmmdd]",
@@ -36,7 +39,30 @@
       "action": "[besluiten niet te behandelen]",
       "object": "[aanvraag]",
       "interested-party": "[belanghebbende]",
-      "preconditions": "((\nNIET [aanvrager heeft voldaan aan enig wettelijk voorschrift voor het in behandeling nemen van de aanvraag])\nOF\n[aanvraag geheel of gedeeltelijk is geweigerd op grond van artikel 2:15 Awb]\nOF\n[verstrekte gegevens en bescheiden zijn onvoldoende voor de beoordeling van de aanvraag of voor de voorbereiding van de beschikking]\n)\nEN\n[aanvrager heeft de gelegenheid gehad de aanvraag aan te vullen]\nEN\n([de aanvraag is binnen de afgelopen 4 weken aangevuld] OF \n[gestelde termijn voor aanvulling is ongebruikt verstreken])",
+      "preconditions": {
+        "expression": "AND",
+        "operands": [
+          {
+            "expression": "OR",
+            "operands": [
+              {
+                "expression": "NOT",
+                "operand": "[aanvrager heeft voldaan aan enig wettelijk voorschrift voor het in behandeling nemen van de aanvraag]"
+              },
+              "[aanvraag geheel of gedeeltelijk is geweigerd op grond van artikel 2:15 Awb]",
+              "[verstrekte gegevens en bescheiden zijn onvoldoende voor de beoordeling van de aanvraag of voor de voorbereiding van de beschikking]"
+            ]
+          },
+          "[aanvrager heeft de gelegenheid gehad de aanvraag aan te vullen]",
+          {
+            "expression": "OR",
+            "operands": [
+              "[de aanvraag is binnen de afgelopen 4 weken aangevuld]",
+              "[gestelde termijn voor aanvulling is ongebruikt verstreken]"
+            ]
+          }
+        ]
+      },
       "create": "[besluit tot niet in behandeling nemen aanvraag];\n<besluit om de aanvraag niet te behandelen wordt bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken>",
       "terminate": "[aanvraag]",
       "version": "3-[20040701]-[jjjjmmdd]",
