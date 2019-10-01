@@ -77,7 +77,7 @@ describe('The Flint Model validator', () => {
 
     expect(errors[0]).to.deep.equal({
       'code': 'LR0001',
-      'identifier': 'test',
+      'source': 'test',
       'message': 'Invalid name for identifier',
       'offset': [139, 145],
       'path': [
@@ -89,5 +89,226 @@ describe('The Flint Model validator', () => {
     })
 
     expect(errors.length).to.equal(6)
+  })
+
+  it('should find undefined facts used in acts', async () => {
+    const model = JSON.stringify({
+      'acts': [{ 'act': '<<act>>', 'actor': '[canary]', 'object': '[birdfood]', 'interested-party': '[cat]' }],
+      'facts': [],
+      'duties': []
+    })
+    const modelValidator = new ModelValidator(model)
+
+    const errors = modelValidator.getDiagnostics()
+
+    expect(errors).to.deep.equal([
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          35,
+          43
+        ],
+        'path': [
+          'acts',
+          0,
+          'actor'
+        ],
+        'severity': 'WARNING',
+        'source': '[canary]'
+      },
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          55,
+          65
+        ],
+        'path': [
+          'acts',
+          0,
+          'object'
+        ],
+        'severity': 'WARNING',
+        'source': '[birdfood]'
+      },
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          87,
+          92
+        ],
+        'path': [
+          'acts',
+          0,
+          'interested-party'
+        ],
+        'severity': 'WARNING',
+        'source': '[cat]'
+      }
+    ]
+    )
+  })
+
+  it('should find undefined facts and duties used in acts in create and terminate', async () => {
+    const model = JSON.stringify({
+      'acts': [{ 'act': '<<act>>', 'create': '[cats];<dogs>', 'terminate': '[sunshine];<rain>' }],
+      'facts': [],
+      'duties': []
+    })
+    const modelValidator = new ModelValidator(model)
+
+    const errors = modelValidator.getDiagnostics()
+
+    expect(errors).to.deep.equal([
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          36,
+          42
+        ],
+        'path': [
+          'acts',
+          0,
+          'create'
+        ],
+        'severity': 'WARNING',
+        'source': '[cats]'
+      },
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          43,
+          49
+        ],
+        'path': [
+          'acts',
+          0,
+          'create'
+        ],
+        'severity': 'WARNING',
+        'source': '<dogs>'
+      },
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          64,
+          74
+        ],
+        'path': [
+          'acts',
+          0,
+          'terminate'
+        ],
+        'severity': 'WARNING',
+        'source': '[sunshine]'
+      },
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          75,
+          81
+        ],
+        'path': [
+          'acts',
+          0,
+          'terminate'
+        ],
+        'severity': 'WARNING',
+        'source': '<rain>'
+      }
+    ]
+    )
+  })
+
+  it('should find invalid expressions in preconditions', async () => {
+    const model = JSON.stringify({
+      'acts': [{ 'act': '<<act>>', 'preconditions': '(not really parsable]}' }],
+      'facts': [],
+      'duties': []
+    })
+
+    const modelValidator = new ModelValidator(model)
+
+    const errors = modelValidator.getDiagnostics()
+
+    expect(errors).to.deep.equal([
+      {
+        'code': 'LR0003',
+        'message': 'Syntax Error: Expected "(", "NIET", or "[" but "n" found.',
+        'offset': [
+          42,
+          64
+        ],
+        'severity': 'ERROR',
+        'source': '(not really parsable]}'
+      }
+    ]
+    )
+  })
+
+  it('should find undefined facts used in acts in fact functions', async () => {
+    const model = JSON.stringify({
+      'acts': [],
+      'facts': [{ 'fact': '[factname]', 'function': '([cats] OF [dogs]) EN [sunshine]' }],
+      'duties': []
+    })
+    const modelValidator = new ModelValidator(model)
+
+    const errors = modelValidator.getDiagnostics()
+
+    expect(errors).to.deep.equal([
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          54,
+          60
+        ],
+        'path': [
+          'facts',
+          0,
+          'function'
+        ],
+        'severity': 'WARNING',
+        'source': '[cats]'
+      },
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          64,
+          70
+        ],
+        'path': [
+          'facts',
+          0,
+          'function'
+        ],
+        'severity': 'WARNING',
+        'source': '[dogs]'
+      },
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          75,
+          85
+        ],
+        'path': [
+          'facts',
+          0,
+          'function'
+        ],
+        'severity': 'WARNING',
+        'source': '[sunshine]'
+      }
+    ]
+    )
   })
 })

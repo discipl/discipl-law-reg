@@ -1,4 +1,5 @@
 import * as jsonc from 'jsonc-parser'
+import { LawReg } from './index'
 
 class ModelValidator {
   /**
@@ -166,8 +167,8 @@ class ModelValidator {
    * @property {number} offset - Begin offset of the error
    * @property {number} endOffset - End offset of the error
    * @property {('ERROR'|'WARNING')} severity - Severity of the error
-   * @property {string|undefined} identifier - Identifier that relates to this error
-   * @property {Array} path - Path to the error
+   * @property {string|undefined} source - Text that relates to the cause of the error
+   * @property {Array|undefined} path - Path to the error
    */
 
   getDiagnostics () {
@@ -175,7 +176,9 @@ class ModelValidator {
     const factNameValidationErrors = this._checkIdentifiers('facts', 'fact', /^\[.*\]$/)
     const dutyNameValidationErrors = this._checkIdentifiers('duties', 'duty', /^<.*>$/)
 
-    return actNameValidationErrors.concat(factNameValidationErrors, dutyNameValidationErrors)
+    const referenceErrors = this._checkReferences()
+
+    return actNameValidationErrors.concat(factNameValidationErrors, dutyNameValidationErrors, referenceErrors)
   }
   /**
    *
@@ -189,7 +192,7 @@ class ModelValidator {
     const identifierValidationErrors = this.model[flintItems]
       .filter((item) => typeof item[flintItem] !== 'string' || !item[flintItem].match(pattern))
       .map((item) => {
-        console.log(item[flintItem])
+        // console.log(item[flintItem])
         const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]])
         const beginPosition = node.offset
         const endPosition = node.offset + node.length
@@ -199,12 +202,151 @@ class ModelValidator {
           message: 'Invalid name for identifier',
           offset: [beginPosition, endPosition],
           severity: 'ERROR',
-          identifier: item[flintItem].toString(),
+          source: item[flintItem].toString(),
           path: this.identifierPaths[item[flintItem]]
         }
       })
 
     return identifierValidationErrors
+  }
+
+  _checkReferences () {
+    const concat = (x, y) => x.concat(y)
+    const createTerminateErrors = this.model.acts.map((act) => {
+      const basePath = this.identifierPaths[act.act]
+      const createNode = jsonc.findNodeAtLocation(this.tree, [basePath[0], basePath[1], 'create'])
+      const terminateNode = jsonc.findNodeAtLocation(this.tree, [basePath[0], basePath[1], 'terminate'])
+
+      const createErrors = createNode ? this._checkCreateTerminate(act.create, createNode.offset) : []
+      const terminateErrors = terminateNode ? this._checkCreateTerminate(act.terminate, terminateNode.offset) : []
+      return createErrors.concat(terminateErrors)
+    }).reduce(concat, [])
+
+    const veryStrict = []
+    const lessStrict = ['']
+    const factStrict = ['<<>>', '[]']
+    const expressionCheckInfo = [['acts', 'actor', veryStrict], ['acts', 'object', veryStrict], ['acts', 'interested-party', veryStrict],
+      ['acts', 'preconditions', lessStrict], ['facts', 'function', factStrict]]
+
+    const expressionErrors = expressionCheckInfo.map((expressionCheckPath) => {
+      return this.model[expressionCheckPath[0]].map((item, index) => {
+        const node = jsonc.findNodeAtLocation(this.tree, [expressionCheckPath[0], index, expressionCheckPath[1]])
+        // console.log("ExpCheck en index", expressionCheckPath, index);
+        if (node && typeof node.value === 'string') {
+          // console.log("Node", node);
+          return this._validateExpression(node.value, node.offset, expressionCheckPath[2])
+        } else {
+          return this._validateParsedExpressionNode(node)
+        }
+      }).reduce(concat, [])
+    }).reduce(concat, [])
+
+    return createTerminateErrors.concat(expressionErrors)
+  }
+
+  _checkCreateTerminate (referenceString, beginOffset) {
+    const createTerminateErrors = []
+    const parsedReferences = referenceString.split(';').map(item => item.trim())
+
+    for (let reference of parsedReferences) {
+      if (reference.trim() === '') {
+        continue
+      }
+      const subPosition = JSON.stringify(referenceString).indexOf(reference)
+      const error = this._validateReference(reference, beginOffset + subPosition)
+
+      if (error) {
+        createTerminateErrors.push(error)
+      }
+    }
+
+    return createTerminateErrors
+  }
+
+  _validateReference (reference, beginOffset) {
+    if (!this.identifierPaths[reference]) {
+      const path = jsonc.getNodePath(jsonc.findNodeAtOffset(this.tree, beginOffset))
+      return {
+        code: 'LR0002',
+        message: 'Undefined item',
+        offset: [beginOffset, beginOffset + reference.length],
+        severity: 'WARNING',
+        source: reference,
+        path: path
+      }
+    }
+  }
+
+  _validateParsedExpressionNode (expression) {
+    let errors = []
+    const operandsNode = jsonc.findNodeAtLocation(expression, ['operands'])
+
+    if (operandsNode) {
+      for (let subNode of operandsNode.children) {
+        errors = errors.concat(this._validateParsedExpressionNode(subNode))
+      }
+    }
+
+    const operandNode = jsonc.findNodeAtLocation(expression, ['operand'])
+
+    if (operandNode) {
+      errors = errors.concat(this._validateParsedExpressionNode(operandNode.value))
+    }
+
+    if (expression && expression.type === 'string') {
+      const error = this._validateReference(expression.value, expression.offset)
+      if (error) {
+        errors.push(error)
+      }
+    }
+
+    return errors
+  }
+
+  _validateParsedExpression (expression, beginOffset, originalExpression) {
+    let errors = []
+    if (typeof expression === 'string') {
+      const extraOffset = JSON.stringify(originalExpression).indexOf(expression)
+      const error = this._validateReference(expression, beginOffset + extraOffset)
+      if (error) {
+        errors.push(error)
+      }
+    }
+
+    if (expression.operands) {
+      for (let operand of expression.operands) {
+        errors = errors.concat(this._validateParsedExpression(operand, beginOffset, originalExpression))
+      }
+    }
+
+    if (expression.operand) {
+      errors = errors.concat(this._validateParsedExpression(expression.operand, beginOffset, originalExpression))
+    }
+
+    return errors
+  }
+
+  _validateExpression (expression, beginOffset, exceptions) {
+    try {
+      if (exceptions.includes(expression.trim())) {
+        return []
+      }
+      let lawReg = new LawReg()
+      let parsedFact = lawReg.factParser.parse(expression)
+      return this._validateParsedExpression(parsedFact, beginOffset, expression)
+    } catch (e) {
+      if (e.name === 'SyntaxError') {
+        return [{
+          code: 'LR0003',
+          message: 'Syntax Error: ' + e.message,
+          offset: [beginOffset, beginOffset + expression.length],
+          severity: 'ERROR',
+          source: expression
+        }]
+      } else {
+        throw e
+      }
+    }
   }
 }
 
