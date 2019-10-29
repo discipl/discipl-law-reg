@@ -10,8 +10,17 @@
         "expression": "NOT",
         "operand": "[bij wettelijk voorschrift is anders bepaald]"
       },
-      "create": "[aanvraag];\r\n<schriftelijk indienen aanvraag>;\r\n<aanvraag indienen bij bevoegd bestuursorgaan>;\r\n<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>;\r\n<verschaffen gegevens nodig om besluit te nemen>;\r\n<vergaren nodige kennis>;\r\n<besluit berust op deugdelijke motivering>;\r\n<beschikking geven binnen termijn>",
-      "terminate": "",
+      "create": [
+        "[aanvraag]",
+        "<schriftelijk indienen aanvraag>",
+        "<aanvraag indienen bij bevoegd bestuursorgaan>",
+        "<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>",
+        "<verschaffen gegevens nodig om besluit te nemen>",
+        "<vergaren nodige kennis>",
+        "<besluit berust op deugdelijke motivering>",
+        "<beschikking geven binnen termijn>"
+      ],
+      "terminate": [],
       "version": "2-[19980101]-[jjjjmmdd]",
       "reference": "art. 1:3 lid 3 Awb",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01",
@@ -25,8 +34,20 @@
       "object": "[besluit]",
       "interested-party": "[belanghebbende]",
       "preconditions": "[aanvraag]",
-      "create": "[besluit treedt in werking]",
-      "terminate": "[aanvraag];\r\n<schriftelijk indienen aanvraag>;\r\n<aanvraag indienen bij bevoegd bestuursorgaan>;\r\n<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>;\r\n<verschaffen gegevens nodig om besluit te nemen>;\r\n<vergaren nodige kennis>;\r\n<besluit berust op deugdelijke motivering>;\r\n<beschikking geven binnen termijn>;\r\n<besluit om de aanvraag niet te behandelen wordt bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken>",
+      "create": [
+        "[besluit treedt in werking]"
+      ],
+      "terminate": [
+        "[aanvraag]",
+        "<schriftelijk indienen aanvraag>",
+        "<aanvraag indienen bij bevoegd bestuursorgaan>",
+        "<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>",
+        "<verschaffen gegevens nodig om besluit te nemen>",
+        "<vergaren nodige kennis>",
+        "<besluit berust op deugdelijke motivering>",
+        "<beschikking geven binnen termijn>",
+        "<besluit om de aanvraag niet te behandelen wordt bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken>"
+      ],
       "version": "2-[19940101]-[jjjjmmdd]",
       "reference": "art. 3:40 Awb",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=3&afdeling=3.6&artikel=3:40&z=2017-04-01&g=2017-04-01",
@@ -63,8 +84,13 @@
           }
         ]
       },
-      "create": "[besluit tot niet in behandeling nemen aanvraag];\r\n<besluit om de aanvraag niet te behandelen wordt bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken>",
-      "terminate": "[aanvraag]",
+      "create": [
+        "[besluit tot niet in behandeling nemen aanvraag]",
+        "<besluit om de aanvraag niet te behandelen wordt bekendgemaakt binnen vier weken nadat de aanvraag is aangevuld of nadat de daarvoor gestelde termijn ongebruikt is verstreken>"
+      ],
+      "terminate": [
+        "[aanvraag]"
+      ],
       "version": "3-[20040701]-[jjjjmmdd]",
       "reference": "art. 4:5 Awb",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=4&titeldeel=4.1&afdeling=4.1.1&artikel=4:5&z=2017-03-10&g=2017-03-10",
@@ -87,8 +113,10 @@
           }
         ]
       },
-      "create": "[formulier voor het verstrekken van gegevens]",
-      "terminate": "",
+      "create": [
+        "[formulier voor het verstrekken van gegevens]"
+      ],
+      "terminate": [],
       "version": "2-[19940101]-[jjjjmmdd]",
       "reference": "art. 4:4 Awb",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=4&titeldeel=4.1&afdeling=4.1.1&artikel=4:4&z=2017-03-01&g=2017-03-01",
@@ -144,8 +172,17 @@
           }
         ]
       },
-      "create": "[besluit]; [besluit tot verlenen subsidie voor studiekosten van een leraar in verband met het volgen van een opleiding]; <minister van OCW berekent de hoogte van de subsidie voor studiekosten>; <subsidiebedrag wordt uitbetaald aan subsidieontvanger voordat de opleiding waar de subsidie betrekking op heeft aanvangt>; [minister verstrekt subsidie lerarenbeurs aan bevoegd gezag]",
-      "terminate": "[aanvraag];  \r\n<minister van OCW besluit binnen acht weken na het sluiten van de aanvraagtermijn>",
+      "create": [
+        "[besluit]",
+        "[besluit tot verlenen subsidie voor studiekosten van een leraar in verband met het volgen van een opleiding]",
+        "<minister van OCW berekent de hoogte van de subsidie voor studiekosten>",
+        "<subsidiebedrag wordt uitbetaald aan subsidieontvanger voordat de opleiding waar de subsidie betrekking op heeft aanvangt>",
+        "[minister verstrekt subsidie lerarenbeurs aan bevoegd gezag]"
+      ],
+      "terminate": [
+        "[aanvraag]",
+        "<minister van OCW besluit binnen acht weken na het sluiten van de aanvraagtermijn>"
+      ],
       "version": "",
       "reference": "art. 3 lid 1, aanhef en onder a, Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=3&lid=1",
@@ -181,8 +218,15 @@
           }
         ]
       },
-      "create": "[besluit tot verlenen subsidie voor kosten in verband met het verlenen van studieverlof aan de leraar]; <subsidiebedrag wordt uitbetaald aan subsidieontvanger voordat de opleiding waar de subsidie betrekking op heeft aanvangt>;<bekend maken besluit>",
-      "terminate": "[aanvraag];  \r\n<minister van OCW berekent de hoogte van de subsidie voor studieverlof>",
+      "create": [
+        "[besluit tot verlenen subsidie voor kosten in verband met het verlenen van studieverlof aan de leraar]",
+        "<subsidiebedrag wordt uitbetaald aan subsidieontvanger voordat de opleiding waar de subsidie betrekking op heeft aanvangt>",
+        "<bekend maken besluit>"
+      ],
+      "terminate": [
+        "[aanvraag]",
+        "<minister van OCW berekent de hoogte van de subsidie voor studieverlof>"
+      ],
       "version": "",
       "reference": "art. 3.1 lid 1, aanhef en onder b, Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=3&lid=1",
@@ -202,8 +246,13 @@
           "[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]"
         ]
       },
-      "create": "[aanvraag];[aanvraag subsidieverlening];[aanvraag subsidie voor studiekosten];\r\n<minister van OCW besluit binnen acht weken na het sluiten van de aanvraagtermijn>",
-      "terminate": "",
+      "create": [
+        "[aanvraag]",
+        "[aanvraag subsidieverlening]",
+        "[aanvraag subsidie voor studiekosten]",
+        "<minister van OCW besluit binnen acht weken na het sluiten van de aanvraagtermijn>"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 7 lid 1 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=7&lid=1",
@@ -223,8 +272,13 @@
           "[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]"
         ]
       },
-      "create": "[aanvraag];[aanvraag subsidieverlening];[aanvraag subsidie voor studieverlof];\r\n<minister van OCW besluit binnen acht weken na het sluiten van de aanvraagtermijn>",
-      "terminate": "",
+      "create": [
+        "[aanvraag]",
+        "[aanvraag subsidieverlening]",
+        "[aanvraag subsidie voor studieverlof]",
+        "<minister van OCW besluit binnen acht weken na het sluiten van de aanvraagtermijn>"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 8 lid 1 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=8&lid=1",
@@ -244,8 +298,10 @@
           "[leraar heeft minder dan 15 studiepunten gehaald]"
         ]
       },
-      "create": "[terugvordering]",
-      "terminate": "",
+      "create": [
+        "[terugvordering]"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 13 lid 1 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=13&lid=1",
@@ -265,8 +321,10 @@
           "[leraar heeft binnen 2 maanden na verstrekking van de subsidie de aanvraag voor subsidie ingetrokken]"
         ]
       },
-      "create": "[terugvordering]",
-      "terminate": "",
+      "create": [
+        "[terugvordering]"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 13 lid 2 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=13&lid=2",
@@ -280,8 +338,11 @@
       "object": "[subsidie voor studieverlof]",
       "interested-party": "[bevoegd gezag]",
       "preconditions": "[besluit tot verlenen subsidie voor kosten in verband met het verlenen van studieverlof aan de leraar]",
-      "create": "[terugvordering]; <bekend maken besluit>",
-      "terminate": "",
+      "create": [
+        "[terugvordering]",
+        "<bekend maken besluit>"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 13 lid 2 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=13&lid=2",
@@ -295,8 +356,8 @@
       "object": "[betalingsregeling voor het terugbetalen van de subsidie studiekosten]",
       "interested-party": "[leraar]",
       "preconditions": "[terugvordering]",
-      "create": "",
-      "terminate": "",
+      "create": [],
+      "terminate": [],
       "version": "",
       "reference": "art. 13 lid 3 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=13&lid=3",
@@ -310,8 +371,11 @@
       "object": "[kosten van collegegeld, studiemiddelen en reiskosten]",
       "interested-party": "[leraar]",
       "preconditions": "[besluit tot verlenen subsidie voor studiekosten van een leraar in verband met het volgen van een opleiding]",
-      "create": "[terugvordering]; <bekend maken besluit>",
-      "terminate": "",
+      "create": [
+        "[terugvordering]",
+        "<bekend maken besluit>"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 16 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=2&artikel=16&z=2019-04-01&g=2019-04-01",
@@ -325,8 +389,10 @@
       "object": "[verzoek tot bewijs van betaling van collegegeld]",
       "interested-party": "[leraar]",
       "preconditions": "[besluit tot verlenen subsidie voor studiekosten van een leraar in verband met het volgen van een opleiding]",
-      "create": "[verzoek tot bewijs van betaling van collegegeld]",
-      "terminate": "",
+      "create": [
+        "[verzoek tot bewijs van betaling van collegegeld]"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 19 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=2&artikel=19&z=2019-04-01&g=2019-04-01",
@@ -340,8 +406,10 @@
       "object": "[verzoek tot bewijs van het behalen van ten minste vijftien studiepunten]",
       "interested-party": "[leraar]",
       "preconditions": "[besluit tot verlenen subsidie voor studiekosten van een leraar in verband met het volgen van een opleiding]",
-      "create": "[verzoek tot bewijs van het behalen van ten minste vijftien studiepunten]",
-      "terminate": "",
+      "create": [
+        "[verzoek tot bewijs van het behalen van ten minste vijftien studiepunten]"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 19 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=2&artikel=19&z=2019-04-01&g=2019-04-01",
@@ -362,8 +430,8 @@
           "[studiejaar waarop subsidie betrekking heeft is voorbij]"
         ]
       },
-      "create": "",
-      "terminate": "",
+      "create": [],
+      "terminate": [],
       "version": "",
       "reference": "art. 19 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=2&artikel=19&z=2019-04-01&g=2019-04-01",
@@ -384,8 +452,8 @@
           "[studiejaar waarop subsidie betrekking heeft is voorbij]"
         ]
       },
-      "create": "",
-      "terminate": "",
+      "create": [],
+      "terminate": [],
       "version": "",
       "reference": "art. 19 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=2&artikel=19&z=2019-04-01&g=2019-04-01",
@@ -399,8 +467,8 @@
       "object": "[aanvraag subsidie voor studieverlof]",
       "interested-party": "[minister van Onderwijs, Cultuur en Wetenschap]",
       "preconditions": "[binnen twee maanden na het verstrekken van de subsidie]",
-      "create": "",
-      "terminate": "",
+      "create": [],
+      "terminate": [],
       "version": "",
       "reference": "art. 13 lid 2, onder b. Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=13&lid=2",
@@ -414,8 +482,8 @@
       "object": "[aanvraag subsidie voor studiekosten]",
       "interested-party": "[minister van Onderwijs, Cultuur en Wetenschap]",
       "preconditions": "[binnen twee maanden na het verstrekken van de subsidie]",
-      "create": "",
-      "terminate": "",
+      "create": [],
+      "terminate": [],
       "version": "",
       "reference": "art. 13 lid 2, onder b. Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=13&lid=2",
@@ -432,8 +500,8 @@
         "expression": "NOT",
         "operand": "[aan de subsidie verbonden verplichtingen zal worden voldaan]"
       },
-      "create": "",
-      "terminate": "",
+      "create": [],
+      "terminate": [],
       "version": "",
       "reference": "art. 5.7 lid 1, aanhef en onder b. Kaderregeling subsidies OCW, SZW en VWS",
       "juriconnect": "jci1.3:c:BWBR0037603&hoofdstuk=5&artikel=5.7&lid=1",
@@ -453,8 +521,8 @@
           "[aan deze leraar is subsidie voor studiekosten verleend tenzij voor een opleiding geen collegegeld verschuldigd is]"
         ]
       },
-      "create": "",
-      "terminate": "",
+      "create": [],
+      "terminate": [],
       "version": "",
       "reference": "art. 23 lid 1 Slb",
       "juriconnect": "jci1.3:c:BWBR0037603&hoofdstuk=5&artikel=5.7&lid=1",
@@ -474,8 +542,10 @@
           "[uit de administratie van het bevoegd gezag blijkt dat het studieverlof daadwerkelijk is verleend]"
         ]
       },
-      "create": "",
-      "terminate": "<subsidieverplichting voor subsidie voor studieverlof>",
+      "create": [],
+      "terminate": [
+        "<subsidieverplichting voor subsidie voor studieverlof>"
+      ],
       "version": "",
       "reference": "art. 24 lid 2 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=3&artikel=24&lid=2",
@@ -489,8 +559,12 @@
       "object": "[een of meer bepalingen van de subsidieregeling lerarenbeurs]",
       "interested-party": "[leraar]",
       "preconditions": "[nadelige gevolgen van een besluit zijn onevenredig in verhouding tot de met het besluit te dienen doelen]",
-      "create": "<bekend maken besluit>",
-      "terminate": "[aanvraag]",
+      "create": [
+        "<bekend maken besluit>"
+      ],
+      "terminate": [
+        "[aanvraag]"
+      ],
       "version": "",
       "reference": "art. 26 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=4&artikel=26",
@@ -504,8 +578,12 @@
       "object": "[een of meer bepalingen van de subsidieregeling lerarenbeurs]",
       "interested-party": "[leraar]",
       "preconditions": "[nadelige gevolgen van een besluit zijn onevenredig in verhouding tot de met het besluit te dienen doelen]",
-      "create": "<bekend maken besluit>",
-      "terminate": "[aanvraag]",
+      "create": [
+        "<bekend maken besluit>"
+      ],
+      "terminate": [
+        "[aanvraag]"
+      ],
       "version": "",
       "reference": "art. 26 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=4&artikel=26",
@@ -520,8 +598,7 @@
       "interested-party": "[belanghebbende]",
       "preconditions": {
         "expression": "OR",
-        "operands": 
-        [
+        "operands": [
           "[een gegronde reden bestaat om aan te nemen dat de activiteiten niet of niet geheel zullen plaatsvinden]",
           "[een gegronde reden bestaat om aan te nemen dat de aanvrager niet zal voldoen aan de aan de subsidie verbonden verplichtingen]",
           "[een gegronde reden bestaat om aan te nemen dat de aanvrager niet op een behoorlijke wijze rekening en verantwoording zal afleggen omtrent de verrichte activiteiten en de daaraan verbonden uitgaven en inkomsten, voor zover deze voor de vaststelling van de subsidie van belang zijn]",
@@ -543,8 +620,14 @@
           "[naar het oordeel van het bestuursorgaan is verstrekking van de subsidie niet verenigbaar met het bepaalde in de artikelen 107 en 108 van het Verdrag betreffende de werking van de Europese Unie.]"
         ]
       },
-      "create": "[besluit]; [besluit tot weigeren subsidie];<bekend maken besluit>",
-      "terminate": "[aanvraag]",
+      "create": [
+        "[besluit]",
+        "[besluit tot weigeren subsidie]",
+        "<bekend maken besluit>"
+      ],
+      "terminate": [
+        "[aanvraag]"
+      ],
       "version": "",
       "reference": "art.4:35 Awb",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=4&titeldeel=4.2&afdeling=4.2.3&artikel=4:35",
@@ -558,8 +641,12 @@
       "object": "[subsidieverlening aan een leraar]",
       "interested-party": "[leraar]",
       "preconditions": "[besluit tot verlenen subsidie voor studiekosten van een leraar in verband met het volgen van een opleiding]",
-      "create": "<bekend maken besluit>",
-      "terminate": "[aanvraag]",
+      "create": [
+        "<bekend maken besluit>"
+      ],
+      "terminate": [
+        "[aanvraag]"
+      ],
       "version": "",
       "reference": "art. 10 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=10&z=2019-04-01&g=2019-04-01",
@@ -573,8 +660,10 @@
       "object": "[beschikbare bedrag voor de subsidieregeling lerarenbeurs]",
       "interested-party": "[Regering]",
       "preconditions": "",
-      "create": "<bekend maken besluit>",
-      "terminate": "",
+      "create": [
+        "<bekend maken besluit>"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 6 lid 1 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=6&lid=1",
@@ -588,8 +677,8 @@
       "object": "[concrete verdeling van het beschikbare budget in een studiejaar per soort onderwijs]",
       "interested-party": "[Regering]",
       "preconditions": "",
-      "create": "",
-      "terminate": "",
+      "create": [],
+      "terminate": [],
       "version": "",
       "reference": "art. 22 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=3&artikel=22",
@@ -603,8 +692,13 @@
       "object": "[hoogte van de subsidie voor studiekosten]",
       "interested-party": "[leraar]",
       "preconditions": "",
-      "create": "[vergoeding kosten collegegeld]; [vergoeding studiemiddelen]; [vergoeding reiskosten];",
-      "terminate": "",
+      "create": [
+        "[vergoeding kosten collegegeld]",
+        "[vergoeding studiemiddelen]",
+        "[vergoeding reiskosten]",
+        ""
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 15 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=2&artikel=15",
@@ -618,8 +712,10 @@
       "object": "[hoogte van de subsidie voor studieverlof]",
       "interested-party": "[bevoegd gezag]",
       "preconditions": "",
-      "create": "[vergoeding studieverlof]",
-      "terminate": "",
+      "create": [
+        "[vergoeding studieverlof]"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "Art. 21 Slb  \r\nArt. 22 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=3&artikel=22&z=2019-04-01&g=2019-04-01",
@@ -633,8 +729,10 @@
       "object": "[template voor aanvraagformulieren studiekosten]",
       "interested-party": "[leraar]",
       "preconditions": "",
-      "create": "[aanvraagformulieren studiekosten op de website van de Dienst Uitvoering Onderwijs]",
-      "terminate": "",
+      "create": [
+        "[aanvraagformulieren studiekosten op de website van de Dienst Uitvoering Onderwijs]"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 7 lid 2 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=7&lid=2",
@@ -648,8 +746,10 @@
       "object": "[template voor aanvraagformulieren studieverlof]",
       "interested-party": "[leraar]",
       "preconditions": "",
-      "create": "[aanvraagformulieren studieverlof op de website van de Dienst Uitvoering Onderwijs]",
-      "terminate": "",
+      "create": [
+        "[aanvraagformulieren studieverlof op de website van de Dienst Uitvoering Onderwijs]"
+      ],
+      "terminate": [],
       "version": "",
       "reference": "art. 8 lid 2 Slb",
       "juriconnect": "jci1.3:c:BWBR0039319&hoofdstuk=1&artikel=8&lid=2",
@@ -726,7 +826,8 @@
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:1&lid=1&z=2017-03-10&g=2017-03-10",
       "sourcetext": "{Onder bestuursorgaan wordt verstaan:  \r\na. een orgaan van een rechtspersoon die krachtens publiekrecht is ingesteld, of  \r\nb. een ander persoon of college, met enig openbaar gezag bekleed.}",
       "explanation": ""
-    },{
+    },
+    {
       "fact": "[college]",
       "function": "[]",
       "version": "",
@@ -876,7 +977,7 @@
     },
     {
       "fact": "[besluit tot niet in behandeling nemen aanvraag]",
-      "function":"[]",
+      "function": "[]",
       "version": "",
       "art": "",
       "juriconnect": "",
@@ -1464,7 +1565,7 @@
       "sourcetext": "",
       "explanation": "fact toegevoegd, omdat in fact leraar voldoet aan subsidiecriteria dit als operand is benoemd"
     },
-      {
+    {
       "fact": "[uitzondering waarbij subsidie wordt verstrekt voor tweede opleiding]",
       "function": "[]",
       "version": "",
@@ -1663,7 +1764,7 @@
       "explanation": "Fact toegevoegd vanwege warning"
     },
     {
-      "fact":"[niet, niet tijdig of niet geheel aan de subsidieverplichtingen zal worden voldaan]",
+      "fact": "[niet, niet tijdig of niet geheel aan de subsidieverplichtingen zal worden voldaan]",
       "function": "[]",
       "version": "",
       "art": "art 5.7, lid 1. onder b van de Kaderregeling subsidies OCW, SZW en VWS",
@@ -1802,11 +1903,11 @@
           "[een samenwerkingsschool: de stichting, bedoeld in artikel 17d]"
         ]
       },
-      "version":"",
+      "version": "",
       "art": "Art. 1 Wet op het primair onderwijs",
       "juriconnect": "jci1.3:c:BWBR0003420&hoofdstuk=I&titeldeel=I&artikel=1",
       "sourcetext": "{bevoegd gezag van volgens deze wet bekostigde scholen:voor wat betreft\r\na. een openbare school:\r\n1°. burgemeester en wethouders, voor zover de raad niet anders bepaalt, en, indien de raad dit besluit, met inachtneming van door hem te stellen regelen;\r\n2°. het krachtens de desbetreffende gemeenschappelijke regeling bevoegde orgaan;\r\n3°. de openbare rechtspersoon, bedoeld inartikel 47; dan wel\r\n4°. de stichting, bedoeld inartikel 17ofartikel 48;\r\nb. een bijzondere school: de rechtspersoon bedoeld inartikel 55;\r\nc. een samenwerkingsschool: de stichting, bedoeld inartikel 17d;}",
-      "explanation":""
+      "explanation": ""
     },
     {
       "fact": "[een openbare school]",
@@ -2275,15 +2376,15 @@
       "sourcetext": "",
       "explanation": "als fact opgenomen vanwege fact bevoegd gezag hoger onderwijs en wetenschappelijk onderzoek"
     },
-     {
-       "fact": "[het college van bestuur, tenzij anders bepaald]",
-       "function": "[]",
-       "version": "",
-       "art": "",
-       "juriconnect": "",
-       "sourcetext": "",
-       "explanation": "oplossing warning"
-     },
+    {
+      "fact": "[het college van bestuur, tenzij anders bepaald]",
+      "function": "[]",
+      "version": "",
+      "art": "",
+      "juriconnect": "",
+      "sourcetext": "",
+      "explanation": "oplossing warning"
+    },
     {
       "fact": "[leraar]",
       "function": {
@@ -2865,7 +2966,8 @@
       "juriconnect": "jci1.3:c:BWBR0037603&hoofdstuk=5&artikel=5.7&lid=1",
       "sourcetext": "{1 De subsidieontvanger meldt onverwijld schriftelijk aan de minister indien:\r\na. aannemelijk is geworden dat de activiteiten waarvoor de subsidie is verstrekt niet, niet tijdig of niet geheel zullen worden verricht,\r\nb. aannemelijk is geworden dat niet, niet tijdig of niet geheel aan de subsidieverplichtingen zal worden voldaan, of\r\nc. zich andere omstandigheden voordoen of zullen voordoen die van belang kunnen zijn voor een beslissing tot wijziging, intrekking of vaststelling van de subsidie.\r\n2 De melding wordt voorzien van een toelichting. Bij de melding worden de relevante stukken overgelegd.}",
       "explanation": "Toegevoegd, omdat deze bepaling uit de Kaderregeling ook regels bevat voor de Slb. Had deze er in eerste instantie uitgehaald"
-    },{
+    },
+    {
       "fact": "[een of meer bepalingen van de subsidieregeling lerarenbeurs]",
       "function": "[]",
       "version": "",
@@ -3289,20 +3391,20 @@
       "juriconnect": "",
       "sourcetext": "",
       "explanation": ""
-    }, 
-   {
-     "duty": "<minister van OCW berekent de hoogte van de subsidie voor studiekosten>",
-     "duty-components": "",
-     "duty-holder": "[]",
-     "claimant": "[]",
-     "create": "",
-     "terminate": "",
-     "version": "",
-     "reference": "",
-     "juriconnect": "",
-     "sourcetext": "",
-     "explanation": ""
-   }, 
+    },
+    {
+      "duty": "<minister van OCW berekent de hoogte van de subsidie voor studiekosten>",
+      "duty-components": "",
+      "duty-holder": "[]",
+      "claimant": "[]",
+      "create": "",
+      "terminate": "",
+      "version": "",
+      "reference": "",
+      "juriconnect": "",
+      "sourcetext": "",
+      "explanation": ""
+    },
     {
       "duty": "<minister van OCW berekent de hoogte van de subsidie voor studieverlof>",
       "duty-components": "",

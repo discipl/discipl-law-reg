@@ -29,29 +29,48 @@ class ModelValidator {
     }
 
     const indexedFields = [['acts', 'act'], ['acts', 'actor'], ['acts', 'object'], ['acts', 'interested-party'],
-      ['acts', 'preconditions'], ['acts', 'create'], ['acts', 'terminate'],
+      ['acts', 'preconditions'],
       ['facts', 'fact'], ['facts', 'function'],
       ['duties', 'duty'], ['duties', 'duty-components'], ['duties', 'duty-holder'], ['duties', 'duty-holder'], ['duties', 'claimant'], ['duties', 'create'], ['duties', 'terminate']]
     for (let indexField of indexedFields) {
-      this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
-        // console.log("Reducing");
-        const path = [indexField[0], index, indexField[1]]
-        const node = jsonc.findNodeAtLocation(this.tree, path)
-        if (node) {
-          const identifiers = this._extractIdentifiersFromString(node.value)
-          if (identifiers) {
-            for (let identifer of identifiers) {
-              if (acc[identifer]) {
-                acc[identifer].push(path)
-              } else {
-                acc[identifer] = [path]
-              }
+      if (this.model[indexField[0]]) {
+        this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
+          // console.log("Reducing");
+          const path = [indexField[0], index, indexField[1]]
+          this._accumulateIdentifiers(path, acc)
+
+          return acc
+        }, this.referencePaths)
+      }
+
+      const indexedSubFields = [['acts', 'create'], ['acts', 'terminate']]
+      for (let indexField of indexedSubFields) {
+        this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
+          if (item[indexField[1]]) {
+            for (let subIndex = 0; subIndex < item[indexField[1]].length; subIndex++) {
+              const path = [indexField[0], index, indexField[1], subIndex]
+              this._accumulateIdentifiers(path, acc)
             }
           }
-        }
+          return acc
+        }, this.referencePaths)
+      }
+    }
+  }
 
-        return acc
-      }, this.referencePaths)
+  _accumulateIdentifiers (path, acc) {
+    const node = jsonc.findNodeAtLocation(this.tree, path)
+    if (node) {
+      const identifiers = this._extractIdentifiersFromString(node.value)
+      if (identifiers) {
+        for (let identifier of identifiers) {
+          if (acc[identifier]) {
+            acc[identifier].push(path)
+          } else {
+            acc[identifier] = [path]
+          }
+        }
+      }
     }
   }
 
@@ -246,7 +265,7 @@ class ModelValidator {
 
   _checkCreateTerminate (referenceString, beginOffset) {
     const createTerminateErrors = []
-    const parsedReferences = referenceString.split(';').map(item => item.trim())
+    const parsedReferences = typeof referenceString === 'string' ? referenceString.split(';').map(item => item.trim()) : referenceString
 
     for (let reference of parsedReferences) {
       if (reference.trim() === '') {
