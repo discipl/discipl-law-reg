@@ -236,8 +236,8 @@ class ModelValidator {
       const createNode = jsonc.findNodeAtLocation(this.tree, [basePath[0], basePath[1], 'create'])
       const terminateNode = jsonc.findNodeAtLocation(this.tree, [basePath[0], basePath[1], 'terminate'])
 
-      const createErrors = createNode ? this._checkCreateTerminate(act.create, createNode.offset) : []
-      const terminateErrors = terminateNode ? this._checkCreateTerminate(act.terminate, terminateNode.offset) : []
+      const createErrors = createNode ? this._checkCreateTerminate(act.create, createNode) : []
+      const terminateErrors = terminateNode ? this._checkCreateTerminate(act.terminate, terminateNode) : []
       return createErrors.concat(terminateErrors)
     }).reduce(concat, [])
 
@@ -263,22 +263,22 @@ class ModelValidator {
     return createTerminateErrors.concat(expressionErrors)
   }
 
-  _checkCreateTerminate (referenceString, beginOffset) {
+  _checkCreateTerminate (referenceString, node) {
     const createTerminateErrors = []
     const parsedReferences = typeof referenceString === 'string' ? referenceString.split(';').map(item => item.trim()) : referenceString
 
-    for (let reference of parsedReferences) {
+    for (let i = 0; i < parsedReferences.length; i++) {
+      const reference = parsedReferences[i]
       if (reference.trim() === '') {
         continue
       }
-      const subPosition = JSON.stringify(referenceString).indexOf(reference)
-      const error = this._validateReference(reference, beginOffset + subPosition)
+      const offset = jsonc.findNodeAtLocation(node, [i]).offset + 1
+      const error = this._validateReference(reference, offset)
 
       if (error) {
         createTerminateErrors.push(error)
       }
     }
-
     return createTerminateErrors
   }
 
