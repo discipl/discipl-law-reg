@@ -10,6 +10,7 @@ const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
 const DISCIPL_FLINT_ACT = 'DISCIPL_FLINT_ACT'
 const DISCIPL_FLINT_DUTY = 'DISCIPL_FLINT_DUTY'
 const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
+const DISCIPL_FLINT_FACTS_SUPPLIED = 'DISCIPL_FLINT_FACTS_SUPPLIED'
 const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
 const DISCIPL_FLINT_PREVIOUS_CASE = 'DISCIPL_FLINT_PREVIOUS_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
@@ -711,11 +712,22 @@ _ "whitespace"
       throw new Error('Act not found ' + act)
     }
 
+    const factsSupplied = {}
+
+    const capturingFactResolver = (fact, flintItem) => {
+      const result = factResolver(fact, flintItem)
+      factsSupplied[fact] = result
+      return result
+    }
+
     logger.debug('Checking if action is possible from perspective of', ssid.did)
-    let checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': factResolver, 'caseLink': caseLink }, true)
+    let checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': capturingFactResolver, 'caseLink': caseLink }, true)
     if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
-      return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink, [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink, [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink })
+      return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink,
+        [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink,
+        [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink,
+        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied })
     }
 
     throw new Error('Action ' + act + ' is not allowed')

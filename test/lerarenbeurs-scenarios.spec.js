@@ -109,6 +109,11 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     expect(action.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+      'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[aanvrager heeft de gelegenheid gehad de aanvraag aan te vullen]': true,
+        '[aanvrager heeft voldaan aan enig wettelijk voorschrift voor het in behandeling nemen van de aanvraag]': false,
+        '[de aanvraag is binnen de afgelopen 4 weken aangevuld]': true
+      },
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
       'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
     })
@@ -276,6 +281,25 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     expect(action.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+      'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[budget volledig benut]': false,
+        '[leraar die bij aanvang van het studiejaar waarvoor de subsidie bestemd de graad Bachelor mag voeren]': true,
+        '[leraar die ingeschreven staat in registerleraar.nl]': true,
+        '[leraar die op het moment van de subsidieaanvraag in dienst is bij een werkgever]': true,
+        '[leraar die pedagogisch-didactisch verantwoordelijk is voor het onderwijs]': true,
+        '[leraar die voor minimaal twintig procent van zijn werktijd is belast met lesgebonden taken]': true,
+        '[leraar is aangesteld als ambulant begeleider]': false,
+        '[leraar is aangesteld als intern begeleider]': false,
+        '[leraar is aangesteld als remedial teacher]': false,
+        '[leraar is aangesteld als zorgcoördinator]': false,
+        '[leraar ontvangt van de minister een tegemoetkoming in de studiekosten voor het volgen van de opleiding]': false,
+        '[leraar voldoet aan bevoegdheidseisen]': true,
+        '[leraar werkt bij een of meer bekostigde onderwijsinstellingen]': true,
+        '[minister verdeelt het beschikbare bedrag per doelgroep over de aanvragen]': true,
+        '[subsidie lerarenbeurs]': true,
+        '[subsidie voor bacheloropleiding leraar]': true,
+        '[subsidie wordt verstrekt voor één studiejaar en voor één opleiding]': true
+      },
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
       'DISCIPL_FLINT_PREVIOUS_CASE': actionLink2
     })
@@ -343,12 +367,19 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     expect(thirdAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedThirdActLink[0])[0],
+      'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]': true,
+        '[ingevuld aanvraagformulier studiekosten op de website van de Dienst Uitvoering Onderwijs]': true
+      },
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
       'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
     })
 
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+      'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[hoogte van de subsidie voor studiekosten]': true
+      },
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
       'DISCIPL_FLINT_PREVIOUS_CASE': actionLink3
     })
@@ -413,6 +444,9 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+      'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[binnen twee maanden na het verstrekken van de subsidie]': true
+      },
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
       'DISCIPL_FLINT_PREVIOUS_CASE': actionLink2
     })
@@ -476,6 +510,9 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+      'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[subsidieverlening aan een leraar]': true
+      },
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
       'DISCIPL_FLINT_PREVIOUS_CASE': actionLink3
     })
