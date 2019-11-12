@@ -441,6 +441,10 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+          'DISCIPL_FLINT_FACTS_SUPPLIED': {
+            '[overheid]': true,
+            '[verwelkomst]': true
+          },
           'DISCIPL_FLINT_GLOBAL_CASE': needLink,
           'DISCIPL_FLINT_PREVIOUS_CASE': needLink
         },
@@ -787,6 +791,11 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+          'DISCIPL_FLINT_FACTS_SUPPLIED': {
+            '[bij wettelijk voorschrift is anders bepaald]': false,
+            '[verzoek een besluit te nemen]': true,
+            '[wetgevende macht]': true
+          },
           'DISCIPL_FLINT_GLOBAL_CASE': needLink,
           'DISCIPL_FLINT_PREVIOUS_CASE': needLink
         },
@@ -854,6 +863,9 @@ describe('discipl-law-reg', () => {
 
       expect(action.data).to.deep.equal({
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+        'DISCIPL_FLINT_FACTS_SUPPLIED': {
+          '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]': true
+        },
         'DISCIPL_FLINT_GLOBAL_CASE': needLink,
         'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
       })
