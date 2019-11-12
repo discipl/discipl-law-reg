@@ -293,7 +293,6 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
         '[leraar is aangesteld als remedial teacher]': false,
         '[leraar is aangesteld als zorgcoördinator]': false,
         '[leraar ontvangt van de minister een tegemoetkoming in de studiekosten voor het volgen van de opleiding]': false,
-        '[leraar voldoet aan bevoegdheidseisen]': true,
         '[leraar werkt bij een of meer bekostigde onderwijsinstellingen]': true,
         '[minister verdeelt het beschikbare bedrag per doelgroep over de aanvragen]': true,
         '[subsidie lerarenbeurs]': true,
