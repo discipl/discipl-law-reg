@@ -290,11 +290,11 @@ _ "whitespace"
         let act = await core.get(actLink, ssid)
         logger.debug('Found earlier act', act)
 
-        if (typeof act.data[DISCIPL_FLINT_ACT].create === 'string' && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
+        if (act.data[DISCIPL_FLINT_ACT].create != null && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
           return true
         }
 
-        if (typeof act.data[DISCIPL_FLINT_ACT].terminate === 'string' && act.data[DISCIPL_FLINT_ACT].terminate.includes(fact)) {
+        if (act.data[DISCIPL_FLINT_ACT].terminate != null && act.data[DISCIPL_FLINT_ACT].terminate.includes(fact)) {
           return false
         }
       }
