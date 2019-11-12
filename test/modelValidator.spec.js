@@ -153,7 +153,7 @@ describe('The Flint Model validator', () => {
 
   it('should find undefined facts and duties used in acts in create and terminate', async () => {
     const model = JSON.stringify({
-      'acts': [{ 'act': '<<act>>', 'create': '[cats];<dogs>', 'terminate': '[sunshine];<rain>' }],
+      'acts': [{ 'act': '<<act>>', 'create': ['[cats]', '<dogs>'], 'terminate': ['[sunshine]', '<rain>'] }],
       'facts': [],
       'duties': []
     })
@@ -166,13 +166,14 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          36,
-          42
+          37,
+          43
         ],
         'path': [
           'acts',
           0,
-          'create'
+          'create',
+          0
         ],
         'severity': 'WARNING',
         'source': '[cats]'
@@ -181,13 +182,14 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          43,
-          49
+          46,
+          52
         ],
         'path': [
           'acts',
           0,
-          'create'
+          'create',
+          1
         ],
         'severity': 'WARNING',
         'source': '<dogs>'
@@ -196,13 +198,14 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          64,
-          74
+          69,
+          79
         ],
         'path': [
           'acts',
           0,
-          'terminate'
+          'terminate',
+          0
         ],
         'severity': 'WARNING',
         'source': '[sunshine]'
@@ -211,13 +214,14 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          75,
-          81
+          82,
+          88
         ],
         'path': [
           'acts',
           0,
-          'terminate'
+          'terminate',
+          1
         ],
         'severity': 'WARNING',
         'source': '<rain>'
