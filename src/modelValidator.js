@@ -313,7 +313,7 @@ class ModelValidator {
     }
 
     if (expression && expression.type === 'string') {
-      const error = this._validateReference(expression.value, expression.offset)
+      const error = this._validateReference(expression.value, expression.offset + 1)
       if (error) {
         errors.push(error)
       }
