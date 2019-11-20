@@ -175,6 +175,7 @@ _ "whitespace"
 
           if (typeof operandResult === 'undefined') {
             hasUndefined = true
+            break
           }
 
           context.listIndices[listIndex] += 1
@@ -685,6 +686,8 @@ _ "whitespace"
       let link = await core.claim(ssid, { [DISCIPL_FLINT_DUTY]: duty })
       result.duties.push({ [duty.duty]: link })
     }
+
+    logger.debug('Done publishing')
     return core.claim(ssid, { [DISCIPL_FLINT_MODEL]: result })
   }
 
