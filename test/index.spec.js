@@ -8,7 +8,7 @@ import * as log from 'loglevel'
 import awb from './flint-example-awb'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
-log.getLogger('disciplLawReg').setLevel('debug')
+log.getLogger('disciplLawReg').setLevel('warn')
 
 const lawReg = new LawReg()
 

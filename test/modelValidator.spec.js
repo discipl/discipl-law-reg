@@ -315,4 +315,40 @@ describe('The Flint Model validator', () => {
     ]
     )
   })
+
+  it('should find undefined facts used in lists', async () => {
+    const model = JSON.stringify({
+      'acts': [],
+      'facts': [{ 'fact': '[factname]',
+        'function': {
+          'name': 'SomeList',
+          'expression': 'LIST',
+          'items': '[cats]'
+        }
+      }],
+      'duties': []
+    })
+    const modelValidator = new ModelValidator(model)
+
+    const errors = modelValidator.getDiagnostics()
+
+    expect(errors).to.deep.equal([
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          100,
+          106
+        ],
+        'path': [
+          'facts',
+          0,
+          'function',
+          'items'
+        ],
+        'severity': 'WARNING',
+        'source': '[cats]'
+      }
+    ])
+  })
 })
