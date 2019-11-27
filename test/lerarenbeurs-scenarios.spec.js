@@ -2,6 +2,7 @@
 import { expect } from 'chai'
 import { LawReg } from '../src/index.js'
 import * as log from 'loglevel'
+import Util from './scenario-util'
 
 import lb from './flint-example-lerarenbeurs'
 
@@ -39,26 +40,9 @@ const factFunctionSpec = {
 }
 
 const setupModel = async () => {
-  const actors = ['lawmaker', 'belanghebbende', 'bestuursorgaan', 'bevoegdGezag']
-  const ssids = {}
-
-  for (let actor of actors) {
-    ssids[actor] = await core.newSsid('ephemeral')
-    await core.allow(ssids[actor])
-  }
-
-  const factFunctions = Object.keys(factFunctionSpec).reduce((factFunctions, fact) => {
-    if (actors.includes(factFunctionSpec[fact])) {
-      factFunctions[fact] = 'IS:' + ssids[factFunctionSpec[fact]].did
-    } else {
-      factFunctions[fact] = factFunctionSpec[fact]
-    }
-    return factFunctions
-  }, {})
-
-  let modelLink = await lawReg.publish(ssids['lawmaker'], { ...lb, 'model': 'LB' }, factFunctions)
-
-  return { 'ssids': ssids, 'modelLink': modelLink }
+  console.log('Setup model')
+  const util = new Util(lawReg)
+  return util.setupModel(lb, ['belanghebbende', 'bestuursorgaan', 'bevoegdGezag'], factFunctionSpec)
 }
 
 let ssids, modelLink
@@ -66,6 +50,7 @@ let ssids, modelLink
 describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   before(async () => {
     ({ ssids, modelLink } = await setupModel())
+    console.log({ ssids, modelLink })
   })
   it('should be able to take an action where the object originates from another action - LERARENBEURS', async () => {
     let retrievedModel = await core.get(modelLink)

@@ -155,6 +155,38 @@ _ "whitespace"
         logger.debug('Switch case: NOT')
         let value = await this.checkExpression(fact.operand, ssid, context)
         return typeof value === 'boolean' ? !value : undefined
+      case 'LIST':
+        logger.debug('Switch case: LIST')
+        if (!context.listNames) {
+          context.listNames = []
+          context.listIndices = []
+        }
+        context.listNames.push(fact.name)
+
+        const listIndex = context.listIndices.push(0) - 1
+        while (true) {
+          let op = fact.items
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in LIST', operandResult, 'for operand', op, 'and index', context.listIndices[listIndex])
+          if (operandResult === false) {
+            logger.debug('Stopping LIST concatenation, because', op, 'is false')
+            break
+          }
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+            break
+          }
+
+          context.listIndices[listIndex] += 1
+        }
+
+        context.listNames.pop()
+        let resultIndex = context.listIndices.pop()
+
+        let listResult = hasUndefined ? undefined : resultIndex !== 0
+        logger.debug('Resolved LIST as', listResult)
+        return listResult
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {
@@ -223,6 +255,9 @@ _ "whitespace"
    * @property {string} [previousFact] - last fact that was considered in the context
    * @property {boolean} [myself] - `IS:` constructions will be resolved iff it concerns the person themselves
    * @property {object} [factReference] - Map from fact names to fact links in a published FLINT model
+   * @property {string} [flintItem] - The FLINT item (actor, object, etc) that is currently under consideration
+   * @property {array} [listNames] - Names of (subsequent) lists that belong to the current context
+   * @property {array} [listIndices] - Index of current location in the list
    */
   /**
    * Checks a fact by doing
@@ -262,7 +297,9 @@ _ "whitespace"
    */
   static async checkFactWithResolver (fact, ssid, context) {
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
-    const result = context.factResolver(factToCheck, context.flintItem)
+    const listNames = context.listNames || []
+    const listIndices = context.listIndices || []
+    const result = context.factResolver(factToCheck, context.flintItem, listNames, listIndices)
     const resolvedResult = Promise.resolve(result)
     logger.debug('Resolving fact', fact, 'as', resolvedResult, 'via', factToCheck, 'by factresolver')
     return resolvedResult
@@ -649,6 +686,8 @@ _ "whitespace"
       let link = await core.claim(ssid, { [DISCIPL_FLINT_DUTY]: duty })
       result.duties.push({ [duty.duty]: link })
     }
+
+    logger.debug('Done publishing')
     return core.claim(ssid, { [DISCIPL_FLINT_MODEL]: result })
   }
 
@@ -714,9 +753,21 @@ _ "whitespace"
 
     const factsSupplied = {}
 
-    const capturingFactResolver = (fact, flintItem) => {
-      const result = factResolver(fact, flintItem)
-      factsSupplied[fact] = result
+    const capturingFactResolver = (fact, flintItem, listNames, listIndices) => {
+      const result = factResolver(fact, flintItem, listNames, listIndices)
+
+      let factsObject = factsSupplied
+      for (let i = 0; i < listNames.length; i++) {
+        const listName = listNames[i]
+        factsObject[listName] = factsObject[listName] ? factsObject[listName] : []
+        const listIndex = listIndices[i]
+
+        factsObject[listName][listIndex] = factsObject[listName][listIndex] ? factsObject[listName][listIndex] : {}
+
+        factsObject = factsObject[listName][listIndex]
+      }
+
+      factsObject[fact] = result
       return result
     }
 

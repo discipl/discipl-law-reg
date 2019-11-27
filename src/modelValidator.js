@@ -312,6 +312,12 @@ class ModelValidator {
       errors = errors.concat(this._validateParsedExpressionNode(operandNode.value))
     }
 
+    const itemsNode = jsonc.findNodeAtLocation(expression, ['items'])
+
+    if (itemsNode) {
+      errors = errors.concat(this._validateParsedExpressionNode(itemsNode))
+    }
+
     if (expression && expression.type === 'string') {
       const error = this._validateReference(expression.value, expression.offset + 1)
       if (error) {
