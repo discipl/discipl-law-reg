@@ -2,7 +2,7 @@
 import { expect } from 'chai'
 import { LawReg } from '../src/index.js'
 import * as log from 'loglevel'
-import Util from './scenario-util'
+import Util from './../src/util'
 
 import lb from './flint-example-lerarenbeurs'
 
@@ -50,7 +50,6 @@ let ssids, modelLink
 describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
   before(async () => {
     ({ ssids, modelLink } = await setupModel())
-    console.log({ ssids, modelLink })
   })
   it('should be able to take an action where the object originates from another action - LERARENBEURS', async () => {
     let retrievedModel = await core.get(modelLink)
