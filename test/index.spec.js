@@ -452,6 +452,75 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to take an action with an async factresolver', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+
+      const model = {
+        'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
+        'acts': [
+          {
+            'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+            'action': '[aanvragen]',
+            'actor': '[ingezetene]',
+            'object': '[verwelkomst]',
+            'interested-party': '[overheid]',
+            'preconditions': '[]',
+            'create': '<verwelkomen>',
+            'terminate': '',
+            'reference': 'art 2.1',
+            'sourcetext': '',
+            'explanation': '',
+            'version': '2-[19980101]-[jjjjmmdd]',
+            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+          }],
+        'facts': [
+          { 'fact': '[ingezetene]', 'function': '[]', 'reference': '' }
+        ],
+        'duties': []
+      }
+
+      let lawmakerSsid = await core.newSsid('ephemeral')
+      await core.allow(lawmakerSsid)
+      let needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+
+      let actorSsid = await core.newSsid('ephemeral')
+
+      let modelLink = await lawReg.publish(lawmakerSsid, model, {
+        '[ingezetene]':
+          'IS:' + actorSsid.did
+      })
+
+      let retrievedModel = await core.get(modelLink)
+
+      let needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      let factResolver = async (fact) => true
+
+      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
+
+      let action = await core.get(actionLink, actorSsid)
+
+      expect(action).to.deep.equal({
+        'data': {
+          'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+          'DISCIPL_FLINT_FACTS_SUPPLIED': {
+            '[overheid]': true,
+            '[verwelkomst]': true
+          },
+          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
+        },
+        'previous': null
+      })
+    })
+
     it('should be able to take an action with a list', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
