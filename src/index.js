@@ -753,7 +753,7 @@ _ "whitespace"
 
     const factsSupplied = {}
 
-    const capturingFactResolver = (fact, flintItem, listNames, listIndices) => {
+    const capturingFactResolver = async (fact, flintItem, listNames, listIndices) => {
       const result = factResolver(fact, flintItem, listNames, listIndices)
 
       let factsObject = factsSupplied
@@ -767,7 +767,7 @@ _ "whitespace"
         factsObject = factsObject[listName][listIndex]
       }
 
-      factsObject[fact] = result
+      factsObject[fact] = await result
       return result
     }
 

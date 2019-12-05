@@ -22,8 +22,6 @@ class Util {
       return factFunctions
     }, {})
 
-    console.log('Publishing')
-
     let modelLink = await this.lawReg.publish(ssids['lawmaker'], { ...model, 'model': 'LB' }, factFunctions)
 
     return { 'ssids': ssids, 'modelLink': modelLink }

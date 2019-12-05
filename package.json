@@ -1,6 +1,6 @@
 {
   "name": "@discipl/law-reg",
-  "version": "0.3.3",
+  "version": "0.3.5",
   "description": "Discipl Law and Regulation Compliance Library",
   "main": "dist/index.js",
   "module": "src/index.js",
