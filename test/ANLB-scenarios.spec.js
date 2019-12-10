@@ -3,7 +3,7 @@ import Util from './../src/util'
 import ANLb from './ANLb.flint'
 import { LawReg } from '../src'
 import * as log from 'loglevel'
-log.getLogger('disciplLawReg').setLevel('debug')
+log.getLogger('disciplLawReg').setLevel('warn')
 const lawReg = new LawReg()
 
 const util = new Util(lawReg)
