@@ -191,9 +191,9 @@ class ModelValidator {
    */
 
   getDiagnostics () {
-    const actNameValidationErrors = this._checkIdentifiers('acts', 'act', /^<<.*>>$/)
-    const factNameValidationErrors = this._checkIdentifiers('facts', 'fact', /^\[.*\]$/)
-    const dutyNameValidationErrors = this._checkIdentifiers('duties', 'duty', /^<.*>$/)
+    const actNameValidationErrors = this._checkIdentifiers('acts', 'act', /^<<.+>>$/)
+    const factNameValidationErrors = this._checkIdentifiers('facts', 'fact', /^\[.+\]$/)
+    const dutyNameValidationErrors = this._checkIdentifiers('duties', 'duty', /^<.+>$/)
 
     const referenceErrors = this._checkReferences()
 
