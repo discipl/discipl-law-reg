@@ -39,7 +39,8 @@ const scenarios = [
       '[De unieke identificatie van iedere deelnemer van het agrarisch collectief]': true,
       '[Aanvraagnummer gebiedsaanvraag (provincie) als bewijsstuk om te bepalen of de begunstigde voor betaling in aanmerking komt.]': true,
       '[De bewijsstukken die nodig zijn om te bepalen of de aanspraak op de steun/bijstand kan worden gemaakt. Hier moet worden gedacht aan stukken die de inhoud van de betalingsaanvraag onderbouwen]': true,
-      '[betaalverzoek is tussen 1 maart en 15 mei ingediend]': true
+      '[betaalverzoek is tussen 1 maart en 15 mei ingediend]': true,
+      '[goedgekeurde gebiedsaanvraag]': true
     }
   }
 
@@ -49,7 +50,6 @@ let ssids, modelLink
 describe('in het ANLb model', () => {
   before(async () => {
     ({ ssids, modelLink } = await util.setupModel(ANLb, actors, factFunctionSpec))
-    console.log({ ssids, modelLink })
   })
 
   for (let scenario of scenarios) {
