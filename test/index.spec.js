@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import sinon from 'sinon'
 import { LawReg } from '../src/index.js'
 import * as log from 'loglevel'
+import Util from '../src/util'
 
 import awb from './flint-example-awb'
 
@@ -409,19 +410,12 @@ describe('discipl-law-reg', () => {
         ],
         'duties': []
       }
+      const util = new Util(lawReg)
+      let { ssids, modelLink } = await util.setupModel(model, ['ingezetene'], { '[ingezetene]': 'ingezetene' }, false)
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
-      await core.allow(lawmakerSsid)
       let needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
-
-      let actorSsid = await core.newSsid('ephemeral')
-
-      let modelLink = await lawReg.publish(lawmakerSsid, model, {
-        '[ingezetene]':
-          'IS:' + actorSsid.did
-      })
 
       let retrievedModel = await core.get(modelLink)
 
@@ -434,21 +428,18 @@ describe('discipl-law-reg', () => {
 
       let factResolver = (fact) => true
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
+      let actionLink = await lawReg.take(ssids['ingezetene'], needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
 
-      let action = await core.get(actionLink, actorSsid)
+      let action = await core.get(actionLink, ssids['ingezetene'])
 
-      expect(action).to.deep.equal({
-        'data': {
-          'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
-          'DISCIPL_FLINT_FACTS_SUPPLIED': {
-            '[overheid]': true,
-            '[verwelkomst]': true
-          },
-          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
+      expect(action.data).to.deep.equal({
+        'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+        'DISCIPL_FLINT_FACTS_SUPPLIED': {
+          '[overheid]': true,
+          '[verwelkomst]': true
         },
-        'previous': null
+        'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+        'DISCIPL_FLINT_PREVIOUS_CASE': needLink
       })
     })
 
