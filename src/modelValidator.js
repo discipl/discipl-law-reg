@@ -378,8 +378,8 @@ class ModelValidator {
     }
   }
 
-  _checkFactUsage(fact) {
-    if((this.referencePaths[fact.fact]) && (this.referencePaths[fact.fact].length==1)) {
+  _checkFactUsage (fact) {
+    if ((this.referencePaths[fact.fact]) && (this.referencePaths[fact.fact].length === 1)) {
       const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[fact.fact])
       const beginPosition = node.offset
       const endPosition = node.offset + node.length
@@ -390,13 +390,12 @@ class ModelValidator {
         offset: [beginPosition, endPosition],
         severity: 'WARNING',
         source: fact.fact,
-        path : path
+        path: path
       }]
     } else {
-        return []
+      return []
     }
   }
-
 }
 
 export { ModelValidator }

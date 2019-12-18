@@ -355,7 +355,7 @@ describe('The Flint Model validator', () => {
   it('should find unused facts (without acts relating to them)', async () => {
     const model = JSON.stringify({
       'acts': [{ 'act': '<<act>>', 'preconditions': '[usedFact]' }],
-      'facts': [{ 'fact': '[usedFact]'},{ 'fact': '[unusedFact]'}],
+      'facts': [{ 'fact': '[usedFact]' }, { 'fact': '[unusedFact]' }],
       'duties': []
     })
     const modelValidator = new ModelValidator(model)
