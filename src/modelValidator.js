@@ -252,7 +252,7 @@ class ModelValidator {
         const node = jsonc.findNodeAtLocation(this.tree, [expressionCheckPath[0], index, expressionCheckPath[1]])
         // console.log("ExpCheck en index", expressionCheckPath, index);
         if (node && typeof node.value === 'string') {
-          // console.log("Node", node);
+          // console.log("Node", node)
           return this._validateExpression(node.value, node.offset, expressionCheckPath[2])
         } else {
           return this._validateParsedExpressionNode(node)
@@ -260,7 +260,11 @@ class ModelValidator {
       }).reduce(concat, [])
     }).reduce(concat, [])
 
-    return createTerminateErrors.concat(expressionErrors)
+    const unusedFactErrors = this.model.facts.map((fact) => {
+      return this._checkFactUsage(fact)
+    }).reduce(concat, [])
+
+    return createTerminateErrors.concat(expressionErrors).concat(unusedFactErrors)
   }
 
   _checkCreateTerminate (referenceString, node) {
@@ -373,6 +377,26 @@ class ModelValidator {
       }
     }
   }
+
+  _checkFactUsage(fact) {
+    if((this.referencePaths[fact.fact]) && (this.referencePaths[fact.fact].length==1)) {
+      const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[fact.fact])
+      const beginPosition = node.offset
+      const endPosition = node.offset + node.length
+      const path = jsonc.getNodePath(node)
+      return [{
+        code: 'LR0004',
+        message: 'Unused fact: ' + fact.fact,
+        offset: [beginPosition, endPosition],
+        severity: 'WARNING',
+        source: fact.fact,
+        path : path
+      }]
+    } else {
+        return []
+    }
+  }
+
 }
 
 export { ModelValidator }

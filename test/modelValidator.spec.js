@@ -66,7 +66,7 @@ describe('The Flint Model validator', () => {
 
   it('should find errors with improperly named acts, facts, duties', async () => {
     const model = JSON.stringify({
-      'acts': [{ 'act': 'test' }, { 'act': '<<test' }, { 'act': '<<act>>' }],
+      'acts': [{ 'act': 'test' }, { 'act': '<<test' }, { 'act': '<<act>>' }, { 'act': '<<act2>>', 'preconditions': '[fact]' }],
       'facts': [{ 'fact': 'test' }, { 'fact': '[test' }, { 'fact': '[fact]' }],
       'duties': [{ 'duty': 'test' }, { 'duty': '<test' }, { 'duty': '<duty>' }]
     })
@@ -79,7 +79,7 @@ describe('The Flint Model validator', () => {
       'code': 'LR0001',
       'source': 'test',
       'message': 'Invalid name for identifier',
-      'offset': [139, 145],
+      'offset': [183, 189],
       'path': [
         'duties',
         0,
@@ -258,7 +258,7 @@ describe('The Flint Model validator', () => {
 
   it('should find undefined facts used in acts in fact functions', async () => {
     const model = JSON.stringify({
-      'acts': [],
+      'acts': [{ 'act': '<<act>>', 'preconditions': '[factname]' }],
       'facts': [{ 'fact': '[factname]', 'function': '([cats] OF [dogs]) EN [sunshine]' }],
       'duties': []
     })
@@ -271,8 +271,8 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          54,
-          60
+          100,
+          106
         ],
         'path': [
           'facts',
@@ -286,8 +286,8 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          64,
-          70
+          110,
+          116
         ],
         'path': [
           'facts',
@@ -301,8 +301,8 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          75,
-          85
+          121,
+          131
         ],
         'path': [
           'facts',
@@ -318,7 +318,7 @@ describe('The Flint Model validator', () => {
 
   it('should find undefined facts used in lists', async () => {
     const model = JSON.stringify({
-      'acts': [],
+      'acts': [{ 'act': '<<act>>', 'preconditions': '[factname]' }],
       'facts': [{ 'fact': '[factname]',
         'function': {
           'name': 'SomeList',
@@ -337,8 +337,8 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          100,
-          106
+          146,
+          152
         ],
         'path': [
           'facts',
@@ -348,6 +348,35 @@ describe('The Flint Model validator', () => {
         ],
         'severity': 'WARNING',
         'source': '[cats]'
+      }
+    ])
+  })
+
+  it('should find unused facts (without acts relating to them)', async () => {
+    const model = JSON.stringify({
+      'acts': [{ 'act': '<<act>>', 'preconditions': '[usedFact]' }],
+      'facts': [{ 'fact': '[usedFact]'},{ 'fact': '[unusedFact]'}],
+      'duties': []
+    })
+    const modelValidator = new ModelValidator(model)
+
+    const errors = modelValidator.getDiagnostics()
+
+    expect(errors).to.deep.equal([
+      {
+        'code': 'LR0004',
+        'message': 'Unused fact: [unusedFact]',
+        'offset': [
+          96,
+          110
+        ],
+        'path': [
+          'facts',
+          1,
+          'fact'
+        ],
+        'severity': 'WARNING',
+        'source': '[unusedFact]'
       }
     ])
   })
