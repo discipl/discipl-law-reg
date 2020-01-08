@@ -1,6 +1,6 @@
 {
   "name": "@discipl/law-reg",
-  "version": "0.3.7",
+  "version": "0.4.0",
   "description": "Discipl Law and Regulation Compliance Library",
   "main": "dist/index.js",
   "module": "src/index.js",
@@ -39,8 +39,7 @@
     "@discipl/abundance-service": "0.5.0",
     "@discipl/core-baseconnector": "0.2.1",
     "jsonc-parser": "^2.1.1",
-    "loglevel": "1.6.1",
-    "pegjs": "0.10.0"
+    "loglevel": "1.6.1"
   },
   "devDependencies": {
     "@babel/cli": "7.4.4",

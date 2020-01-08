@@ -1,5 +1,4 @@
 import * as jsonc from 'jsonc-parser'
-import { LawReg } from './index'
 
 class ModelValidator {
   /**
@@ -253,7 +252,7 @@ class ModelValidator {
         // console.log("ExpCheck en index", expressionCheckPath, index);
         if (node && typeof node.value === 'string') {
           // console.log("Node", node);
-          return this._validateExpression(node.value, node.offset, expressionCheckPath[2])
+          return this._validateParsedExpression(node.value, node.offset, expressionCheckPath[2])
         } else {
           return this._validateParsedExpressionNode(node)
         }
@@ -328,11 +327,14 @@ class ModelValidator {
     return errors
   }
 
-  _validateParsedExpression (expression, beginOffset, originalExpression) {
+  _validateParsedExpression (expression, beginOffset, exceptions = []) {
     let errors = []
     if (typeof expression === 'string') {
-      const extraOffset = JSON.stringify(originalExpression).indexOf(expression)
-      const error = this._validateReference(expression, beginOffset + extraOffset)
+      if (exceptions.includes(expression.trim())) {
+        return []
+      }
+
+      const error = this._validateReference(expression, beginOffset + 1)
       if (error) {
         errors.push(error)
       }
@@ -340,38 +342,15 @@ class ModelValidator {
 
     if (expression.operands) {
       for (let operand of expression.operands) {
-        errors = errors.concat(this._validateParsedExpression(operand, beginOffset, originalExpression))
+        errors = errors.concat(this._validateParsedExpression(operand, beginOffset, exceptions))
       }
     }
 
     if (expression.operand) {
-      errors = errors.concat(this._validateParsedExpression(expression.operand, beginOffset, originalExpression))
+      errors = errors.concat(this._validateParsedExpression(expression.operand, beginOffset, exceptions))
     }
 
     return errors
-  }
-
-  _validateExpression (expression, beginOffset, exceptions) {
-    try {
-      if (exceptions.includes(expression.trim())) {
-        return []
-      }
-      let lawReg = new LawReg()
-      let parsedFact = lawReg.factParser.parse(expression)
-      return this._validateParsedExpression(parsedFact, beginOffset, expression)
-    } catch (e) {
-      if (e.name === 'SyntaxError') {
-        return [{
-          code: 'LR0003',
-          message: 'Syntax Error: ' + e.message,
-          offset: [beginOffset, beginOffset + expression.length],
-          severity: 'ERROR',
-          source: expression
-        }]
-      } else {
-        throw e
-      }
-    }
   }
 }
 
