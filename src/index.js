@@ -2,7 +2,6 @@ import { AbundanceService } from '@discipl/abundance-service'
 import { ModelValidator } from './modelValidator'
 
 import * as log from 'loglevel'
-import * as peg from 'pegjs'
 import { BaseConnector } from '@discipl/core-baseconnector'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
@@ -23,75 +22,6 @@ const logger = log.getLogger('disciplLawReg')
 class LawReg {
   constructor (abundanceService = new AbundanceService()) {
     this.abundance = abundanceService
-    this.factParser = peg.generate(`
-start
-  = Expression
-  / DelimitedExpression
-
-Expression
-  = EN
-  / OF
-  / NIET
-  / Fact
-  
-DelimitedExpression
-  = _ '(' _ ex:Expression _ ')' _ {
-   return ex
-  }
-  / Fact
-
-Fact
-  = '[' quote: NotFactBracket* ']' {
-  return '[' + quote.join("") + ']'
-  }
-
-EN
-  = op1: DelimitedExpression op2: (_ 'EN' _ DelimitedExpression)+ {
-  let operands = [op1]
-  for (let op of op2) {
-    operands.push(op[3])
-  }
-  return {
-    'expression': 'AND',
-      'operands': operands
-  }
-}
-  
-OF
-  = op1: DelimitedExpression op2: (_ 'OF' _ DelimitedExpression)+ {
-  let operands = [op1]
-  for (let op of op2) {
-    operands.push(op[3])
-  }
-  return {
-    'expression': 'OR',
-      'operands': operands
-  }
-}
-  
-NIET
-  =  'NIET' _ op: DelimitedExpression {
-  return {
-    'expression': 'NOT',
-    'operand': op
-  }
-  }
-  
-NotFactBracket
-  = !'[' !']' char: . {
-  return char
-}
-  
-  
-Text
-  = text: NotFactBracket+ {
-  return text.join('')
-}
-  
-_ "whitespace"
- = [\\r\\n\\t ]*
-`
-    )
   }
 
   getAbundanceService () {
@@ -266,7 +196,7 @@ _ "whitespace"
    *   a. If it is a simple expression, pass to the factResolver
    *   b. If it is a complex expression, parse it and evaluate it by parts
    *
-   * @param {string} fact - fact name
+   * @param {string|object} fact - fact or expression
    * @param {object} ssid - ssid representing the actor
    * @param {Context} context -
    * @returns {Promise<boolean>} - result of the fact
@@ -277,11 +207,11 @@ _ "whitespace"
     if (factLink) {
       return this.checkFactLink(factLink, fact, ssid, context)
     }
-    let parsedFact = typeof fact === 'string' ? this.factParser.parse(fact) : fact
-    if (typeof parsedFact === 'string') {
-      return LawReg.checkFactWithResolver(parsedFact, ssid, context)
+
+    if (typeof fact === 'string') {
+      return LawReg.checkFactWithResolver(fact, ssid, context)
     } else {
-      return this.checkExpression(parsedFact, ssid, context)
+      return this.checkExpression(fact, ssid, context)
     }
   }
 

@@ -230,36 +230,24 @@ describe('The Flint Model validator', () => {
     )
   })
 
-  it('should find invalid expressions in preconditions', async () => {
-    const model = JSON.stringify({
-      'acts': [{ 'act': '<<act>>', 'preconditions': '(not really parsable]}' }],
-      'facts': [],
-      'duties': []
-    })
-
-    const modelValidator = new ModelValidator(model)
-
-    const errors = modelValidator.getDiagnostics()
-
-    expect(errors).to.deep.equal([
-      {
-        'code': 'LR0003',
-        'message': 'Syntax Error: Expected "(", "NIET", or "[" but "n" found.',
-        'offset': [
-          42,
-          64
-        ],
-        'severity': 'ERROR',
-        'source': '(not really parsable]}'
-      }
-    ]
-    )
-  })
-
   it('should find undefined facts used in acts in fact functions', async () => {
     const model = JSON.stringify({
       'acts': [],
-      'facts': [{ 'fact': '[factname]', 'function': '([cats] OF [dogs]) EN [sunshine]' }],
+      'facts': [{ 'fact': '[factname]',
+        'function': {
+          'expression': 'AND',
+          'operands': [
+            {
+              'expression': 'OR',
+              'operands': [
+                '[cats]',
+                '[dogs]'
+              ]
+            },
+            '[sunshine]'
+          ]
+        }
+      }],
       'duties': []
     })
     const modelValidator = new ModelValidator(model)
@@ -271,13 +259,17 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          54,
-          60
+          116,
+          122
         ],
         'path': [
           'facts',
           0,
-          'function'
+          'function',
+          'operands',
+          0,
+          'operands',
+          0
         ],
         'severity': 'WARNING',
         'source': '[cats]'
@@ -286,13 +278,17 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          64,
-          70
+          125,
+          131
         ],
         'path': [
           'facts',
           0,
-          'function'
+          'function',
+          'operands',
+          0,
+          'operands',
+          1
         ],
         'severity': 'WARNING',
         'source': '[dogs]'
@@ -301,13 +297,15 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          75,
-          85
+          136,
+          146
         ],
         'path': [
           'facts',
           0,
-          'function'
+          'function',
+          'operands',
+          1
         ],
         'severity': 'WARNING',
         'source': '[sunshine]'

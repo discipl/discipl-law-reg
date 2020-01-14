@@ -7,9 +7,21 @@
       "action": "[indienen]",
       "object": "[verzoek een besluit te nemen]",
       "interested-party": "[bestuursorgaan]",
-      "preconditions": "NIET [bij wettelijk voorschrift is anders bepaald]",
-      "create": "[aanvraag];\r\n<schriftelijk indienen aanvraag>;\r\n<aanvraag indienen bij bevoegd bestuursorgaan>;\r\n<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>;\r\n<verschaffen gegevens nodig om besluit te nemen>;\r\n<vergaren nodige kennis>;\r\n<besluit berust op deugdelijke motivering>;\r\n<beschikking geven binnen termijn>",
-      "terminate": "-",
+      "preconditions": {
+        "expression": "NOT",
+        "operand": "[bij wettelijk voorschrift is anders bepaald]"
+      },
+      "create": [
+        "[aanvraag]",
+        "<schriftelijk indienen aanvraag>",
+        "<aanvraag indienen bij bevoegd bestuursorgaan>",
+        "<aanvraag ondertekenen en naam aanvrager, adres, dagtekening en aanduiding doen bevatten>",
+        "<verschaffen gegevens nodig om besluit te nemen>",
+        "<vergaren nodige kennis>",
+        "<besluit berust op deugdelijke motivering>",
+        "<beschikking geven binnen termijn>"
+      ],
+      "terminate": [],
       "reference": "art. 1:3 lid 3 Awb",
       "version": "2-[19980101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01",
@@ -23,9 +35,49 @@
       "action": "[bekendmaken]",
       "object": "[besluit]",
       "interested-party": "[belanghebbende(n)]",
-      "preconditions": "[besluit]\r\nEN\r\n(\r\n[toezending besluit aan aanvrager]\r\nOF\r\n[toezending besluit aan meer belanghebbenden]\r\nOF\r\n[uitreiking besluit aan aanvrager]\r\nOF\r\n[uitreiking besluit aan meer belanghebbenden]\r\n)\r\nOF\r\n(\r\nNIET [bekendmaking van het besluit kan geschieden door uitreiking of toezending]\r\nEN\r\n[bekendmaking van het besluit op een andere geschikte wijze]\r\n)",
-      "create": "[besluit treedt in werking]",
-      "terminate": "[aanvraag];\r\n<schriftelijk indienen aanvraag>;\r\n<aanvraag indienen bij bevoegd bestuursorgaan>;\r\n<aanvraag ondertekenen>;\r\n<verschaffen gegevens nodig om besluit te nemen>;\r\n<vergaren nodige kennis>;\r\n<besluit berust op deugdelijke motivering>;\r\n<beschikking geven binnen termijn>",
+      "preconditions": {
+        "expression": "AND",
+        "operands": [
+          "[besluit]",
+          {
+            "expression": "OR",
+            "operands": [
+              {
+                "expression": "OR",
+                "operands": [
+                  "[toezending besluit aan aanvrager]",
+                  "[toezending besluit aan meer belanghebbenden]",
+                  "[uitreiking besluit aan aanvrager]",
+                  "[uitreiking besluit aan meer belanghebbenden]"
+                ]
+              },
+              {
+                "expression": "AND",
+                "operands": [
+                  {
+                    "expression": "NOT",
+                    "operand": "[bekendmaking van het besluit kan geschieden door uitreiking of toezending]"
+                  },
+                  "[bekendmaking van het besluit op een andere geschikte wijze]"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "create": [
+        "[besluit treedt in werking]"
+      ],
+      "terminate": [
+        "[aanvraag]",
+        "<schriftelijk indienen aanvraag>",
+        "<aanvraag indienen bij bevoegd bestuursorgaan>",
+        "<aanvraag ondertekenen>",
+        "<verschaffen gegevens nodig om besluit te nemen>",
+        "<vergaren nodige kennis>",
+        "<besluit berust op deugdelijke motivering>",
+        "<beschikking geven binnen termijn>"
+      ],
       "reference": "art. 3:40 Awb",
       "version": "2-[19940101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=3&afdeling=3.6&artikel=3:40&z=2017-04-01&g=2017-04-01",
@@ -40,8 +92,12 @@
       "object": "[aanvraag]",
       "interested-party": "[belanghebbende]",
       "preconditions": "[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]",
-      "create": "[besluit tot niet in behandeling nemen aanvraag]",
-      "terminate": "[aanvraag]",
+      "create": [
+        "[besluit tot niet in behandeling nemen aanvraag]"
+      ],
+      "terminate": [
+        "[aanvraag]"
+      ],
       "reference": "art. 4:5 Awb",
       "version": "3-[20040701]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=4&titeldeel=4.1&afdeling=4.1.1&artikel=4:5&z=2017-03-10&g=2017-03-10",
@@ -55,9 +111,20 @@
       "action": "[vaststellen]",
       "object": "[formulier]",
       "interested-party": "[aanvrager]",
-      "preconditions": "[bestuursorgaan is bevoegd op de aanvraag te beslissen]\r\nEN\r\nNIET [formulier is bij wettelijk voorschrift voorzien]",
-      "create": "[formulier voor het indienen van aanvragen]",
-      "terminate": "",
+      "preconditions": {
+        "expression": "AND",
+        "operands": [
+          "[bestuursorgaan is bevoegd op de aanvraag te beslissen]",
+          {
+            "expression": "NOT",
+            "operand": "[formulier is bij wettelijk voorschrift voorzien]"
+          }
+        ]
+      },
+      "create": [
+        "[formulier voor het indienen van aanvragen]"
+      ],
+      "terminate": [],
       "reference": "art. 4:4 Awb",
       "version": "2-[19940101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=4&titeldeel=4.1&afdeling=4.1.1&artikel=4:4&z=2017-03-01&g=2017-03-01",
@@ -71,9 +138,20 @@
       "action": "[vaststellen]",
       "object": "[formulier]",
       "interested-party": "[aanvrager]",
-      "preconditions": "[bestuursorgaan is bevoegd op de aanvraag te beslissen]\r\nEN\r\nNIET [formulier is bij wettelijk voorschrift voorzien]",
-      "create": "[formulier voor het verstrekken van gegevens]",
-      "terminate": "",
+      "preconditions": {
+        "expression": "AND",
+        "operands": [
+          "[bestuursorgaan is bevoegd op de aanvraag te beslissen]",
+          {
+            "expression": "NOT",
+            "operand": "[formulier is bij wettelijk voorschrift voorzien]"
+          }
+        ]
+      },
+      "create": [
+        "[formulier voor het verstrekken van gegevens]"
+      ],
+      "terminate": [],
       "reference": "art. 4:4 Awb",
       "version": "2-[19940101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=4&titeldeel=4.1&afdeling=4.1.1&artikel=4:4&z=2017-03-01&g=2017-03-01",
@@ -88,8 +166,11 @@
       "object": "[bezwaarschrift]",
       "interested-party": "[bestuursorgaan]",
       "preconditions": "[beslissing treft de belanghebbende los van het voor te bereiden besluit rechtstreeks in zijn belang]",
-      "create": "[bezwaarschrift]; [bestreden besluit]",
-      "terminate": "",
+      "create": [
+        "[bezwaarschrift]",
+        "[bestreden besluit]"
+      ],
+      "terminate": [],
       "reference": "art. 6:4 lid 1 Awb",
       "version": "",
       "juriconnect": "",
@@ -104,8 +185,12 @@
       "object": "[bestreden besluit]",
       "interested-party": "[belanghebbende(n)]",
       "preconditions": "[voor zover de heroverweging aanleiding geeft]",
-      "create": "[besluit tot herroepen bestreden besluit]",
-      "terminate": "[besluit]",
+      "create": [
+        "[besluit tot herroepen bestreden besluit]"
+      ],
+      "terminate": [
+        "[besluit]"
+      ],
       "reference": "art. 7:11 lid 2 Awb",
       "version": "",
       "juriconnect": "",
@@ -120,8 +205,10 @@
       "object": "[nieuw besluit na herroepen bestreden besluit]",
       "interested-party": "[belanghebbende(n)]",
       "preconditions": "[voor zover de heroverweging aanleiding geeft]",
-      "create": "[besluit]",
-      "terminate": "",
+      "create": [
+        "[besluit]"
+      ],
+      "terminate": [],
       "reference": "art. 7:11 lid 2 Awb",
       "version": "",
       "juriconnect": "",
@@ -136,8 +223,8 @@
       "object": "[beroep]",
       "interested-party": "[bestuursorgaan]",
       "preconditions": "",
-      "create": "",
-      "terminate": "",
+      "create": [],
+      "terminate": [],
       "reference": "art. 6:4 lid 3 Awb",
       "version": "",
       "juriconnect": "",
@@ -149,7 +236,36 @@
     {
       "explanation": "",
       "fact": "[bestuursorgaan]",
-      "function": "(\r\n[wetgevende macht]\r\nOF\r\n((\r\n[kamers en de verenigde vergadering der Staten-Generaal]\r\nOF\r\n[onafhankelijke, bij de wet ingestelde organen die met rechtspraak zijn belast]\r\nOF\r\n[Raad voor de rechtspraak]\r\nOF\r\n[College van afgevaardigden]\r\nOF\r\n[Raad van State]\r\nOF\r\n[Algemene Rekenkamer]\r\nOF\r\n[Nationale ombudsman en de substituut-ombudsmannen als bedoeld in art. 9 lid 1 Wet Nationale ombudsman]\r\nOF\r\n[ombudsmannen en ombudscommissies als bedoeld in art. 9:17, onder b, Awb]\r\n)\r\nEN\r\n[voorzitters, leden, griffiers en secretarissen van de bedoelde organen]\r\nEN\r\n[commissies uit het midden van de bedoelde organen]\r\n)\r\nOF\r\n[procureur-generaal, de plaatsvervangend procureur-generaal en de advocaten-generaal bij de Hoge Raad]\r\nOF\r\n[besturen van bij de wet ingestelde organen die met rechtspraak zijn belast, de Raad voor de rechtspraak en het College van afgevaardigden, alsmede de voorzitters van die besturen]\r\nOF\r\n[commissie van toezicht op de inlichtingen- en veiligheidsdiensten en haar afdelingen, bedoeld in art. 97 Wiv]\r\nOF\r\n[toetsingscommissie inzet bevoegdheden, bedoeld in art. 32 Wiv]\r\n)",
+      "function": {
+        "expression": "OR",
+        "operands": [
+          "[wetgevende macht]",
+          {
+            "expression": "AND",
+            "operands": [
+              {
+                "expression": "OR",
+                "operands": [
+                  "[kamers en de verenigde vergadering der Staten-Generaal]",
+                  "[onafhankelijke, bij de wet ingestelde organen die met rechtspraak zijn belast]",
+                  "[Raad voor de rechtspraak]",
+                  "[College van afgevaardigden]",
+                  "[Raad van State]",
+                  "[Algemene Rekenkamer]",
+                  "[Nationale ombudsman en de substituut-ombudsmannen als bedoeld in art. 9 lid 1 Wet Nationale ombudsman]",
+                  "[ombudsmannen en ombudscommissies als bedoeld in art. 9:17, onder b, Awb]"
+                ]
+              },
+              "[voorzitters, leden, griffiers en secretarissen van de bedoelde organen]",
+              "[commissies uit het midden van de bedoelde organen]"
+            ]
+          },
+          "[procureur-generaal, de plaatsvervangend procureur-generaal en de advocaten-generaal bij de Hoge Raad]",
+          "[besturen van bij de wet ingestelde organen die met rechtspraak zijn belast, de Raad voor de rechtspraak en het College van afgevaardigden, alsmede de voorzitters van die besturen]",
+          "[commissie van toezicht op de inlichtingen- en veiligheidsdiensten en haar afdelingen, bedoeld in art. 97 Wiv]",
+          "[toetsingscommissie inzet bevoegdheden, bedoeld in art. 32 Wiv]"
+        ]
+      },
       "reference": "art. 1:1 lid 1 Awb",
       "version": "10-[20110223]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:1&lid=1&z=2017-03-10&g=2017-03-10",
@@ -158,7 +274,19 @@
     {
       "explanation": "",
       "fact": "[persoon of college, met enig openbaar gezag bekleed]",
-      "function": "(\r\n[persoon]\r\nOF\r\n[college]\r\n)\r\nEN\r\n[met enig openbaar gezag bekleed]",
+      "function": {
+        "expression": "AND",
+        "operands": [
+          {
+            "expression": "OR",
+            "operands": [
+              "[persoon]",
+              "[college]"
+            ]
+          },
+          "[met enig openbaar gezag bekleed]"
+        ]
+      },
       "reference": "art. 1:1 lid 1 Awb",
       "version": "10-[20110223]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:1&lid=1&z=2017-03-10&g=2017-03-10",
@@ -167,7 +295,13 @@
     {
       "explanation": "",
       "fact": "[orgaan van een rechtspersoon die krachtens publiekrecht is ingesteld]",
-      "function": "[orgaan]\r\nEN\r\n[rechtspersoon die krachtens publiekrecht is ingesteld]",
+      "function": {
+        "expression": "AND",
+        "operands": [
+          "[orgaan]",
+          "[rechtspersoon die krachtens publiekrecht is ingesteld]"
+        ]
+      },
       "reference": "art. 1:1 lid 1 Awb",
       "version": "10-[20110223]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:1&lid=1&z=2017-03-10&g=2017-03-10",
@@ -194,7 +328,13 @@
     {
       "explanation": "",
       "fact": "[besluit]",
-      "function": "[schriftelijke beslissing van een bestuursorgaan]\r\nEN\r\n[beslissing inhoudende een publiekrechtelijke rechtshandeling]",
+      "function": {
+        "expression": "AND",
+        "operands": [
+          "[schriftelijke beslissing van een bestuursorgaan]",
+          "[beslissing inhoudende een publiekrechtelijke rechtshandeling]"
+        ]
+      },
       "reference": "art. 1:3 lid 1 Awb",
       "version": "2-[19980101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=1&z=2017-03-01&g=2017-03-01",
@@ -203,7 +343,16 @@
     {
       "explanation": "De passage \"met inbegrip van de afwijzing van een aanvraag daarvan\" is niet in de interpretatie opgenomen. Het is niet duidelijk wat deze passage toevoegd aan de interpretatie. Als het nodig het afwijzen expliciet te benoemen, dan is het bij het definiëren van het concept [besluit].",
       "fact": "[beschikking]",
-      "function": "[besluit]\r\nEN NIET\r\n[besluit dat van algemene strekking is]",
+      "function": {
+        "expression": "AND",
+        "operands": [
+          "[besluit]",
+          {
+            "expression": "NOT",
+            "operand": "[besluit dat van algemene strekking is]"
+          }
+        ]
+      },
       "reference": "art. 1:3 lid 2 Awb",
       "version": "2-[19980101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=2&z=2017-03-01&g=2017-03-01",
@@ -221,7 +370,16 @@
     {
       "explanation": "",
       "fact": "[beleidsregel]",
-      "function": "[bij besluit vastgestelde algemene regel]\r\nEN NIET\r\n[algemeen verbindend voorschrift, omtrent de afweging van belangen, de vaststelling van feiten of de uitleg van wettelijke voorschriften bij het gebruik van een bevoegdheid van een bestuursorgaan]",
+      "function": {
+        "expression": "AND",
+        "operands": [
+          "[bij besluit vastgestelde algemene regel]",
+          {
+            "expression": "NOT",
+            "operand": "[algemeen verbindend voorschrift, omtrent de afweging van belangen, de vaststelling van feiten of de uitleg van wettelijke voorschriften bij het gebruik van een bevoegdheid van een bestuursorgaan]"
+          }
+        ]
+      },
       "reference": "art. 1:3 lid 4 Awb",
       "version": "2-[19980101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=4&z=2017-03-01&g=2017-03-01",
@@ -311,11 +469,19 @@
     {
       "explanation": "",
       "fact": "[aanvraag is ondertekend en bevat: naam en adres aanvrager; dagtekening, aanduiding van de gevraagde beschikking]",
-      "function": "[aanvraag is ondertekend]\r\nEN\r\n[aanvraag bevat naam en adres aanvrager]\r\nEN\r\n[aanvraag bevat dagtekening]\r\nEN\r\n[aanvraag bevat aanduiding van de gevraagde beschikking]",
+      "function": {
+        "expression": "AND",
+        "operands": [
+          "[aanvraag is ondertekend]",
+          "[aanvraag bevat naam en adres aanvrager]",
+          "[aanvraag bevat dagtekening]",
+          "[aanvraag bevat aanduiding van de gevraagde beschikking]"
+        ]
+      },
       "reference": "art. 4:2 lid 1 Awb",
       "version": "2-[19940101]-[jjjjmmdd]",
       "juriconnect": "jci1.3:c:BWBR0005537&hoofdstuk=4&titeldeel=4.1&afdeling=4.1.1&artikel=4:2&lid=1&z=2017-03-10&g=2017-03-10",
-      "sourcetext": "{De aanvraag wordt ondertekend en bevat ten minste:\r\na. de naam en het adres van de aanvrager;\r\nb. de dagtekening;\r\nc. een aanduiding van de beschikking die wordt gevraagd.}"
+      "sourcetext": "{De aanvraag wordt ondertekend en bevat ten minste:\r\na. de naam en het adres van de aanvrager;\r\n b. de dagtekening;\r\nc. een aanduiding van de beschikking die wordt gevraagd.}"
     },
     {
       "explanation": "",
