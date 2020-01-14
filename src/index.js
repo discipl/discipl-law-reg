@@ -117,6 +117,28 @@ class LawReg {
         let listResult = hasUndefined ? undefined : resultIndex !== 0
         logger.debug('Resolved LIST as', listResult)
         return listResult
+      case 'LESS_THAN':
+        logger.debug('Switch case: LESS_THAN')
+        let lastOperandResult
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
+          if (typeof lastOperandResult !== 'undefined') {
+            if (operandResult <= lastOperandResult) {
+              logger.debug('Resolved LESS_THAN as false, because', lastOperandResult, 'is not less than', operandResult)
+              return false
+            }
+          }
+
+          lastOperandResult = operandResult
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        let lessThanResult = hasUndefined ? undefined : true
+        logger.debug('Resolved LESS_THAN as', lessThanResult)
+        return lessThanResult
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {

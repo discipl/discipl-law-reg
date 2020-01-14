@@ -574,6 +574,102 @@ describe('discipl-law-reg', () => {
       expect(activeDuties2).to.deep.equal(['<verwelkomen>'])
     })
 
+    it('should be able to compare numbers', async () => {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const model = {
+        'acts': [
+          {
+            'act': '<<determine 3 to be less than 5>>',
+            'actor': '[mathematician]',
+            'object': '[expression]',
+            'interested-party': '[user]',
+            'preconditions': {
+              'expression': 'LESS_THAN',
+              'operands': [
+                '[three]',
+                '[five]'
+              ]
+            }
+          }
+        ],
+        'facts': [],
+        'duties': []
+      }
+      const util = new Util(lawReg)
+
+      let { ssids, modelLink } = await util.setupModel(model, ['mathematician'], { 'mathematician': '[mathematician]' })
+      let needLink = await core.claim(ssids['mathematician'], {
+        'need': {
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => {
+        if (fact === '[three]') {
+          return 3
+        } else if (fact === '[five]') {
+          return 5
+        }
+
+        return true
+      }
+
+      let actionLink = await lawReg.take(ssids['mathematician'], needLink, '<<determine 3 to be less than 5>>', factResolver)
+
+      expect(actionLink).to.be.a('string')
+    })
+
+    it('should be able to compare numbers and reject an action', async () => {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const model = {
+        'acts': [
+          {
+            'act': '<<determine 5 to be less than 3>>',
+            'actor': '[mathematician]',
+            'object': '[expression]',
+            'interested-party': '[user]',
+            'preconditions': {
+              'expression': 'LESS_THAN',
+              'operands': [
+                '[five]',
+                '[three]'
+              ]
+            }
+          }
+        ],
+        'facts': [],
+        'duties': []
+      }
+      const util = new Util(lawReg)
+
+      let { ssids, modelLink } = await util.setupModel(model, ['mathematician'], { 'mathematician': '[mathematician]' })
+      let needLink = await core.claim(ssids['mathematician'], {
+        'need': {
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => {
+        if (fact === '[three]') {
+          return 3
+        } else if (fact === '[five]') {
+          return 5
+        }
+
+        return true
+      }
+
+      let errorMessage = ''
+      try {
+        let check = await lawReg.take(ssids['mathematician'], needLink, '<<determine 5 to be less than 3>>', factResolver)
+        console.log(check)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(errorMessage).to.equal('Action <<determine 3 to be less than 5>> is not allowed')
+    })
+
     it('should be able to determine active duties being terminated', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
