@@ -191,6 +191,40 @@ class LawReg {
         const finalProductResult = hasUndefined ? undefined : productResult
         logger.debug('Resolved PRODUCT as', finalProductResult)
         return finalProductResult
+      case 'MIN':
+        logger.debug('Switch case: MIN')
+        let minResult
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in MIN', operandResult, 'for operand', op)
+          if (typeof minResult === 'undefined' || operandResult < minResult) {
+            minResult = operandResult
+          }
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        const finalMinResult = hasUndefined ? undefined : minResult
+        logger.debug('Resolved MIN as', finalMinResult)
+        return finalMinResult
+      case 'MAX':
+        logger.debug('Switch case: MAX')
+        let maxResult
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in MAX', operandResult, 'for operand', op)
+          if (typeof maxResult === 'undefined' || operandResult > maxResult) {
+            maxResult = operandResult
+          }
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        const finalMaxResult = hasUndefined ? undefined : maxResult
+        logger.debug('Resolved MAX as', finalMaxResult)
+        return finalMaxResult
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {

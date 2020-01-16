@@ -743,6 +743,44 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to determine the maximum of numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'MAX',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[five]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
+    it('should be able to determine the minimum of numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'MIN',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[three]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
     it('should be able to determine active duties being terminated', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
