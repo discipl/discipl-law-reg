@@ -176,6 +176,21 @@ class LawReg {
         let finalSumResult = hasUndefined ? undefined : sumResult
         logger.debug('Resolved SUM as', finalSumResult)
         return finalSumResult
+      case 'PRODUCT':
+        logger.debug('Switch case: PRODUCT')
+        let productResult = 1
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in PRODUCT', operandResult, 'for operand', op)
+          productResult *= operandResult
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        const finalProductResult = hasUndefined ? undefined : productResult
+        logger.debug('Resolved PRODUCT as', finalProductResult)
+        return finalProductResult
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {

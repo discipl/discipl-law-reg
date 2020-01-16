@@ -703,6 +703,46 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to multiply numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'PRODUCT',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[fifteen]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5,
+        '[fifteen]': 15
+      })
+    })
+
+    it('should be able to add numbers with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'PRODUCT',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[fourteen]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5,
+        '[fourteen]': 14
+      })
+    })
+
     it('should be able to determine active duties being terminated', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
