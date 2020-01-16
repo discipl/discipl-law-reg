@@ -574,100 +574,93 @@ describe('discipl-law-reg', () => {
       expect(activeDuties2).to.deep.equal(['<verwelkomen>'])
     })
 
-    it('should be able to compare numbers', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
+    const testMathExpression = async (precondition, facts) => {
       const model = {
         'acts': [
           {
-            'act': '<<determine 3 to be less than 5>>',
+            'act': '<<compute mathematical expression>>',
             'actor': '[mathematician]',
             'object': '[expression]',
             'interested-party': '[user]',
-            'preconditions': {
-              'expression': 'LESS_THAN',
-              'operands': [
-                '[three]',
-                '[five]'
-              ]
-            }
+            'preconditions': precondition
           }
         ],
         'facts': [],
         'duties': []
       }
+
+      const completeFacts = { '[expression]': true, '[user]': true, '[mathematician]': true, ...facts }
       const util = new Util(lawReg)
 
       let { ssids, modelLink } = await util.setupModel(model, ['mathematician'], { 'mathematician': '[mathematician]' })
-      let needLink = await core.claim(ssids['mathematician'], {
-        'need': {
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
 
-      const factResolver = (fact) => {
-        if (fact === '[three]') {
-          return 3
-        } else if (fact === '[five]') {
-          return 5
-        }
+      await util.scenarioTest(ssids, modelLink, [{ 'act': '<<compute mathematical expression>>', 'actor': 'mathematician' }], completeFacts)
+    }
 
-        return true
-      }
-
-      let actionLink = await lawReg.take(ssids['mathematician'], needLink, '<<determine 3 to be less than 5>>', factResolver)
-
-      expect(actionLink).to.be.a('string')
-    })
-
-    it('should be able to compare numbers and reject an action', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-      const model = {
-        'acts': [
-          {
-            'act': '<<determine 5 to be less than 3>>',
-            'actor': '[mathematician]',
-            'object': '[expression]',
-            'interested-party': '[user]',
-            'preconditions': {
-              'expression': 'LESS_THAN',
-              'operands': [
-                '[five]',
-                '[three]'
-              ]
-            }
-          }
-        ],
-        'facts': [],
-        'duties': []
-      }
-      const util = new Util(lawReg)
-
-      let { ssids, modelLink } = await util.setupModel(model, ['mathematician'], { 'mathematician': '[mathematician]' })
-      let needLink = await core.claim(ssids['mathematician'], {
-        'need': {
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const factResolver = (fact) => {
-        if (fact === '[three]') {
-          return 3
-        } else if (fact === '[five]') {
-          return 5
-        }
-
-        return true
-      }
-
+    const testFalseMathExpression = async (precondition, facts) => {
       let errorMessage = ''
       try {
-        let check = await lawReg.take(ssids['mathematician'], needLink, '<<determine 5 to be less than 3>>', factResolver)
-        console.log(check)
+        await testMathExpression(precondition, facts)
       } catch (e) {
         errorMessage = e.message
       }
+      expect(errorMessage).to.equal('Action <<compute mathematical expression>> is not allowed')
+    }
 
-      expect(errorMessage).to.equal('Action <<determine 3 to be less than 5>> is not allowed')
+    it('should be able to compare numbers', async () => {
+      await testMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          '[three]',
+          '[five]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
+    it('should be able to compare numbers equality', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          '[dozen]',
+          '[twelve]'
+        ]
+      },
+      {
+        '[dozen]': 12,
+        '[twelve]': 12
+      })
+    })
+
+    it('should be able to compare numbers equality with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          '[dozen]',
+          '[thirteen]'
+        ]
+      },
+      {
+        '[dozen]': 12,
+        '[thirteen]': 13
+      })
+    })
+
+    it('should be able to compare numbers with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          '[five]',
+          '[three]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
     })
 
     it('should be able to determine active duties being terminated', async () => {
