@@ -621,17 +621,31 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    it('should be able to compare numbers equality', async () => {
-      await testMathExpression({
-        'expression': 'EQUAL',
+    it('should be able to compare numbers with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'LESS_THAN',
         'operands': [
-          '[dozen]',
-          '[twelve]'
+          '[five]',
+          '[three]'
         ]
       },
       {
-        '[dozen]': 12,
-        '[twelve]': 12
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
+    it('should be able to compare numbers with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          '[five]',
+          '[three]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
       })
     })
 
@@ -649,17 +663,43 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    it('should be able to compare numbers with a false result', async () => {
-      await testFalseMathExpression({
-        'expression': 'LESS_THAN',
+    it('should be able to add numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
         'operands': [
-          '[five]',
-          '[three]'
+          {
+            'expression': 'SUM',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[eight]'
         ]
       },
       {
         '[three]': 3,
-        '[five]': 5
+        '[five]': 5,
+        '[eight]': 8
+      })
+    })
+
+    it('should be able to add numbers with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'SUM',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[nine]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5,
+        '[nine]': 9
       })
     })
 

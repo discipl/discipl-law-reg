@@ -161,6 +161,21 @@ class LawReg {
         let equalResult = hasUndefined ? undefined : true
         logger.debug('Resolved LESS_THAN as', equalResult)
         return equalResult
+      case 'SUM':
+        logger.debug('Switch case: SUM')
+        let sumResult = 0
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in SUM', operandResult, 'for operand', op)
+          sumResult += operandResult
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        let finalSumResult = hasUndefined ? undefined : sumResult
+        logger.debug('Resolved SUM as', finalSumResult)
+        return finalSumResult
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {
