@@ -231,7 +231,7 @@ class LawReg {
           return this.checkFact(fact, ssid, context)
         }
 
-        throw new Error('Undefined fact')
+        throw new Error('Unknown expression type')
     }
   }
 
