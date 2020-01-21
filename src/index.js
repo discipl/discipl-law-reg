@@ -117,6 +117,114 @@ class LawReg {
         let listResult = hasUndefined ? undefined : resultIndex !== 0
         logger.debug('Resolved LIST as', listResult)
         return listResult
+      case 'LESS_THAN':
+        logger.debug('Switch case: LESS_THAN')
+        let lastOperandResult
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
+          if (typeof lastOperandResult !== 'undefined') {
+            if (operandResult <= lastOperandResult) {
+              logger.debug('Resolved LESS_THAN as false, because', lastOperandResult, 'is not less than', operandResult)
+              return false
+            }
+          }
+
+          lastOperandResult = operandResult
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        let lessThanResult = hasUndefined ? undefined : true
+        logger.debug('Resolved LESS_THAN as', lessThanResult)
+        return lessThanResult
+      case 'EQUAL':
+        logger.debug('Switch case: LESS_THAN')
+        let lastEqualOperandResult
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in EQUAL', operandResult, 'for operand', op)
+          if (typeof lastEqualOperandResult !== 'undefined') {
+            if (operandResult !== lastEqualOperandResult) {
+              logger.debug('Resolved EQUAL as false, because', lastEqualOperandResult, 'does not equal', operandResult)
+              return false
+            }
+          }
+
+          lastEqualOperandResult = operandResult
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        let equalResult = hasUndefined ? undefined : true
+        logger.debug('Resolved LESS_THAN as', equalResult)
+        return equalResult
+      case 'SUM':
+        logger.debug('Switch case: SUM')
+        let sumResult = 0
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in SUM', operandResult, 'for operand', op)
+          sumResult += operandResult
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        let finalSumResult = hasUndefined ? undefined : sumResult
+        logger.debug('Resolved SUM as', finalSumResult)
+        return finalSumResult
+      case 'PRODUCT':
+        logger.debug('Switch case: PRODUCT')
+        let productResult = 1
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in PRODUCT', operandResult, 'for operand', op)
+          productResult *= operandResult
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        const finalProductResult = hasUndefined ? undefined : productResult
+        logger.debug('Resolved PRODUCT as', finalProductResult)
+        return finalProductResult
+      case 'MIN':
+        logger.debug('Switch case: MIN')
+        let minResult
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in MIN', operandResult, 'for operand', op)
+          if (typeof minResult === 'undefined' || operandResult < minResult) {
+            minResult = operandResult
+          }
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        const finalMinResult = hasUndefined ? undefined : minResult
+        logger.debug('Resolved MIN as', finalMinResult)
+        return finalMinResult
+      case 'MAX':
+        logger.debug('Switch case: MAX')
+        let maxResult
+        for (let op of fact.operands) {
+          let operandResult = await this.checkExpression(op, ssid, context)
+          logger.debug('OperandResult in MAX', operandResult, 'for operand', op)
+          if (typeof maxResult === 'undefined' || operandResult > maxResult) {
+            maxResult = operandResult
+          }
+
+          if (typeof operandResult === 'undefined') {
+            hasUndefined = true
+          }
+        }
+        const finalMaxResult = hasUndefined ? undefined : maxResult
+        logger.debug('Resolved MAX as', finalMaxResult)
+        return finalMaxResult
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {

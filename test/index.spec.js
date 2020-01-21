@@ -574,6 +574,213 @@ describe('discipl-law-reg', () => {
       expect(activeDuties2).to.deep.equal(['<verwelkomen>'])
     })
 
+    const testMathExpression = async (precondition, facts) => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<compute mathematical expression>>',
+            'actor': '[mathematician]',
+            'object': '[expression]',
+            'interested-party': '[user]',
+            'preconditions': precondition
+          }
+        ],
+        'facts': [],
+        'duties': []
+      }
+
+      const completeFacts = { '[expression]': true, '[user]': true, '[mathematician]': true, ...facts }
+      const util = new Util(lawReg)
+
+      let { ssids, modelLink } = await util.setupModel(model, ['mathematician'], { 'mathematician': '[mathematician]' })
+
+      await util.scenarioTest(ssids, modelLink, [{ 'act': '<<compute mathematical expression>>', 'actor': 'mathematician' }], completeFacts)
+    }
+
+    const testFalseMathExpression = async (precondition, facts) => {
+      let errorMessage = ''
+      try {
+        await testMathExpression(precondition, facts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+      expect(errorMessage).to.equal('Action <<compute mathematical expression>> is not allowed')
+    }
+
+    it('should be able to compare numbers', async () => {
+      await testMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          '[three]',
+          '[five]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
+    it('should be able to compare numbers with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          '[five]',
+          '[three]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
+    it('should be able to compare numbers with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          '[five]',
+          '[three]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
+    it('should be able to compare numbers equality with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          '[dozen]',
+          '[thirteen]'
+        ]
+      },
+      {
+        '[dozen]': 12,
+        '[thirteen]': 13
+      })
+    })
+
+    it('should be able to add numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'SUM',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[eight]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5,
+        '[eight]': 8
+      })
+    })
+
+    it('should be able to add numbers with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'SUM',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[nine]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5,
+        '[nine]': 9
+      })
+    })
+
+    it('should be able to multiply numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'PRODUCT',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[fifteen]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5,
+        '[fifteen]': 15
+      })
+    })
+
+    it('should be able to add numbers with a false result', async () => {
+      await testFalseMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'PRODUCT',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[fourteen]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5,
+        '[fourteen]': 14
+      })
+    })
+
+    it('should be able to determine the maximum of numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'MAX',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[five]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
+    it('should be able to determine the minimum of numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'MIN',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[three]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
     it('should be able to determine active duties being terminated', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
