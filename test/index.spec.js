@@ -781,6 +781,26 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should throw an error with unknown expressions', async () => {
+      let errorMessage
+      try {
+        await testMathExpression({
+          'expression': 'BANANAS',
+          'operands': [
+            '[three]', '[five]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5
+        })
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(errorMessage).to.equal('Unknown expression type')
+    })
+
     it('should be able to determine active duties being terminated', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
