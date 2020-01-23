@@ -781,6 +781,26 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should throw an error with unknown expressions', async () => {
+      let errorMessage
+      try {
+        await testMathExpression({
+          'expression': 'BANANAS',
+          'operands': [
+            '[three]', '[five]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5
+        })
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(errorMessage).to.equal('Unknown expression type')
+    })
+
     it('should be able to determine active duties being terminated', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
@@ -933,8 +953,8 @@ describe('discipl-law-reg', () => {
 
     it('should be able to determine possible actions with a list', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
-
-      const model = {
+      let util = new Util(lawReg)
+      let { ssids, modelLink } = await util.setupModel({
         'model': 'Fictieve kinderbijslag',
         'acts': [
           {
@@ -960,30 +980,68 @@ describe('discipl-law-reg', () => {
           { 'fact': '[ingezetene]', 'function': '[]', 'reference': '' }
         ],
         'duties': []
-      }
+      }, ['actor'], {})
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
-      await core.allow(lawmakerSsid)
-      let needSsid = await core.newSsid('ephemeral')
-
-      await core.allow(needSsid)
-
-      let actorSsid = await core.newSsid('ephemeral')
-
-      let modelLink = await lawReg.publish(lawmakerSsid, model, {})
-
-      let needLink = await core.claim(needSsid, {
+      let needLink = await core.claim(ssids['actor'], {
         'need': {
           'act': '<<kinderbijslag aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let possibleActs = (await lawReg.getAvailableActs(needLink, actorSsid, [], [])).map((actInfo) => actInfo.act)
+      let possibleActs = (await lawReg.getAvailableActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
 
       expect(possibleActs).to.deep.equal([])
 
-      let potentialActs = (await lawReg.getPotentialActs(needLink, actorSsid, [], [])).map((actInfo) => actInfo.act)
+      let potentialActs = (await lawReg.getPotentialActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(potentialActs).to.deep.equal(['<<kinderbijslag aanvragen>>'])
+    })
+
+    it('should be able to determine possible actions with a less than', async () => {
+      let core = lawReg.getAbundanceService().getCoreAPI()
+      let util = new Util(lawReg)
+      let { ssids, modelLink } = await util.setupModel({
+        'model': 'Fictieve kinderbijslag',
+        'acts': [
+          {
+            'act': '<<kinderbijslag aanvragen>>',
+            'action': '[aanvragen]',
+            'actor': '[ouder]',
+            'object': '[verzoek]',
+            'interested-party': '[overheid]',
+            'preconditions': {
+              'expression': 'LESS_THAN',
+              'operands': [
+                '[kinderen]',
+                '[honderd]'
+              ]
+            },
+            'create': [],
+            'terminate': [],
+            'reference': 'art 2.1',
+            'sourcetext': '',
+            'explanation': '',
+            'version': '2-[19980101]-[jjjjmmdd]',
+            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+          }],
+        'facts': [
+        ],
+        'duties': []
+      }, ['actor'], {})
+
+      let needLink = await core.claim(ssids['actor'], {
+        'need': {
+          'act': '<<kinderbijslag aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      let possibleActs = (await lawReg.getAvailableActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(possibleActs).to.deep.equal([])
+
+      let potentialActs = (await lawReg.getPotentialActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
 
       expect(potentialActs).to.deep.equal(['<<kinderbijslag aanvragen>>'])
     })
