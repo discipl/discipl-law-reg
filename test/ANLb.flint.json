@@ -81,13 +81,13 @@
         {
             "act": "<<verantwoorden beheeractiviteiten en wijzigingen>>",
             "actor": "[agrarisch collectief]",
-            "action": "[]",
+            "action": "[verantwoording]",
             "object": "[begroting]",
             "interested-party": "[RVO]",
             "preconditions": {
                 "expression": "AND",
                 "operands": [
-                    "[identiteit van de begustigde]",
+                    "[identiteit van de begunstigde]",
                     "[kenmerk van de bijbehorende beschikking tot subsidieverlening van de gebiedsaanvraag]",
                     "[De wijzigingen (ten opzichte van jaarlijks beheer) die doorgevoerd zijn op de beheeractiviteiten met reden van wijzigen en per welke datum (indien van toepassing).]",
                     {
@@ -103,328 +103,359 @@
                                 "[De beheerfunctie waartoe het perceel behoort]",
                                 "[Opgave van de uitgevoerde beheeractiviteit (Nederlandse versie van de koppeltabel) of combinatie van beheeractiviteiten.]",
                                 "[De aard van het grondgebruik: grasland, bouwland, landschapselement (w.o. water)]"
-                            
                             ]
                         }
                     },
                     "[Digitale handtekening van de verantwoording]"
                 ]
-                },
-                "create": [],
-                "terminate": [],
-                "version": "",
-                "reference": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
             },
-            {
-                "act": "<<Beoordelen verantwoording>>",
-                "actor": "[RVO]",
-                "action": "[beoordelen]",
-                "object": "[verantwoording]",
-                "interested-party": "[agrarisch collectief]",
-                "preconditions": "",
-                "create": [],
-                "terminate": [],
-                "version": "",
-                "reference": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
+            "create": [
+                "<vaststellen voldoen aan alle voorwaarden>",
+                "<bepalen hoogte betaling>"
+            ],
+            "terminate": [],
+            "version": "",
+            "reference": "art. 3.11 h SVNL",
+            "juriconnect": "",
+            "sourcetext": "de subsidieontvanger dient uiterlijk 1 oktober van ieder kalenderjaar een verantwoording in waarin is beschreven: 1. welke activiteiten als bedoeld onder b, daadwerkelijk zijn uitgevoerd; 2.welke wijzigingen als bedoeld onder d, e en f hebben plaatsgevonden en waarom;",
+            "explanation": ""
+        },
+        {
+            "act": "<<Beoordelen verantwoording>>",
+            "actor": "[RVO]",
+            "action": "[beoordelen]",
+            "object": "[verantwoording]",
+            "interested-party": "[agrarisch collectief]",
+            "preconditions": "",
+            "create": [],
+            "terminate": [],
+            "version": "",
+            "reference": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {   
+            "act": "<<beoordelen betalingsaanvraag>>",
+            "actor": "[RVO]",
+            "action": "[beoordelen]",
+            "object": "[betalingsaanvraag]",
+            "interested-party": "[agrarisch collectief]",
+            "preconditions": { 
+                "expression": "AND",
+                "operands": [
+                    "[agrarisch collectief heeft subsidie ANLb ontvangen in betreffende provincie]",
+                    "[agrarisch collectief heeft een certificaat collectief agrarisch natuurbeheer verkregen van de Stichting certificering SNL voor de gehele subsidieperiode]",
+                    "[Er is een beheerplan]",
+                    "[Wijzigingen zijn ingediend voor 1 oktober van het betreffende jaar]",
+                    "[Meldingen zijn gedaan uiterlijk op 20 september van het lopende jaar]",
+                    "[Gecontroleerd is dat het minimale percentage dat genoemd is, is gehaald in de betreffende beheeractiviteit qua oppervlakte]",
+                    "[Vastgesteld is dat de reden van de wijziging van de beheeractiviteit geoorloofd is]",
+                    "[Vastgesteld is dat de wijziging of melding is toegestaan]"
+
+
+                ]
             },
-            {
-                "act": "<<beoordelen betalingsaanvraag>>",
-                "actor": "[RVO]",
-                "action": "[beoordelen]",
-                "object": "[betalingsaanvraag]",
-                "interested-party": "[agrarisch collectief]",
-                "preconditions": "",
-                "create": [],
-                "terminate": [],
-                "version": "",
-                "reference": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
+            "create": [],
+            "terminate": [],
+            "version": "",
+            "reference": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "act": "<<Uitbetalen subsidie ANLb>>",
+            "actor": "[RVO]",
+            "action": "[uitbetalen]",
+            "object": "[subsidie ANLb]",
+            "interested-party": "[agrarisch collectief]",
+            "preconditions": "",
+            "create": [],
+            "terminate": [],
+            "version": "",
+            "reference": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "act": "<<Vaststellen natuurbeheerplan>>",
+            "actor": "[provincie]",
+            "action": "[vaststellen]",
+            "object": "[natuurbeheerplan]",
+            "interested-party": "[]",
+            "preconditions": "",
+            "create": [],
+            "terminate": [],
+            "version": "",
+            "reference": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        }
+    ],
+    "facts": [
+        {
+            "fact": "[aanvraag]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[subsidie ANLb]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[aanvraagformulier betalingsaanvraag]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[agrarisch collectief]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[betalingsaanvraag]",
+            "function": {
+                "expression": "AND",
+                "operands": [
+                    "[goedgekeurde gebiedsaanvraag]",
+                    "[identiteit van de begunstigde]",
+                    "[De naam van de regeling]",
+                    "[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]",
+                    {
+                        "expression": "LIST",
+                        "items": {
+                            "expression": "AND",
+                            "operands": [
+                                "[De ligging (geometrie).]",
+                                "[Het leefgebied waartoe het perceel behoort.]",
+                                "[Indien van toepassing het deelgebied waartoe het perceel behoort.]",
+                                "[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]",
+                                "[Aard van het grondgebruik (grasland, bouwland, landschapselement of water).]"
+                            ]
+                        }
+                    },
+                    "[De identificatie van niet-landbouwgrond die voor steun in aanmerking komt (subsidiabele landschapselementen (met uitzondering van hoogstamboomgaard, natuurvriendelijke oever en solitaire boom) en water).]",
+                    "[Verklaring van het agrarisch collectief dat de individuele deelnemers weten wat de verplichtingen en consequenties zijn]",
+                    "[De unieke identificatie van iedere deelnemer van het agrarisch collectief]",
+                    "[Aanvraagnummer gebiedsaanvraag (provincie) als bewijsstuk om te bepalen of de begunstigde voor betaling in aanmerking komt.]",
+                    "[De bewijsstukken die nodig zijn om te bepalen of de aanspraak op de steun/bijstand kan worden gemaakt. Hier moet worden gedacht aan stukken die de inhoud van de betalingsaanvraag onderbouwen]"
+                ]
             },
-            {
-                "act": "<<Uitbetalen subsidie ANLb>>",
-                "actor": "[RVO]",
-                "action": "[uitbetalen]",
-                "object": "[subsidie ANLb]",
-                "interested-party": "[agrarisch collectief]",
-                "preconditions": "",
-                "create": [],
-                "terminate": [],
-                "version": "",
-                "reference": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            }
-        ],
-        "facts": [
-            {
-                "fact": "[aanvraag]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[subsidie ANLb]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[aanvraagformulier betalingsaanvraag]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[agrarisch collectief]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[betalingsaanvraag]",
-                "function": {
-                    "expression": "AND",
-                    "operands": [
-                        "[goedgekeurde gebiedsaanvraag]",
-                        "[De identiteit van de begunstigde]",
-                        "[De naam van de regeling]",
-                        "[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]",
-                        {
-                            "expression": "LIST",
-                            "items": {
-                                "expression": "AND",
-                                "operands": [
-                                    "[De ligging (geometrie).]",
-                                    "[Het leefgebied waartoe het perceel behoort.]",
-                                    "[Indien van toepassing het deelgebied waartoe het perceel behoort.]",
-                                    "[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]",
-                                    "[Aard van het grondgebruik (grasland, bouwland, landschapselement of water).]"
-                                ]
-                            }
-                        },
-                        "[De identificatie van niet-landbouwgrond die voor steun in aanmerking komt (subsidiabele landschapselementen (met uitzondering van hoogstamboomgaard, natuurvriendelijke oever en solitaire boom) en water).]",
-                        "[Verklaring van het agrarisch collectief dat de individuele deelnemers weten wat de verplichtingen en consequenties zijn]",
-                        "[De unieke identificatie van iedere deelnemer van het agrarisch collectief]",
-                        "[Aanvraagnummer gebiedsaanvraag (provincie) als bewijsstuk om te bepalen of de begunstigde voor betaling in aanmerking komt.]",
-                        "[De bewijsstukken die nodig zijn om te bepalen of de aanspraak op de steun/bijstand kan worden gemaakt. Hier moet worden gedacht aan stukken die de inhoud van de betalingsaanvraag onderbouwen]"
-                    ]
-                },
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[betaalverzoek is tussen 1 maart en 15 mei ingediend]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[agrarisch collectief]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[RVO]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[subsidieontvanger]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": "subisidieontvanger is in dit deze context het agrarisch collectief"
-            },
-            {
-                "fact": "[De identiteit van de begunstigde]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[De naam van de regeling]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[De identificatie van niet-landbouwgrond die voor steun in aanmerking komt (subsidiabele landschapselementen (met uitzondering van hoogstamboomgaard, natuurvriendelijke oever en solitaire boom) en water).]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[Verklaring van het agrarisch collectief dat de individuele deelnemers weten wat de verplichtingen en consequenties zijn]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[De unieke identificatie van iedere deelnemer van het agrarisch collectief]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[Aanvraagnummer gebiedsaanvraag (provincie) als bewijsstuk om te bepalen of de begunstigde voor betaling in aanmerking komt.]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[De bewijsstukken die nodig zijn om te bepalen of de aanspraak op de steun/bijstand kan worden gemaakt. Hier moet worden gedacht aan stukken die de inhoud van de betalingsaanvraag onderbouwen]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[goedgekeurde gebiedsaanvraag]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[voorafgaande controles]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[voorafgaand controleren]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": "dit is een fact om het model kloppend te maken"
-            },
-            {
-                "fact": "[fouten]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[geconstateerde fout]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[begroting]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[Correctie]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[teruglegging geconstateerde fouten]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            },
-            {
-                "fact": "[verantwoording]",
-                "function": "[]",
-                "version": "",
-                "art": "",
-                "juriconnect": "",
-                "sourcetext": "",
-                "explanation": ""
-            }
-        ],
-        "duties": []
-    }
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[betaalverzoek is tussen 1 maart en 15 mei ingediend]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[agrarisch collectief]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[RVO]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[subsidieontvanger]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": "subisidieontvanger is in dit deze context het agrarisch collectief"
+        },
+        {
+            "fact": "[identiteit van de begunstigde]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[De naam van de regeling]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[De identificatie van niet-landbouwgrond die voor steun in aanmerking komt (subsidiabele landschapselementen (met uitzondering van hoogstamboomgaard, natuurvriendelijke oever en solitaire boom) en water).]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[Verklaring van het agrarisch collectief dat de individuele deelnemers weten wat de verplichtingen en consequenties zijn]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[De unieke identificatie van iedere deelnemer van het agrarisch collectief]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[Aanvraagnummer gebiedsaanvraag (provincie) als bewijsstuk om te bepalen of de begunstigde voor betaling in aanmerking komt.]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[De bewijsstukken die nodig zijn om te bepalen of de aanspraak op de steun/bijstand kan worden gemaakt. Hier moet worden gedacht aan stukken die de inhoud van de betalingsaanvraag onderbouwen]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[goedgekeurde gebiedsaanvraag]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[voorafgaande controles]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[voorafgaand controleren]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": "dit is een fact om het model kloppend te maken"
+        },
+        {
+            "fact": "[fouten]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[geconstateerde fout]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[begroting]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[Correctie]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[teruglegging geconstateerde fouten]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        },
+        {
+            "fact": "[verantwoording]",
+            "function": "[]",
+            "version": "",
+            "art": "",
+            "juriconnect": "",
+            "sourcetext": "",
+            "explanation": ""
+        }
+    ],
+    "duties": []
+}

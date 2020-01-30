@@ -25,8 +25,7 @@ const scenarios = [
       }
     ],
     facts: {
-      '[toegekende gebiedsaanvraag]': true,
-      '[De identiteit van de begunstigde]': true,
+      '[identiteit van de begunstigde]': true,
       '[De naam van de regeling]': true,
       '[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]': true,
       '[De ligging (geometrie).]': [true, false],
