@@ -13,10 +13,12 @@
             "terminate": [
                 "[aanvraagformulier betalingsaanvraag]"
             ],
-            "version": "",
-            "reference": "art. 72, lid 1 Vo (EU) 1306/2013 en art 3.11, onder g SVNL 2016",
-            "juriconnect": "",
-            "sourcetext": "Een begunstigde van de in artikel 67, lid 2, bedoelde steun dient elk jaar een aanvraag voor rechtstreekse betalingen of een betalingsaanvraag in",
+            "sources": [{
+                "validFrom": "30-01-2020",
+                "citation": "art. 72, lid 1 Vo (EU) 1306/2013 en art 3.11, onder g SVNL 2016",
+                "juriconnect": "",
+                "text": "Een begunstigde van de in artikel 67, lid 2, bedoelde steun dient elk jaar een aanvraag voor rechtstreekse betalingen of een betalingsaanvraag in"
+            }],
             "explanation": "Zowel de Europese Vo als de provinciale vo regelt dat je een betaalverzoek/aanvraag moet doen. Om de de Europese Vo het recht creëert, heb ik alleen de sourcetekst van de Europese Vo opgenomen."
         },
         {
@@ -38,10 +40,13 @@
             "terminate": [
                 "[voorafgaande controles]"
             ],
-            "version": "",
-            "reference": "art. 11, lid 4 Vo (EU) 809/2014",
-            "juriconnect": "",
-            "sourcetext": "Wanneer in het kader van het geïntegreerde systeem het vooraf opgestelde formulier en het bijbehorende grafische materiaal als bedoeld in artikel 72, lid 3, van Verordening (EU) nr. 1306/2013 worden verstrekt via een GIS-gebaseerde interface die de verwerking van de ruimtelijke en alfanumerieke gegevens van de aangegeven percelen mogelijk maakt (hierna „geospatiaal steunaanvraagformulier” genoemd), kunnen de lidstaten besluiten een systeem van voorafgaande kruiscontroles (hierna „voorafgaande controles” genoemd) in te voeren dat ten minste de in artikel 29, lid 1, eerste alinea, onder a), b) en c), van deze verordening bedoelde kruiscontroles omvat.",
+            "sources": [{
+                "validFrom": "30-01-2020",
+                
+                "citation": "art. 11, lid 4 Vo (EU) 809/2014",
+                "juriconnect": "",
+                "text": "Wanneer in het kader van het geïntegreerde systeem het vooraf opgestelde formulier en het bijbehorende grafische materiaal als bedoeld in artikel 72, lid 3, van Verordening (EU) nr. 1306/2013 worden verstrekt via een GIS-gebaseerde interface die de verwerking van de ruimtelijke en alfanumerieke gegevens van de aangegeven percelen mogelijk maakt (hierna „geospatiaal steunaanvraagformulier” genoemd), kunnen de lidstaten besluiten een systeem van voorafgaande kruiscontroles (hierna „voorafgaande controles” genoemd) in te voeren dat ten minste de in artikel 29, lid 1, eerste alinea, onder a), b) en c), van deze verordening bedoelde kruiscontroles omvat."
+            }],
             "explanation": "de vervolgacties van de voorcontroles is voor een aangegeven aantal controles teruglegging, zodat de fouten nog gecorrigeerd kunnen worden. Er worden meer (voor)controles uitgevoerd, waar deze dienstverlening niet geleverd wordt"
         },
         {
@@ -57,10 +62,7 @@
             "terminate": [
                 "[voorafgaande controles]"
             ],
-            "version": "",
-            "reference": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
@@ -69,13 +71,15 @@
             "action": "[correctie]",
             "object": "[geconstateerde fout]",
             "interested-party": "[RVO]",
-            "preconditions": "",
+            "preconditions": "[]",
             "create": [],
             "terminate": [],
-            "version": "",
-            "reference": "artikel 13 Vo (EU) 640/2014 en artikel 11 lid 4 en artikel 15 lid 2a Vo (EU) 809/2014",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [{
+                "validFrom": "20-01-2020",
+                "citation": "artikel 13 Vo (EU) 640/2014 en artikel 11 lid 4 en artikel 15 lid 2a Vo (EU) 809/2014",
+                "juriconnect": "",
+                "text": ""
+            }],
             "explanation": ""
         },
         {
@@ -90,10 +94,12 @@
                 "<bepalen hoogte betaling>"
             ],
             "terminate": [],
-            "version": "",
-            "reference": "art. 3.11 h SVNL",
-            "juriconnect": "",
-            "sourcetext": "de subsidieontvanger dient uiterlijk 1 oktober van ieder kalenderjaar een verantwoording in waarin is beschreven: 1. welke activiteiten als bedoeld onder b, daadwerkelijk zijn uitgevoerd; 2.welke wijzigingen als bedoeld onder d, e en f hebben plaatsgevonden en waarom;",
+            "sources": [{
+                "validFrom": "20-01-2020",
+                "citation": "art. 3.11 h SVNL",
+                "juriconnect": "",
+                "text": "de subsidieontvanger dient uiterlijk 1 oktober van ieder kalenderjaar een verantwoording in waarin is beschreven: 1. welke activiteiten als bedoeld onder b, daadwerkelijk zijn uitgevoerd; 2.welke wijzigingen als bedoeld onder d, e en f hebben plaatsgevonden en waarom;"
+            }],
             "explanation": ""
         },
         {
@@ -105,10 +111,7 @@
             "preconditions": "[]",
             "create": [],
             "terminate": [],
-            "version": "",
-            "reference": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {   
@@ -134,10 +137,7 @@
             },
             "create": [],
             "terminate": [],
-            "version": "",
-            "reference": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
@@ -146,13 +146,10 @@
             "action": "[uitbetalen]",
             "object": "[subsidie ANLb]",
             "interested-party": "[agrarisch collectief]",
-            "preconditions": "",
+            "preconditions": "[]",
             "create": [],
             "terminate": [],
-            "version": "",
-            "reference": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
@@ -161,13 +158,10 @@
             "action": "[vaststellen]",
             "object": "[natuurbeheerplan]",
             "interested-party": "[]",
-            "preconditions": "",
+            "preconditions": "[]",
             "create": [],
             "terminate": [],
-            "version": "",
-            "reference": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         }
     ],
@@ -175,37 +169,25 @@
         {
             "fact": "[aanvraag]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[subsidie ANLb]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[aanvraagformulier betalingsaanvraag]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[agrarisch collectief]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
@@ -218,6 +200,7 @@
                     "[De naam van de regeling]",
                     "[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]",
                     {
+                        "name": "[Perceel]",
                         "expression": "LIST",
                         "items": {
                             "expression": "AND",
@@ -237,163 +220,109 @@
                     "[De bewijsstukken die nodig zijn om te bepalen of de aanspraak op de steun/bijstand kan worden gemaakt. Hier moet worden gedacht aan stukken die de inhoud van de betalingsaanvraag onderbouwen]"
                 ]
             },
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[betaalverzoek is tussen 1 maart en 15 mei ingediend]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[agrarisch collectief]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[RVO]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[subsidieontvanger]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": "subisidieontvanger is in dit deze context het agrarisch collectief"
         },
         {
             "fact": "[identiteit van de begunstigde]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[De naam van de regeling]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[De identificatie van niet-landbouwgrond die voor steun in aanmerking komt (subsidiabele landschapselementen (met uitzondering van hoogstamboomgaard, natuurvriendelijke oever en solitaire boom) en water).]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[Verklaring van het agrarisch collectief dat de individuele deelnemers weten wat de verplichtingen en consequenties zijn]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[De unieke identificatie van iedere deelnemer van het agrarisch collectief]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[Aanvraagnummer gebiedsaanvraag (provincie) als bewijsstuk om te bepalen of de begunstigde voor betaling in aanmerking komt.]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[De bewijsstukken die nodig zijn om te bepalen of de aanspraak op de steun/bijstand kan worden gemaakt. Hier moet worden gedacht aan stukken die de inhoud van de betalingsaanvraag onderbouwen]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[goedgekeurde gebiedsaanvraag]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[voorafgaande controles]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[voorafgaand controleren]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": "dit is een fact om het model kloppend te maken"
         },
         {
             "fact": "[fouten]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[geconstateerde fout]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
@@ -423,37 +352,25 @@
                     "[Digitale handtekening van de verantwoording]"
                 ]
             },
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[Correctie]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[teruglegging geconstateerde fouten]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         },
         {
             "fact": "[verantwoording]",
             "function": "[]",
-            "version": "",
-            "art": "",
-            "juriconnect": "",
-            "sourcetext": "",
+            "sources": [],
             "explanation": ""
         }
     ],
