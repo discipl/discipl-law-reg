@@ -84,31 +84,7 @@
             "action": "[verantwoording]",
             "object": "[begroting]",
             "interested-party": "[RVO]",
-            "preconditions": {
-                "expression": "AND",
-                "operands": [
-                    "[identiteit van de begunstigde]",
-                    "[kenmerk van de bijbehorende beschikking tot subsidieverlening van de gebiedsaanvraag]",
-                    "[De wijzigingen (ten opzichte van jaarlijks beheer) die doorgevoerd zijn op de beheeractiviteiten met reden van wijzigen en per welke datum (indien van toepassing).]",
-                    {
-                        "expression": "LIST",
-                        "name": "[Perceel]",
-                        "items": {
-                            "expression": "AND",
-                            "operands": [
-                                "[De ligging (geometrie)]",
-                                "[De omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond en in 4 decimalen voor niet-landbouwgrond) die exact past bij de geometrie (ligging).]",
-                                "[Het leefgebied waartoe het perceel behoort.]",
-                                "[Het deelgebied waartoe het perceel behoort (indien van toepassing).]",
-                                "[De beheerfunctie waartoe het perceel behoort]",
-                                "[Opgave van de uitgevoerde beheeractiviteit (Nederlandse versie van de koppeltabel) of combinatie van beheeractiviteiten.]",
-                                "[De aard van het grondgebruik: grasland, bouwland, landschapselement (w.o. water)]"
-                            ]
-                        }
-                    },
-                    "[Digitale handtekening van de verantwoording]"
-                ]
-            },
+            "preconditions": "[]",
             "create": [
                 "<vaststellen voldoen aan alle voorwaarden>",
                 "<bepalen hoogte betaling>"
@@ -126,7 +102,7 @@
             "action": "[beoordelen]",
             "object": "[verantwoording]",
             "interested-party": "[agrarisch collectief]",
-            "preconditions": "",
+            "preconditions": "[]",
             "create": [],
             "terminate": [],
             "version": "",
@@ -246,7 +222,7 @@
                         "items": {
                             "expression": "AND",
                             "operands": [
-                                "[De ligging (geometrie).]",
+                                "[De ligging (geometrie)]",
                                 "[Het leefgebied waartoe het perceel behoort.]",
                                 "[Indien van toepassing het deelgebied waartoe het perceel behoort.]",
                                 "[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]",
@@ -422,7 +398,31 @@
         },
         {
             "fact": "[begroting]",
-            "function": "[]",
+            "function": {
+                "expression": "AND",
+                "operands": [
+                    "[identiteit van de begunstigde]",
+                    "[kenmerk van de bijbehorende beschikking tot subsidieverlening van de gebiedsaanvraag]",
+                    "[De wijzigingen (ten opzichte van jaarlijks beheer) die doorgevoerd zijn op de beheeractiviteiten met reden van wijzigen en per welke datum (indien van toepassing).]",
+                    {
+                        "expression": "LIST",
+                        "name": "[Perceel]",
+                        "items": {
+                            "expression": "AND",
+                            "operands": [
+                                "[De ligging (geometrie)]",
+                                "[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]",
+                                "[Het leefgebied waartoe het perceel behoort.]",
+                                "[Het deelgebied waartoe het perceel behoort (indien van toepassing).]",
+                                "[De beheerfunctie waartoe het perceel behoort]",
+                                "[Opgave van de uitgevoerde beheeractiviteit (Nederlandse versie van de koppeltabel) of combinatie van beheeractiviteiten.]",
+                                "[Aard van het grondgebruik (grasland, bouwland, landschapselement of water).]"
+                            ]
+                        }
+                    },
+                    "[Digitale handtekening van de verantwoording]"
+                ]
+            },
             "version": "",
             "art": "",
             "juriconnect": "",
