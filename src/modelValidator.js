@@ -1,6 +1,6 @@
 import * as jsonc from 'jsonc-parser'
-import { groupBy, mergeMap, toArray, filter, map } from 'rxjs/operators';
-import { from, zip } from 'rxjs';
+import {filter, groupBy, map, mergeMap, toArray} from 'rxjs/operators';
+import {from} from 'rxjs';
 
 class ModelValidator {
     /**
@@ -203,23 +203,29 @@ class ModelValidator {
 
     // duplicate
     checkDuplicateIdentifiers(flintItems, flintItem) {
-        const dictOfItems = this.model[flintItems]
-            .filter((item) => typeof item[flintItem] === 'string')
-            .map((item) => {
-                const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]]);
+        var errorMsgList = [];
+        from(this.model[flintItems]).pipe(
+            filter(key => typeof key[flintItem] === 'string'),
+            map(key => {
+                const value = key[flintItem];
+                const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[value]);
                 const beginPosition = node.offset;
                 const endPosition = node.offset + node.length;
-
                 return new MessageHolder(
-                            'LR0001',
-                            'Invalid name for identifier',
-                            [beginPosition, endPosition],
-                            'ERROR',
-                            item[flintItem].toString(),
-                            this.identifierPaths[item[flintItem]]
-                        )
-            }).reduce((acc, item) => (acc[item.source] = [...(acc[item.source] || []), item], acc), {});
-        return dictOfItems;
+                    'LR0003',
+                    'Duplicate identifier',
+                    [beginPosition, endPosition],
+                    'ERROR',
+                    value.toString(),
+                    this.identifierPaths[value]
+                )
+            }),
+            groupBy(key => key.source, value => value),
+            mergeMap(group => group.pipe(toArray())),
+            filter(collectionDuplicates => collectionDuplicates.length > 1)
+        ).subscribe(errorMsg => errorMsgList = errorMsg);
+
+        return errorMsgList;
     }
 
     /**
@@ -232,22 +238,22 @@ class ModelValidator {
      */
     _checkIdentifiers(flintItems, flintItem, pattern) {
         const identifierValidationErrors = this.model[flintItems]
-          .filter((item) => typeof item[flintItem] !== 'string' || !item[flintItem].match(pattern))
-          .map((item) => {
-            // console.log(item[flintItem])
-            const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]])
-            const beginPosition = node.offset
-            const endPosition = node.offset + node.length
+            .filter((item) => typeof item[flintItem] !== 'string' || !item[flintItem].match(pattern))
+            .map((item) => {
+                // console.log(item[flintItem])
+                const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]])
+                const beginPosition = node.offset
+                const endPosition = node.offset + node.length
 
-            return {
-              code: 'LR0001',
-              message: 'Invalid name for identifier',
-              offset: [beginPosition, endPosition],
-              severity: 'ERROR',
-              source: item[flintItem].toString(),
-              path: this.identifierPaths[item[flintItem]]
-            }
-          })
+                return {
+                    code: 'LR0001',
+                    message: 'Invalid name for identifier',
+                    offset: [beginPosition, endPosition],
+                    severity: 'ERROR',
+                    source: item[flintItem].toString(),
+                    path: this.identifierPaths[item[flintItem]]
+                }
+            })
 
         return identifierValidationErrors
     }
