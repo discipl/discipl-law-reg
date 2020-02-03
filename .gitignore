@@ -71,3 +71,5 @@ coverage.lcov
 
 dist
 .DS_Store
+.idea/dictionaries
+.idea
