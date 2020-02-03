@@ -21,7 +21,7 @@ describe('The Flint Model validator', () => {
 
     it('should find duplicate identifiers', async () => {
         const model = JSON.stringify({
-            'acts': [{ 'act': '<<act>>' }, { 'act': '<<test' }, { 'act': '<<>>' }, { 'act': '<<act>>' }],
+            'acts': [{ 'act': '<<act>>' }, { 'act': '<<test' }, { 'act': '<<leuk>>' }, { 'act': '<<act>>' }, { 'act': '<<leuk>>' }],
             'facts': [{ 'fact': 'test' }, { 'fact': '[test' }, { 'fact': '[]' }, { 'fact': '[fact]' }],
             'duties': [{ 'duty': 'test' }, { 'duty': '<test' }, { 'duty': '<>' }, { 'duty': '<duty>' }]
         })

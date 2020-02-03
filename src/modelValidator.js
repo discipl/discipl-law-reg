@@ -1,6 +1,7 @@
 import * as jsonc from 'jsonc-parser'
-import {filter, groupBy, map, mergeMap, toArray} from 'rxjs/operators';
+import {filter, groupBy, map, mergeMap, toArray, flatMap, distinct } from 'rxjs/operators';
 import {from} from 'rxjs';
+import * as lodash from 'lodash'
 
 class ModelValidator {
     /**
@@ -201,13 +202,17 @@ class ModelValidator {
         return actNameValidationErrors.concat(factNameValidationErrors, dutyNameValidationErrors, referenceErrors)
     }
 
-    // duplicate
+    // get duplicate
     checkDuplicateIdentifiers(flintItems, flintItem) {
-        var errorMsgList = [];
+        const errorMsgList = [];
+
         from(this.model[flintItems]).pipe(
             filter(key => typeof key[flintItem] === 'string'),
-            map(key => {
-                const value = key[flintItem];
+            groupBy(key => key[flintItem], value => value[flintItem]),
+            mergeMap(group => group.pipe(toArray())),
+            filter(duplicates => duplicates.length > 1),
+            flatMap(arr => arr),
+            map(value => {
                 const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[value]);
                 const beginPosition = node.offset;
                 const endPosition = node.offset + node.length;
@@ -219,11 +224,8 @@ class ModelValidator {
                     value.toString(),
                     this.identifierPaths[value]
                 )
-            }),
-            groupBy(key => key.source, value => value),
-            mergeMap(group => group.pipe(toArray())),
-            filter(collectionDuplicates => collectionDuplicates.length > 1)
-        ).subscribe(errorMsg => errorMsgList = errorMsg);
+            })
+        ).subscribe(errorMsg => errorMsgList.push(errorMsg));
 
         return errorMsgList;
     }
