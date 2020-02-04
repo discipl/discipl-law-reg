@@ -745,6 +745,28 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to multiply in a list', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'PRODUCT',
+            'operands': [
+              {
+                'expression': 'LIST',
+                'items': '[number]'
+              }
+            ]
+          },
+          '[fifteen]'
+        ]
+      },
+      {
+        '[number]': [3, 5, false],
+        '[fifteen]': 15
+      })
+    })
+
     it('should be able to add numbers with a false result', async () => {
       await testFalseMathExpression({
         'expression': 'EQUAL',

@@ -192,7 +192,15 @@ class LawReg {
         for (let op of fact.operands) {
           let operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in PRODUCT', operandResult, 'for operand', op)
-          productResult *= operandResult
+          if (Array.isArray(operandResult)) {
+            for (let arrayOp of operandResult) {
+              if (arrayOp) {
+                productResult *= arrayOp
+              }
+            }
+          } else {
+            productResult *= operandResult
+          }
 
           if (typeof operandResult === 'undefined') {
             hasUndefined = true
