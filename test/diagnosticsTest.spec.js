@@ -29,7 +29,7 @@ describe('The Flint Model validator', () => {
         const modelValidator = new ModelValidator(model)
 
         // const errors = modelValidator.getDiagnostics()
-        const errors = modelValidator.checkDuplicateIdentifiers(
+        const errors = modelValidator._findDuplicateIdentifiers(
             'acts',
             'act');
 

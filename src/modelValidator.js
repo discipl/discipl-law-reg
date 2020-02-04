@@ -20,6 +20,7 @@ class ModelValidator {
         this.identifierPaths = {}
         this.referencePaths = {}
         this.multiIdentifierPaths = [];
+        this.inputValues = [];
 
         const identifierFields = [['acts', 'act'], ['facts', 'fact'], ['duties', 'duty']]
         for (let identifierField of identifierFields) {
@@ -64,21 +65,22 @@ class ModelValidator {
     }
 
     /***
-     * This method populates @code multiIdentifierPaths with multiple positions of a identifiers
+     * This method populates 'multiIdentifierPaths' with multiple positions of a identifier
      * as Key (String): Value (List).
      *
      * @private
      */
     _populateMultiIdentifierPaths(identifierFields){
         for (let identifierField of identifierFields) {
-            this.multiIdentifierPaths = this.model[identifierField[0]].reduce((acc, _item, index) => {
+            this.multiIdentifierPaths = this.model[identifierField[0]]
+                .reduce((acc, _item, index) => {
                 const path = [identifierField[0], index, identifierField[1]];
                 const node = jsonc.findNodeAtLocation(this.tree, path);
                 acc[node.value] = [...(acc[node.value] || []), path];
                 return acc
             }, this.multiIdentifierPaths)
         }
-        console.log(this.multiIdentifierPaths)
+        this.inputValues = Object.keys(this.multiIdentifierPaths);
     }
 
     _accumulateIdentifiers(path, acc) {
@@ -223,18 +225,48 @@ class ModelValidator {
         return actNameValidationErrors.concat(factNameValidationErrors, dutyNameValidationErrors, referenceErrors)
     }
 
-    // get duplicate
-    checkDuplicateIdentifiers(flintItems, flintItem) {
-        const errorMsgList = [];
+    /***
+     * Does a overall look at duplicate identifiers,
+     * e.g. <<act>> is not only findable on 'ACTS' field but as well
+     * on 'FACTS' field.
+     *
+     * @returns {ValidationError[]} Validation errors
+     * @private
+     */
+    _findOverallDuplicateIdentifiers() {
+        const validationError = [];
+        this.inputValues.filter(value =>
+            this.multiIdentifierPaths[value].length > 1)
+            .forEach(key => {
+                const errors = this.multiIdentifierPaths[key]
+                    .map(path => {
+                        const node = jsonc.findNodeAtLocation(this.tree, path);
+                        const beginPosition = node.offset;
+                        const endPosition = node.offset + node.length;
+                        return new ValidationMessage(
+                            'LR0004',
+                            'Overall duplicate identifier',
+                            [beginPosition, endPosition],
+                            'ERROR',
+                            key.toString(),
+                            path
+                        )
+                    });
+                validationError.push(errors);
+            });
+        return validationError.flatMap(value => value);
+    }
 
-        // console.log(this.multiIdentifierPaths)
-
-        // from(this.multiIdentifierPaths).pipe(
-        //     map(key => {
-        //         console.log(key)
-        //         return key
-        //     })
-        // ).subscribe(value => value)
+    /***
+     * Looks for duplicate identifiers only on the given field, e.g. only 'ACTS' field.
+     *
+     * @param flintItems identifier field
+     * @param flintItem identifier
+     * @returns {ValidationError[]} Validation errors
+     * @private
+     */
+    _findDuplicateIdentifiers(flintItems, flintItem) {
+        const validationError = [];
 
         from(this.model[flintItems]).pipe(
             groupBy(key => key[flintItem], value => value[flintItem]),
@@ -242,14 +274,13 @@ class ModelValidator {
             filter(duplicates => duplicates.length > 1),
             flatMap(arr => arr),
             map(value => {
-
                 const path = this.multiIdentifierPaths[value].shift();
                 const node = jsonc.findNodeAtLocation(this.tree, path);
 
                 const beginPosition = node.offset;
                 const endPosition = node.offset + node.length;
 
-                return new MessageHolder(
+                return new ValidationMessage(
                     'LR0003',
                     'Duplicate identifier',
                     [beginPosition, endPosition],
@@ -258,9 +289,9 @@ class ModelValidator {
                     path
                 )
             })
-        ).subscribe(errorMsg => errorMsgList.push(errorMsg));
+        ).subscribe(error => validationError.push(error));
 
-        return errorMsgList;
+        return validationError;
     }
 
     /**
@@ -424,17 +455,15 @@ class ModelValidator {
     }
 }
 
-class MessageHolder {
-
+class ValidationMessage {
     constructor(code, message, offset, severity, source, path) {
-        this.code = code
-        this.message = message
-        this.offset = offset
-        this.severity = severity
-        this.source = source
-        this.path = path
+        this.code = code;
+        this.message = message;
+        this.offset = offset;
+        this.severity = severity;
+        this.source = source;
+        this.path = path;
     }
-
 }
 
 export {ModelValidator}
