@@ -119,7 +119,8 @@
                     "[Meldingen zijn gedaan uiterlijk op 20 september van het lopende jaar]",
                     "[Gecontroleerd is dat het minimale percentage dat genoemd is, is gehaald in de betreffende beheeractiviteit qua oppervlakte]",
                     "[Vastgesteld is dat de reden van de wijziging van de beheeractiviteit geoorloofd is]",
-                    "[Vastgesteld is dat de wijziging of melding is toegestaan]"
+                    "[Vastgesteld is dat de wijziging of melding is toegestaan]",
+                    "[controles op de beschikking tot subsidieverlening]"
 
 
                 ]
@@ -162,7 +163,7 @@
             "explanation": ""
         },
         {
-            "fact": "[controles op de beschikking tot subsidieverlenin]",
+            "fact": "[controles op de beschikking tot subsidieverlening]",
             "function": {
                 "expression": "AND",
                 "operands": [
