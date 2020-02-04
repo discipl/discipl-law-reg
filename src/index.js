@@ -338,7 +338,7 @@ class LawReg {
     const listNames = context.listNames || []
     const listIndices = context.listIndices || []
     const result = context.factResolver(factToCheck, context.flintItem, listNames, listIndices)
-    const resolvedResult = Promise.resolve(result)
+    const resolvedResult = await Promise.resolve(result)
     logger.debug('Resolving fact', fact, 'as', resolvedResult, 'via', factToCheck, 'by factresolver')
     return resolvedResult
   }

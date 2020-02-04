@@ -28,16 +28,16 @@ const scenarios = [
         actor: 'collectief'
       },
       {
-        act: '<<Beoordelen verantwoording>>',
+        act: '<<beoordelen betalingsaanvraag>>',
         actor: 'RVO'
-      },
+      }
 
     ],
     facts: {
       '[identiteit van de begunstigde]': true,
       '[De naam van de regeling]': true,
       '[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]': true,
-      '[De ligging (geometrie)]': [true, false, true, false],
+      '[De ligging (geometrie)]': [true, false, true, false, true, false, true, false],
       '[Het leefgebied waartoe het perceel behoort.]': true,
       '[Indien van toepassing het deelgebied waartoe het perceel behoort.]': true,
       '[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]': true,
@@ -55,7 +55,22 @@ const scenarios = [
       '[kenmerk van de bijbehorende beschikking tot subsidieverlening van de gebiedsaanvraag]': true,
       '[De wijzigingen (ten opzichte van jaarlijks beheer) die doorgevoerd zijn op de beheeractiviteiten met reden van wijzigen en per welke datum (indien van toepassing).]': true,
       '[Digitale handtekening van de verantwoording]': true,
-      '[verantwoording]': true
+      '[verantwoording]': true,
+      '[agrarisch collectief heeft subsidie ANLb ontvangen in betreffende provincie]': true,
+      '[agrarisch collectief heeft een certificaat collectief agrarisch natuurbeheer verkregen van de Stichting certificering SNL voor de gehele subsidieperiode]': true,
+      '[Er is een beheerplan]': true,
+      '[Wijzigingen zijn ingediend voor 1 oktober van het betreffende jaar]': true,
+      '[Meldingen zijn gedaan uiterlijk op 20 september van het lopende jaar]': true,
+      '[Gecontroleerd is dat het minimale percentage dat genoemd is, is gehaald in de betreffende beheeractiviteit qua oppervlakte]': true,
+      '[Vastgesteld is dat de reden van de wijziging van de beheeractiviteit geoorloofd is]': true,
+      '[Vastgesteld is dat de wijziging of melding is toegestaan]': true,
+      '[staan de opgegeven leefgebieden/deelgebieden ook in de beschikking tot subsidieverlening genoemd]': true,
+      '[staan de opgegeven beheerfuncties in het betreffende leefgebied/deelgebied ook vermeld in de beschikking tot subsidieverlening]': true,
+      '[ligt het perceel binnen het leefgebied/deelgebied zoals dit bepaald is op de kaart bij de beschikking van de gebiedsaanvraag]': true,
+      '[indien er nadere voorwaarden in de beschikking tot subsidieverlening van de gebiedsaanvraag zijn opgenomen: wordt daar aan voldaan]': true,
+      '[controle of de totale (netto) oppervlakte van de percelen per leefgebied (of deelgebied) binnen het minimum en maximum aantal hectares blijft, zoals vermeld in de beschikking tot subsidieverlening van de gebiedsaanvraag]': true,
+      '[controle of het maximale subsidiebedrag per jaar per leefgebied of (indien van toepassing) deelgebied niet wordt overschreden]': true,
+      '[de subsidieverlening is door de provincie verstrekt]': true
     }
   }
 

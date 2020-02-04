@@ -102,18 +102,6 @@
             }],
             "explanation": ""
         },
-        {
-            "act": "<<Beoordelen verantwoording>>",
-            "actor": "[RVO]",
-            "action": "[beoordelen]",
-            "object": "[verantwoording]",
-            "interested-party": "[agrarisch collectief]",
-            "preconditions": "[]",
-            "create": [],
-            "terminate": [],
-            "sources": [],
-            "explanation": ""
-        },
         {   
             "act": "<<beoordelen betalingsaanvraag>>",
             "actor": "[RVO]",
@@ -123,6 +111,7 @@
             "preconditions": { 
                 "expression": "AND",
                 "operands": [
+                    "[verantwoording]",
                     "[agrarisch collectief heeft subsidie ANLb ontvangen in betreffende provincie]",
                     "[agrarisch collectief heeft een certificaat collectief agrarisch natuurbeheer verkregen van de Stichting certificering SNL voor de gehele subsidieperiode]",
                     "[Er is een beheerplan]",
@@ -170,6 +159,30 @@
             "fact": "[aanvraag]",
             "function": "[]",
             "sources": [],
+            "explanation": ""
+        },
+        {
+            "fact": "[controles op de beschikking tot subsidieverlenin]",
+            "function": {
+                "expression": "AND",
+                "operands": [
+                    "[staan de opgegeven leefgebieden/deelgebieden ook in de beschikking tot subsidieverlening genoemd]",
+                    "[staan de opgegeven beheerfuncties in het betreffende leefgebied/deelgebied ook vermeld in de beschikking tot subsidieverlening]",
+                    "[ligt het perceel binnen het leefgebied/deelgebied zoals dit bepaald is op de kaart bij de beschikking van de gebiedsaanvraag]",
+                    "[indien er nadere voorwaarden in de beschikking tot subsidieverlening van de gebiedsaanvraag zijn opgenomen: wordt daar aan voldaan]",
+                    "[controle of de totale (netto) oppervlakte van de percelen per leefgebied (of deelgebied) binnen het minimum en maximum aantal hectares blijft, zoals vermeld in de beschikking tot subsidieverlening van de gebiedsaanvraag]",
+                    "[controle of het maximale subsidiebedrag per jaar per leefgebied of (indien van toepassing) deelgebied niet wordt overschreden]",
+                    "[de subsidieverlening is door de provincie verstrekt]"
+                ]
+            },
+            "sources": [
+                {
+                    "validFrom": "05-02-2019",
+                    "citation": "KADER JAARLIJKS BEHEER, BETALINGSAANVRAAG EN VERANTWOORDING ANLb VOOR BEHEERJAAR 2019",
+                    "juriconnect": "",
+                    "text": ""
+                }
+            ],
             "explanation": ""
         },
         {
@@ -369,9 +382,9 @@
         },
         {
             "fact": "[verantwoording]",
-            "function": "[]",
+            "function": "[begroting]",
             "sources": [],
-            "explanation": ""
+            "explanation": "TODO: controle op juistheid"
         }
     ],
     "duties": []
