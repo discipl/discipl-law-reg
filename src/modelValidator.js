@@ -19,6 +19,7 @@ class ModelValidator {
 
         this.identifierPaths = {}
         this.referencePaths = {}
+        this.multiIdentifierPaths = [];
 
         const identifierFields = [['acts', 'act'], ['facts', 'fact'], ['duties', 'duty']]
         for (let identifierField of identifierFields) {
@@ -29,6 +30,8 @@ class ModelValidator {
                 return acc
             }, this.identifierPaths)
         }
+
+        this._populateMultiIdentifierPaths(identifierFields);
 
         const indexedFields = [['acts', 'act'], ['acts', 'actor'], ['acts', 'object'], ['acts', 'interested-party'],
             ['acts', 'preconditions'],
@@ -58,6 +61,24 @@ class ModelValidator {
                 }, this.referencePaths)
             }
         }
+    }
+
+    /***
+     * This method populates @code multiIdentifierPaths with multiple positions of a identifiers
+     * as Key (String): Value (List).
+     *
+     * @private
+     */
+    _populateMultiIdentifierPaths(identifierFields){
+        for (let identifierField of identifierFields) {
+            this.multiIdentifierPaths = this.model[identifierField[0]].reduce((acc, _item, index) => {
+                const path = [identifierField[0], index, identifierField[1]];
+                const node = jsonc.findNodeAtLocation(this.tree, path);
+                acc[node.value] = [...(acc[node.value] || []), path];
+                return acc
+            }, this.multiIdentifierPaths)
+        }
+        console.log(this.multiIdentifierPaths)
     }
 
     _accumulateIdentifiers(path, acc) {
@@ -206,23 +227,35 @@ class ModelValidator {
     checkDuplicateIdentifiers(flintItems, flintItem) {
         const errorMsgList = [];
 
+        // console.log(this.multiIdentifierPaths)
+
+        // from(this.multiIdentifierPaths).pipe(
+        //     map(key => {
+        //         console.log(key)
+        //         return key
+        //     })
+        // ).subscribe(value => value)
+
         from(this.model[flintItems]).pipe(
-            filter(key => typeof key[flintItem] === 'string'),
             groupBy(key => key[flintItem], value => value[flintItem]),
             mergeMap(group => group.pipe(toArray())),
             filter(duplicates => duplicates.length > 1),
             flatMap(arr => arr),
             map(value => {
-                const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[value]);
+
+                const path = this.multiIdentifierPaths[value].shift();
+                const node = jsonc.findNodeAtLocation(this.tree, path);
+
                 const beginPosition = node.offset;
                 const endPosition = node.offset + node.length;
+
                 return new MessageHolder(
                     'LR0003',
                     'Duplicate identifier',
                     [beginPosition, endPosition],
                     'ERROR',
                     value.toString(),
-                    this.identifierPaths[value]
+                    path
                 )
             })
         ).subscribe(errorMsg => errorMsgList.push(errorMsg));

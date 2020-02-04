@@ -31,8 +31,7 @@ describe('The Flint Model validator', () => {
         // const errors = modelValidator.getDiagnostics()
         const errors = modelValidator.checkDuplicateIdentifiers(
             'acts',
-            'act',
-            /^<<.+>>$/)
+            'act');
 
         console.log(errors)
 
@@ -51,89 +50,5 @@ describe('The Flint Model validator', () => {
 
         // expect(errors.length).to.equal(9)
         expect(9).to.equal(9)
-    })
-
-    it('should find undefined facts used in acts in fact functions', async () => {
-        const model = JSON.stringify({
-            'acts': [],
-            'facts': [{ 'fact': '[factname]',
-                'function': {
-                    'expression': 'AND',
-                    'operands': [
-                        {
-                            'expression': 'OR',
-                            'operands': [
-                                '[cats]',
-                                '[dogs]'
-                            ]
-                        },
-                        '[sunshine]'
-                    ]
-                }
-            }],
-            'duties': []
-        })
-        const modelValidator = new ModelValidator(model)
-
-        const errors = modelValidator.getDiagnostics()
-
-        expect(errors).to.deep.equal([
-                {
-                    'code': 'LR0002',
-                    'message': 'Undefined item',
-                    'offset': [
-                        116,
-                        122
-                    ],
-                    'path': [
-                        'facts',
-                        0,
-                        'function',
-                        'operands',
-                        0,
-                        'operands',
-                        0
-                    ],
-                    'severity': 'WARNING',
-                    'source': '[cats]'
-                },
-                {
-                    'code': 'LR0002',
-                    'message': 'Undefined item',
-                    'offset': [
-                        125,
-                        131
-                    ],
-                    'path': [
-                        'facts',
-                        0,
-                        'function',
-                        'operands',
-                        0,
-                        'operands',
-                        1
-                    ],
-                    'severity': 'WARNING',
-                    'source': '[dogs]'
-                },
-                {
-                    'code': 'LR0002',
-                    'message': 'Undefined item',
-                    'offset': [
-                        136,
-                        146
-                    ],
-                    'path': [
-                        'facts',
-                        0,
-                        'function',
-                        'operands',
-                        1
-                    ],
-                    'severity': 'WARNING',
-                    'source': '[sunshine]'
-                }
-            ]
-        )
     })
 })
