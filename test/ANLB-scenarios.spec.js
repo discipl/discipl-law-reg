@@ -36,11 +36,11 @@ const scenarios = [
     facts: {
       '[identiteit van de begunstigde]': true,
       '[De naam van de regeling]': true,
-      '[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]': true,
+      '[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]': 100,
       '[De ligging (geometrie)]': [true, false, true, false, true, false, true, false],
       '[Het leefgebied waartoe het perceel behoort.]': true,
       '[Indien van toepassing het deelgebied waartoe het perceel behoort.]': true,
-      '[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]': true,
+      '[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]': [10, 10, 40, 40, 40, false],
       '[Aard van het grondgebruik (grasland, bouwland, landschapselement of water).]': true,
       '[De identificatie van niet-landbouwgrond die voor steun in aanmerking komt (subsidiabele landschapselementen (met uitzondering van hoogstamboomgaard, natuurvriendelijke oever en solitaire boom) en water).]': true,
       '[Verklaring van het agrarisch collectief dat de individuele deelnemers weten wat de verplichtingen en consequenties zijn]': true,
@@ -70,7 +70,8 @@ const scenarios = [
       '[indien er nadere voorwaarden in de beschikking tot subsidieverlening van de gebiedsaanvraag zijn opgenomen: wordt daar aan voldaan]': true,
       '[controle of de totale (netto) oppervlakte van de percelen per leefgebied (of deelgebied) binnen het minimum en maximum aantal hectares blijft, zoals vermeld in de beschikking tot subsidieverlening van de gebiedsaanvraag]': true,
       '[controle of het maximale subsidiebedrag per jaar per leefgebied of (indien van toepassing) deelgebied niet wordt overschreden]': true,
-      '[de subsidieverlening is door de provincie verstrekt]': true
+      '[de subsidieverlening is door de provincie verstrekt]': true,
+      '[1,15]': 1.15
     }
   }
 

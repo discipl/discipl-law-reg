@@ -13,12 +13,14 @@
             "terminate": [
                 "[aanvraagformulier betalingsaanvraag]"
             ],
-            "sources": [{
-                "validFrom": "30-01-2020",
-                "citation": "art. 72, lid 1 Vo (EU) 1306/2013 en art 3.11, onder g SVNL 2016",
-                "juriconnect": "",
-                "text": "Een begunstigde van de in artikel 67, lid 2, bedoelde steun dient elk jaar een aanvraag voor rechtstreekse betalingen of een betalingsaanvraag in"
-            }],
+            "sources": [
+                {
+                    "validFrom": "30-01-2020",
+                    "citation": "art. 72, lid 1 Vo (EU) 1306/2013 en art 3.11, onder g SVNL 2016",
+                    "juriconnect": "",
+                    "text": "Een begunstigde van de in artikel 67, lid 2, bedoelde steun dient elk jaar een aanvraag voor rechtstreekse betalingen of een betalingsaanvraag in"
+                }
+            ],
             "explanation": "Zowel de Europese Vo als de provinciale vo regelt dat je een betaalverzoek/aanvraag moet doen. Om de de Europese Vo het recht creëert, heb ik alleen de sourcetekst van de Europese Vo opgenomen."
         },
         {
@@ -40,13 +42,14 @@
             "terminate": [
                 "[voorafgaande controles]"
             ],
-            "sources": [{
-                "validFrom": "30-01-2020",
-                
-                "citation": "art. 11, lid 4 Vo (EU) 809/2014",
-                "juriconnect": "",
-                "text": "Wanneer in het kader van het geïntegreerde systeem het vooraf opgestelde formulier en het bijbehorende grafische materiaal als bedoeld in artikel 72, lid 3, van Verordening (EU) nr. 1306/2013 worden verstrekt via een GIS-gebaseerde interface die de verwerking van de ruimtelijke en alfanumerieke gegevens van de aangegeven percelen mogelijk maakt (hierna „geospatiaal steunaanvraagformulier” genoemd), kunnen de lidstaten besluiten een systeem van voorafgaande kruiscontroles (hierna „voorafgaande controles” genoemd) in te voeren dat ten minste de in artikel 29, lid 1, eerste alinea, onder a), b) en c), van deze verordening bedoelde kruiscontroles omvat."
-            }],
+            "sources": [
+                {
+                    "validFrom": "30-01-2020",
+                    "citation": "art. 11, lid 4 Vo (EU) 809/2014",
+                    "juriconnect": "",
+                    "text": "Wanneer in het kader van het geïntegreerde systeem het vooraf opgestelde formulier en het bijbehorende grafische materiaal als bedoeld in artikel 72, lid 3, van Verordening (EU) nr. 1306/2013 worden verstrekt via een GIS-gebaseerde interface die de verwerking van de ruimtelijke en alfanumerieke gegevens van de aangegeven percelen mogelijk maakt (hierna „geospatiaal steunaanvraagformulier” genoemd), kunnen de lidstaten besluiten een systeem van voorafgaande kruiscontroles (hierna „voorafgaande controles” genoemd) in te voeren dat ten minste de in artikel 29, lid 1, eerste alinea, onder a), b) en c), van deze verordening bedoelde kruiscontroles omvat."
+                }
+            ],
             "explanation": "de vervolgacties van de voorcontroles is voor een aangegeven aantal controles teruglegging, zodat de fouten nog gecorrigeerd kunnen worden. Er worden meer (voor)controles uitgevoerd, waar deze dienstverlening niet geleverd wordt"
         },
         {
@@ -74,12 +77,14 @@
             "preconditions": "[]",
             "create": [],
             "terminate": [],
-            "sources": [{
-                "validFrom": "20-01-2020",
-                "citation": "artikel 13 Vo (EU) 640/2014 en artikel 11 lid 4 en artikel 15 lid 2a Vo (EU) 809/2014",
-                "juriconnect": "",
-                "text": ""
-            }],
+            "sources": [
+                {
+                    "validFrom": "20-01-2020",
+                    "citation": "artikel 13 Vo (EU) 640/2014 en artikel 11 lid 4 en artikel 15 lid 2a Vo (EU) 809/2014",
+                    "juriconnect": "",
+                    "text": ""
+                }
+            ],
             "explanation": ""
         },
         {
@@ -94,21 +99,23 @@
                 "<bepalen hoogte betaling>"
             ],
             "terminate": [],
-            "sources": [{
-                "validFrom": "20-01-2020",
-                "citation": "art. 3.11 h SVNL",
-                "juriconnect": "",
-                "text": "de subsidieontvanger dient uiterlijk 1 oktober van ieder kalenderjaar een verantwoording in waarin is beschreven: 1. welke activiteiten als bedoeld onder b, daadwerkelijk zijn uitgevoerd; 2.welke wijzigingen als bedoeld onder d, e en f hebben plaatsgevonden en waarom;"
-            }],
+            "sources": [
+                {
+                    "validFrom": "20-01-2020",
+                    "citation": "art. 3.11 h SVNL",
+                    "juriconnect": "",
+                    "text": "de subsidieontvanger dient uiterlijk 1 oktober van ieder kalenderjaar een verantwoording in waarin is beschreven: 1. welke activiteiten als bedoeld onder b, daadwerkelijk zijn uitgevoerd; 2.welke wijzigingen als bedoeld onder d, e en f hebben plaatsgevonden en waarom;"
+                }
+            ],
             "explanation": ""
         },
-        {   
+        {
             "act": "<<beoordelen betalingsaanvraag>>",
             "actor": "[RVO]",
             "action": "[beoordelen]",
             "object": "[betalingsaanvraag]",
             "interested-party": "[agrarisch collectief]",
-            "preconditions": { 
+            "preconditions": {
                 "expression": "AND",
                 "operands": [
                     "[verantwoording]",
@@ -121,8 +128,6 @@
                     "[Vastgesteld is dat de reden van de wijziging van de beheeractiviteit geoorloofd is]",
                     "[Vastgesteld is dat de wijziging of melding is toegestaan]",
                     "[controles op de beschikking tot subsidieverlening]"
-
-
                 ]
             },
             "create": [],
@@ -193,7 +198,52 @@
             "explanation": ""
         },
         {
+            "fact": "[controle of de totale (netto) oppervlakte van de percelen per leefgebied (of deelgebied) binnen het minimum en maximum aantal hectares blijft, zoals vermeld in de beschikking tot subsidieverlening van de gebiedsaanvraag]",
+            "function": {
+                "expression": "LESS_THAN",
+                "operands": [
+                    {
+                        "expression": "SUM",
+                        "operands": [
+                            {
+                                "expression": "LIST",
+                                "name": "[Perceel]",
+                                "items": "[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]"
+                            }
+                        ]
+                    },
+                    "[maximale totale oppervlakte van de percelen]"
+                ]
+            },
+            "sources": [],
+            "explanation": ""
+        },
+        {
+            "fact": "[maximale totale oppervlakte van de percelen]",
+            "function": {
+                "expression": "PRODUCT",
+                "operands": [
+                    "[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]",
+                    "[1,15]"
+                ]
+            },
+            "sources": [],
+            "explanation": ""
+        },
+        {
             "fact": "[aanvraagformulier betalingsaanvraag]",
+            "function": "[]",
+            "sources": [],
+            "explanation": ""
+        },
+        {
+            "fact": "[1,15]",
+            "function": "[]",
+            "sources": [],
+            "explanation": ""
+        },
+        {
+            "fact": "[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]",
             "function": "[]",
             "sources": [],
             "explanation": ""
