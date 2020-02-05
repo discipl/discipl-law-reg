@@ -202,6 +202,7 @@
             "function": {
                 "expression": "LESS_THAN",
                 "operands": [
+                    "[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]",
                     {
                         "expression": "SUM",
                         "operands": [

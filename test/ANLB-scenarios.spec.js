@@ -40,7 +40,7 @@ const scenarios = [
       '[De ligging (geometrie)]': [true, false, true, false, true, false, true, false],
       '[Het leefgebied waartoe het perceel behoort.]': true,
       '[Indien van toepassing het deelgebied waartoe het perceel behoort.]': true,
-      '[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]': [10, 10, 10, 40, 40, false],
+      '[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]': [10, 10, 30, 40, 40, false],
       '[Aard van het grondgebruik (grasland, bouwland, landschapselement of water).]': true,
       '[De identificatie van niet-landbouwgrond die voor steun in aanmerking komt (subsidiabele landschapselementen (met uitzondering van hoogstamboomgaard, natuurvriendelijke oever en solitaire boom) en water).]': true,
       '[Verklaring van het agrarisch collectief dat de individuele deelnemers weten wat de verplichtingen en consequenties zijn]': true,
