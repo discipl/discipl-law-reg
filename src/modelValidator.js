@@ -20,7 +20,7 @@ class ModelValidator {
         this.identifierPaths = {}
         this.referencePaths = {}
         this.multiIdentifierPaths = [];
-        this.inputValues = [];
+        this.valuesOfIdentifiers = [];
 
         const identifierFields = [['acts', 'act'], ['facts', 'fact'], ['duties', 'duty']]
         for (let identifierField of identifierFields) {
@@ -80,7 +80,7 @@ class ModelValidator {
                 return acc
             }, this.multiIdentifierPaths)
         }
-        this.inputValues = Object.keys(this.multiIdentifierPaths);
+        this.valuesOfIdentifiers = Object.keys(this.multiIdentifierPaths);
     }
 
     _accumulateIdentifiers(path, acc) {
@@ -235,7 +235,7 @@ class ModelValidator {
      */
     _findOverallDuplicateIdentifiers() {
         const validationError = [];
-        this.inputValues.filter(value =>
+        this.valuesOfIdentifiers.filter(value =>
             this.multiIdentifierPaths[value].length > 1)
             .forEach(key => {
                 const errors = this.multiIdentifierPaths[key]
