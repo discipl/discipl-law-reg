@@ -34,10 +34,10 @@ const scenarios = [
 
     ],
     facts: {
-      '[identiteit van de begunstigde]': true,
-      '[De naam van de regeling]': true,
-      '[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]': 100,
-      '[De ligging (geometrie)]': [true, false, true, false, true, false, true, false],
+      '[identiteit van de begunstigde]': 'Coöperatie Natuurrijk Limburg U.A.',
+      '[De naam van de regeling]': 'ANLb',
+      '[De totale omvang in hectares in 2 decimalen per leefgebied/deelgebied waarvoor betaling wordt gevraagd]': 132.54,
+      '[De ligging (geometrie)]': ['SCANGIS:1234', false, 'SCANGIS:1234', false, 'SCANGIS:1234', false, 'SCANGIS:1234', false],
       '[Het leefgebied waartoe het perceel behoort.]': true,
       '[Indien van toepassing het deelgebied waartoe het perceel behoort.]': true,
       '[Omvang van de beheerde oppervlakte (in hectares in 2 decimalen voor landbouwgrond, die exact past bij de geometrie (uit eerste punt).]': [10, 10, 30, 40, 40, false],
