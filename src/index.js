@@ -94,10 +94,14 @@ class LawReg {
         context.listNames.push(fact.name)
 
         const listIndex = context.listIndices.push(0) - 1
+        const listContentResult = []
         while (true) {
           let op = fact.items
           let operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in LIST', operandResult, 'for operand', op, 'and index', context.listIndices[listIndex])
+
+          listContentResult.push(operandResult)
+
           if (operandResult === false) {
             logger.debug('Stopping LIST concatenation, because', op, 'is false')
             break
@@ -114,7 +118,7 @@ class LawReg {
         context.listNames.pop()
         let resultIndex = context.listIndices.pop()
 
-        let listResult = hasUndefined ? undefined : resultIndex !== 0
+        let listResult = hasUndefined ? undefined : (resultIndex !== 0 ? listContentResult : false)
         logger.debug('Resolved LIST as', listResult)
         return listResult
       case 'LESS_THAN':
@@ -167,7 +171,13 @@ class LawReg {
         for (let op of fact.operands) {
           let operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in SUM', operandResult, 'for operand', op)
-          sumResult += operandResult
+          if (Array.isArray(operandResult)) {
+            for (let arrayOp of operandResult) {
+              sumResult += arrayOp
+            }
+          } else {
+            sumResult += operandResult
+          }
 
           if (typeof operandResult === 'undefined') {
             hasUndefined = true
@@ -182,7 +192,15 @@ class LawReg {
         for (let op of fact.operands) {
           let operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in PRODUCT', operandResult, 'for operand', op)
-          productResult *= operandResult
+          if (Array.isArray(operandResult)) {
+            for (let arrayOp of operandResult) {
+              if (arrayOp) {
+                productResult *= arrayOp
+              }
+            }
+          } else {
+            productResult *= operandResult
+          }
 
           if (typeof operandResult === 'undefined') {
             hasUndefined = true
@@ -792,8 +810,6 @@ class LawReg {
     const factsSupplied = {}
 
     const capturingFactResolver = async (fact, flintItem, listNames, listIndices) => {
-      const result = factResolver(fact, flintItem, listNames, listIndices)
-
       let factsObject = factsSupplied
       for (let i = 0; i < listNames.length; i++) {
         const listName = listNames[i]
@@ -805,6 +821,7 @@ class LawReg {
         factsObject = factsObject[listName][listIndex]
       }
 
+      const result = factsObject[fact] || factResolver(fact, flintItem, listNames, listIndices)
       factsObject[fact] = await result
       return result
     }
