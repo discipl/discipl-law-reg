@@ -103,55 +103,55 @@ describe('The Flint Model validator', () => {
     const errors = modelValidator._findOverallDuplicateIdentifiers()
 
     expect(errors).to.deep.equal([
-          {
-            code: 'LR0003',
-            message: 'Duplicate identifier',
-            offset: [ 16, 25 ],
-            severity: 'ERROR',
-            source: '<<act>>',
-            path: [ 'acts', 0, 'act' ]
-          },
-          {
-            code: 'LR0003',
-            message: 'Duplicate identifier',
-            offset: [ 69, 78 ],
-            severity: 'ERROR',
-            source: '<<act>>',
-            path: [ 'acts', 3, 'act' ]
-          },
-          {
-            code: 'LR0003',
-            message: 'Duplicate identifier',
-            offset: [ 51, 60 ],
-            severity: 'ERROR',
-            source: '<<atc>>',
-            path: [ 'acts', 2, 'act' ]
-          },
-          {
-            code: 'LR0003',
-            message: 'Duplicate identifier',
-            offset: [ 87, 96 ],
-            severity: 'ERROR',
-            source: '<<atc>>',
-            path: [ 'acts', 4, 'act' ]
-          },
-          {
-            code: 'LR0003',
-            message: 'Duplicate identifier',
-            offset: [ 116, 122 ],
-            severity: 'ERROR',
-            source: 'test',
-            path: [ 'facts', 0, 'fact' ]
-          },
-          {
-            code: 'LR0003',
-            message: 'Duplicate identifier',
-            offset: [ 192, 198 ],
-            severity: 'ERROR',
-            source: 'test',
-            path: [ 'duties', 0, 'duty' ]
-          }
-        ]
+      {
+        code: 'LR0003',
+        message: 'Duplicate identifier',
+        offset: [ 16, 25 ],
+        severity: 'ERROR',
+        source: '<<act>>',
+        path: [ 'acts', 0, 'act' ]
+      },
+      {
+        code: 'LR0003',
+        message: 'Duplicate identifier',
+        offset: [ 69, 78 ],
+        severity: 'ERROR',
+        source: '<<act>>',
+        path: [ 'acts', 3, 'act' ]
+      },
+      {
+        code: 'LR0003',
+        message: 'Duplicate identifier',
+        offset: [ 51, 60 ],
+        severity: 'ERROR',
+        source: '<<atc>>',
+        path: [ 'acts', 2, 'act' ]
+      },
+      {
+        code: 'LR0003',
+        message: 'Duplicate identifier',
+        offset: [ 87, 96 ],
+        severity: 'ERROR',
+        source: '<<atc>>',
+        path: [ 'acts', 4, 'act' ]
+      },
+      {
+        code: 'LR0003',
+        message: 'Duplicate identifier',
+        offset: [ 116, 122 ],
+        severity: 'ERROR',
+        source: 'test',
+        path: [ 'facts', 0, 'fact' ]
+      },
+      {
+        code: 'LR0003',
+        message: 'Duplicate identifier',
+        offset: [ 192, 198 ],
+        severity: 'ERROR',
+        source: 'test',
+        path: [ 'duties', 0, 'duty' ]
+      }
+    ]
     )
 
     expect(errors.length).to.equal(6)

@@ -62,7 +62,7 @@ class ModelValidator {
 
   /***
      * This method populates 'multiIdentifierPaths' with multiple positions of a identifier
-     * as Key (String): Value (List).
+     * as Key (String): Value (Collection).
      *
      * @private
      */
