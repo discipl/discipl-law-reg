@@ -131,7 +131,7 @@ class LawReg {
           logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
           if (typeof lastOperandResult !== 'undefined') {
             if (operandResult <= lastOperandResult) {
-              logger.debug('Resolved LESS_THAN as false, because', lastOperandResult.toString(), 'is not less than', operandResult.toString())
+              logger.debug('Resolved LESS_THAN as false, because', String(lastOperandResult), 'is not less than', String(operandResult))
               return false
             }
           }
@@ -143,17 +143,17 @@ class LawReg {
           }
         }
         let lessThanResult = hasUndefined ? undefined : true
-        logger.debug('Resolved LESS_THAN as', lessThanResult.toString())
+        logger.debug('Resolved LESS_THAN as', String(lessThanResult))
         return lessThanResult
       case 'EQUAL':
         logger.debug('Switch case: EQUAL')
         let lastEqualOperandResult
         for (let op of fact.operands) {
           let operandResult = await this.checkExpression(op, ssid, context)
-          logger.debug('OperandResult in EQUAL', operandResult.toString(), 'for operand', op)
+          logger.debug('OperandResult in EQUAL', String(operandResult), 'for operand', op)
           if (typeof lastEqualOperandResult !== 'undefined') {
             if (!BigUtil.equal(operandResult, lastEqualOperandResult)) {
-              logger.debug('Resolved EQUAL as false, because', lastEqualOperandResult.toString(), 'does not equal', operandResult.toString())
+              logger.debug('Resolved EQUAL as false, because', String(lastEqualOperandResult), 'does not equal', String(operandResult))
               return false
             }
           }
@@ -165,14 +165,14 @@ class LawReg {
           }
         }
         let equalResult = hasUndefined ? undefined : true
-        logger.debug('Resolved EQUAL as', equalResult.toString())
+        logger.debug('Resolved EQUAL as', String(equalResult))
         return equalResult
       case 'SUM':
         logger.debug('Switch case: SUM')
         let sumResult = 0
         for (let op of fact.operands) {
           let operandResult = await this.checkExpression(op, ssid, context)
-          logger.debug('OperandResult in SUM', operandResult.toString(), 'for operand', op)
+          logger.debug('OperandResult in SUM', String(operandResult), 'for operand', op)
           if (Array.isArray(operandResult)) {
             for (let arrayOp of operandResult) {
               if (arrayOp) {
@@ -188,14 +188,14 @@ class LawReg {
           }
         }
         let finalSumResult = hasUndefined ? undefined : sumResult
-        logger.debug('Resolved SUM as', finalSumResult.toString())
+        logger.debug('Resolved SUM as', String(finalSumResult))
         return finalSumResult
       case 'PRODUCT':
         logger.debug('Switch case: PRODUCT')
         let productResult = 1
         for (let op of fact.operands) {
           let operandResult = await this.checkExpression(op, ssid, context)
-          logger.debug('OperandResult in PRODUCT', operandResult.toString(), 'for operand', op)
+          logger.debug('OperandResult in PRODUCT', String(operandResult), 'for operand', op)
           if (Array.isArray(operandResult)) {
             for (let arrayOp of operandResult) {
               if (arrayOp) {
@@ -211,7 +211,7 @@ class LawReg {
           }
         }
         const finalProductResult = hasUndefined ? undefined : productResult
-        logger.debug('Resolved PRODUCT as', finalProductResult.toString())
+        logger.debug('Resolved PRODUCT as', String(finalProductResult))
         return finalProductResult
       case 'MIN':
         logger.debug('Switch case: MIN')
@@ -364,7 +364,8 @@ class LawReg {
     if (typeof resolvedResult === 'number') {
       resolvedResult = Big(resolvedResult)
     }
-    logger.debug('Resolving fact', fact, 'as', resolvedResult.toString(), 'via', factToCheck, 'by factresolver')
+
+    logger.debug('Resolving fact', fact, 'as', String(resolvedResult), 'via', factToCheck, 'by factresolver')
     return resolvedResult
   }
 
