@@ -1,8 +1,10 @@
 import { AbundanceService } from '@discipl/abundance-service'
 import { ModelValidator } from './modelValidator'
+import { BigUtil } from './big_util'
 
 import * as log from 'loglevel'
 import { BaseConnector } from '@discipl/core-baseconnector'
+import Big from 'big.js'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -129,7 +131,7 @@ class LawReg {
           logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
           if (typeof lastOperandResult !== 'undefined') {
             if (operandResult <= lastOperandResult) {
-              logger.debug('Resolved LESS_THAN as false, because', lastOperandResult, 'is not less than', operandResult)
+              logger.debug('Resolved LESS_THAN as false, because', lastOperandResult.toString(), 'is not less than', operandResult.toString())
               return false
             }
           }
@@ -141,17 +143,17 @@ class LawReg {
           }
         }
         let lessThanResult = hasUndefined ? undefined : true
-        logger.debug('Resolved LESS_THAN as', lessThanResult)
+        logger.debug('Resolved LESS_THAN as', lessThanResult.toString())
         return lessThanResult
       case 'EQUAL':
-        logger.debug('Switch case: LESS_THAN')
+        logger.debug('Switch case: EQUAL')
         let lastEqualOperandResult
         for (let op of fact.operands) {
           let operandResult = await this.checkExpression(op, ssid, context)
-          logger.debug('OperandResult in EQUAL', operandResult, 'for operand', op)
+          logger.debug('OperandResult in EQUAL', operandResult.toString(), 'for operand', op)
           if (typeof lastEqualOperandResult !== 'undefined') {
-            if (operandResult !== lastEqualOperandResult) {
-              logger.debug('Resolved EQUAL as false, because', lastEqualOperandResult, 'does not equal', operandResult)
+            if (!BigUtil.equal(operandResult, lastEqualOperandResult)) {
+              logger.debug('Resolved EQUAL as false, because', lastEqualOperandResult.toString(), 'does not equal', operandResult.toString())
               return false
             }
           }
@@ -163,20 +165,22 @@ class LawReg {
           }
         }
         let equalResult = hasUndefined ? undefined : true
-        logger.debug('Resolved LESS_THAN as', equalResult)
+        logger.debug('Resolved EQUAL as', equalResult.toString())
         return equalResult
       case 'SUM':
         logger.debug('Switch case: SUM')
         let sumResult = 0
         for (let op of fact.operands) {
           let operandResult = await this.checkExpression(op, ssid, context)
-          logger.debug('OperandResult in SUM', operandResult, 'for operand', op)
+          logger.debug('OperandResult in SUM', operandResult.toString(), 'for operand', op)
           if (Array.isArray(operandResult)) {
             for (let arrayOp of operandResult) {
-              sumResult += arrayOp
+              if (arrayOp) {
+                sumResult = BigUtil.add(sumResult, arrayOp)
+              }
             }
           } else {
-            sumResult += operandResult
+            sumResult = BigUtil.add(sumResult, operandResult)
           }
 
           if (typeof operandResult === 'undefined') {
@@ -184,22 +188,22 @@ class LawReg {
           }
         }
         let finalSumResult = hasUndefined ? undefined : sumResult
-        logger.debug('Resolved SUM as', finalSumResult)
+        logger.debug('Resolved SUM as', finalSumResult.toString())
         return finalSumResult
       case 'PRODUCT':
         logger.debug('Switch case: PRODUCT')
         let productResult = 1
         for (let op of fact.operands) {
           let operandResult = await this.checkExpression(op, ssid, context)
-          logger.debug('OperandResult in PRODUCT', operandResult, 'for operand', op)
+          logger.debug('OperandResult in PRODUCT', operandResult.toString(), 'for operand', op)
           if (Array.isArray(operandResult)) {
             for (let arrayOp of operandResult) {
               if (arrayOp) {
-                productResult *= arrayOp
+                productResult = BigUtil.multiply(arrayOp, productResult)
               }
             }
           } else {
-            productResult *= operandResult
+            productResult = BigUtil.multiply(operandResult, productResult)
           }
 
           if (typeof operandResult === 'undefined') {
@@ -207,7 +211,7 @@ class LawReg {
           }
         }
         const finalProductResult = hasUndefined ? undefined : productResult
-        logger.debug('Resolved PRODUCT as', finalProductResult)
+        logger.debug('Resolved PRODUCT as', finalProductResult.toString())
         return finalProductResult
       case 'MIN':
         logger.debug('Switch case: MIN')
@@ -356,8 +360,11 @@ class LawReg {
     const listNames = context.listNames || []
     const listIndices = context.listIndices || []
     const result = context.factResolver(factToCheck, context.flintItem, listNames, listIndices)
-    const resolvedResult = await Promise.resolve(result)
-    logger.debug('Resolving fact', fact, 'as', resolvedResult, 'via', factToCheck, 'by factresolver')
+    let resolvedResult = await Promise.resolve(result)
+    if (typeof resolvedResult === 'number') {
+      resolvedResult = Big(resolvedResult)
+    }
+    logger.debug('Resolving fact', fact, 'as', resolvedResult.toString(), 'via', factToCheck, 'by factresolver')
     return resolvedResult
   }
 

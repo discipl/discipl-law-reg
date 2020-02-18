@@ -1,6 +1,6 @@
 {
   "name": "@discipl/law-reg",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Discipl Law and Regulation Compliance Library",
   "main": "dist/index.js",
   "module": "src/index.js",
@@ -38,6 +38,7 @@
   "dependencies": {
     "@discipl/abundance-service": "0.5.0",
     "@discipl/core-baseconnector": "0.2.1",
+    "big.js": "^5.2.2",
     "jsonc-parser": "^2.1.1",
     "loglevel": "1.6.1"
   },
