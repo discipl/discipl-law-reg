@@ -130,7 +130,7 @@ class LawReg {
           let operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
           if (typeof lastOperandResult !== 'undefined') {
-            if (operandResult <= lastOperandResult) {
+            if (BigUtil.lessThan(operandResult, lastOperandResult)) {
               logger.debug('Resolved LESS_THAN as false, because', String(lastOperandResult), 'is not less than', String(operandResult))
               return false
             }

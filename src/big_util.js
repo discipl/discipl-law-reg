@@ -8,7 +8,7 @@ class BigUtil {
       return b.plus(a)
     }
 
-    return a * b
+    return a + b
   }
 
   static multiply (a, b) {
@@ -33,6 +33,18 @@ class BigUtil {
     }
 
     return a === b
+  }
+
+  static lessThan (a, b) {
+    if (a.lt) {
+      return a.lt(b)
+    }
+
+    if (b.gt) {
+      return b.gt(a)
+    }
+
+    return a < b
   }
 }
 
