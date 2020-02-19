@@ -725,23 +725,41 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    it('should be able to multiply numbers', async () => {
+    it('should be able to determine the minimum of numbers', async () => {
       await testMathExpression({
         'expression': 'EQUAL',
         'operands': [
           {
-            'expression': 'PRODUCT',
+            'expression': 'MIN',
             'operands': [
               '[three]', '[five]'
             ]
           },
-          '[fifteen]'
+          '[three]'
         ]
       },
       {
         '[three]': 3,
-        '[five]': 5,
-        '[fifteen]': 15
+        '[five]': 5
+      })
+    })
+
+    it('should be able to determine the minimum of numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'MIN',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[three]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
       })
     })
 
@@ -767,7 +785,28 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    it('should be able to add numbers with a false result', async () => {
+    it('should be able to multiply numbers with arbitrary precision', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'PRODUCT',
+            'operands': [
+              '[1,15]', '[400]', '[100]'
+            ]
+          },
+          '[46000]'
+        ]
+      },
+      {
+        '[1,15]': 1.15,
+        '[400]': 400,
+        '[100]': 100,
+        '[46000]': 46000
+      })
+    })
+
+    it('should be able to multiply numbers with a false result', async () => {
       await testFalseMathExpression({
         'expression': 'EQUAL',
         'operands': [
