@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+/* eslint-disable no-unused-expressions */
 import { expect } from 'chai'
 
 import { BigUtil } from './../src/big_util'
@@ -9,6 +10,10 @@ log.getLogger('disciplLawReg').setLevel('warn')
 describe('big_util.js', () => {
   it('should add two normal numbers', () => {
     expect(BigUtil.add(1, 2)).to.equal(3)
+  })
+
+  it('should add undefined and result in undefined', () => {
+    expect(BigUtil.add(undefined, 2)).to.be.undefined
   })
 
   it('should add a number and a big number', () => {

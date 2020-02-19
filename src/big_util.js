@@ -1,50 +1,34 @@
 class BigUtil {
+  static genericOp (a, b, functionName, fallbackFunction, commutativeFunctionName = functionName) {
+    if (typeof a === 'undefined' || typeof b === 'undefined') {
+      return undefined
+    }
+
+    if (a[functionName]) {
+      return a[functionName](b)
+    }
+
+    if (b[commutativeFunctionName]) {
+      return b[commutativeFunctionName](a)
+    }
+
+    return fallbackFunction()
+  }
+
   static add (a, b) {
-    if (a.plus) {
-      return a.plus(b)
-    }
-
-    if (b.times) {
-      return b.plus(a)
-    }
-
-    return a + b
+    return this.genericOp(a, b, 'plus', () => a + b)
   }
 
   static multiply (a, b) {
-    if (a.times) {
-      return a.times(b)
-    }
-
-    if (b.times) {
-      return b.times(a)
-    }
-
-    return a * b
+    return this.genericOp(a, b, 'times', () => a * b)
   }
 
   static equal (a, b) {
-    if (a.eq) {
-      return a.eq(b)
-    }
-
-    if (b.eq) {
-      return b.eq(a)
-    }
-
-    return a === b
+    return this.genericOp(a, b, 'eq', () => a === b)
   }
 
   static lessThan (a, b) {
-    if (a.lt) {
-      return a.lt(b)
-    }
-
-    if (b.gt) {
-      return b.gt(a)
-    }
-
-    return a < b
+    return this.genericOp(a, b, 'lt', () => a < b, 'gt')
   }
 }
 
