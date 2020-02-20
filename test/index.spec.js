@@ -761,6 +761,15 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to evaluate a literal boolean', async () => {
+      await testMathExpression({
+        'expression': 'LITERAL',
+        'operand': true
+      },
+      {
+      })
+    })
+
     it('should be able to determine the minimum of numbers', async () => {
       await testMathExpression({
         'expression': 'EQUAL',
