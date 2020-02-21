@@ -6,7 +6,7 @@
       "actor": "[belanghebbende]",
       "action": "[indienen]",
       "object": "[verzoek een besluit te nemen]",
-      "interested-party": "[bestuursorgaan]",
+      "recipient": "[bestuursorgaan]",
       "preconditions": {
         "expression": "NOT",
         "operand": "[bij wettelijk voorschrift is anders bepaald]"
@@ -34,7 +34,7 @@
       "actor": "[bestuursorgaan]",
       "action": "[bekendmaken]",
       "object": "[besluit]",
-      "interested-party": "[belanghebbende(n)]",
+      "recipient": "[belanghebbende(n)]",
       "preconditions": {
         "expression": "AND",
         "operands": [
@@ -90,7 +90,7 @@
       "actor": "[bestuursorgaan]",
       "action": "[besluiten niet te behandelen]",
       "object": "[aanvraag]",
-      "interested-party": "[belanghebbende]",
+      "recipient": "[belanghebbende]",
       "preconditions": "[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]",
       "create": [
         "[besluit tot niet in behandeling nemen aanvraag]"
@@ -110,7 +110,7 @@
       "actor": "[bestuursorgaan]",
       "action": "[vaststellen]",
       "object": "[formulier]",
-      "interested-party": "[aanvrager]",
+      "recipient": "[aanvrager]",
       "preconditions": {
         "expression": "AND",
         "operands": [
@@ -137,7 +137,7 @@
       "actor": "[bestuursorgaan]",
       "action": "[vaststellen]",
       "object": "[formulier]",
-      "interested-party": "[aanvrager]",
+      "recipient": "[aanvrager]",
       "preconditions": {
         "expression": "AND",
         "operands": [
@@ -164,7 +164,7 @@
       "actor": "[aanvrager]",
       "action": "[indienen]",
       "object": "[bezwaarschrift]",
-      "interested-party": "[bestuursorgaan]",
+      "recipient": "[bestuursorgaan]",
       "preconditions": "[beslissing treft de belanghebbende los van het voor te bereiden besluit rechtstreeks in zijn belang]",
       "create": [
         "[bezwaarschrift]",
@@ -183,7 +183,7 @@
       "actor": "[bestuursorgaan]",
       "action": "[herroepen]",
       "object": "[bestreden besluit]",
-      "interested-party": "[belanghebbende(n)]",
+      "recipient": "[belanghebbende(n)]",
       "preconditions": "[voor zover de heroverweging aanleiding geeft]",
       "create": [
         "[besluit tot herroepen bestreden besluit]"
@@ -203,7 +203,7 @@
       "actor": "[bestuursorgaan]",
       "action": "[nemen]",
       "object": "[nieuw besluit na herroepen bestreden besluit]",
-      "interested-party": "[belanghebbende(n)]",
+      "recipient": "[belanghebbende(n)]",
       "preconditions": "[voor zover de heroverweging aanleiding geeft]",
       "create": [
         "[besluit]"
@@ -221,7 +221,7 @@
       "actor": "???",
       "action": "[instellen]",
       "object": "[beroep]",
-      "interested-party": "[bestuursorgaan]",
+      "recipient": "[bestuursorgaan]",
       "preconditions": "",
       "create": [],
       "terminate": [],
