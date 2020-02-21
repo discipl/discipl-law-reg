@@ -27,7 +27,7 @@ class ModelValidator {
       }, this.identifierPaths)
     }
 
-    const indexedFields = [['acts', 'act'], ['acts', 'actor'], ['acts', 'object'], ['acts', 'interested-party'],
+    const indexedFields = [['acts', 'act'], ['acts', 'actor'], ['acts', 'object'], ['acts', 'recipient'],
       ['acts', 'preconditions'],
       ['facts', 'fact'], ['facts', 'function'],
       ['duties', 'duty'], ['duties', 'duty-components'], ['duties', 'duty-holder'], ['duties', 'duty-holder'], ['duties', 'claimant'], ['duties', 'create'], ['duties', 'terminate']]
@@ -243,7 +243,7 @@ class ModelValidator {
     const veryStrict = []
     const lessStrict = ['']
     const factStrict = ['<<>>', '[]']
-    const expressionCheckInfo = [['acts', 'actor', veryStrict], ['acts', 'object', veryStrict], ['acts', 'interested-party', veryStrict],
+    const expressionCheckInfo = [['acts', 'actor', veryStrict], ['acts', 'object', veryStrict], ['acts', 'recipient', veryStrict],
       ['acts', 'preconditions', lessStrict], ['facts', 'function', factStrict]]
 
     const expressionErrors = expressionCheckInfo.map((expressionCheckPath) => {

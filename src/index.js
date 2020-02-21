@@ -498,12 +498,12 @@ class LawReg {
       }
     }
 
-    const interestedParty = actReference.data[DISCIPL_FLINT_ACT]['interested-party']
-    logger.debug('Original interestedparty', interestedParty)
-    const checkedInterestedParty = await this.checkFact(interestedParty, ssid, { ...context, 'facts': factReference, 'flintItem': 'interested-party' })
+    const recipient = actReference.data[DISCIPL_FLINT_ACT]['recipient']
+    logger.debug('Original recipient', recipient)
+    const checkedInterestedParty = await this.checkFact(recipient, ssid, { ...context, 'facts': factReference, 'flintItem': 'recipient' })
 
     if (!checkedInterestedParty) {
-      invalidReasons.push('interested-party')
+      invalidReasons.push('recipient')
       if (earlyEscape) {
         return {
           'valid': false,

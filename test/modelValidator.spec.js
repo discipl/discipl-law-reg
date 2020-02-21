@@ -93,7 +93,7 @@ describe('The Flint Model validator', () => {
 
   it('should find undefined facts used in acts', async () => {
     const model = JSON.stringify({
-      'acts': [{ 'act': '<<act>>', 'actor': '[canary]', 'object': '[birdfood]', 'interested-party': '[cat]' }],
+      'acts': [{ 'act': '<<act>>', 'actor': '[canary]', 'object': '[birdfood]', 'recipient': '[cat]' }],
       'facts': [],
       'duties': []
     })
@@ -136,13 +136,13 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          87,
-          92
+          80,
+          85
         ],
         'path': [
           'acts',
           0,
-          'interested-party'
+          'recipient'
         ],
         'severity': 'WARNING',
         'source': '[cat]'

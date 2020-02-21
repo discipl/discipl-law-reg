@@ -6,7 +6,7 @@
       "action" : "verstrekken",
       "actor": "[minister]",
       "object": "[subsidie lerarenbeurs]",
-      "interested-party": "[leraar]", //belanghebbende
+      "recipient": "[leraar]", //belanghebbende
       "preconditions": "([subsidie voor bacheloropleiding leraar] OF [subsidie voor masteropleiding leraar] ...",
       "create": "<<>>,<<>>",
       "terminate": "<<>>,<<>>",
