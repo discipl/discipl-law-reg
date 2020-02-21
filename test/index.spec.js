@@ -621,6 +621,23 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to compare literals', async () => {
+      await testMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          {
+            'expression': 'LITERAL',
+            'operand': 3
+          },
+          {
+            'expression': 'LITERAL',
+            'operand': 5
+          }
+        ]
+      },
+      {})
+    })
+
     it('should be able to compare numbers with a false result', async () => {
       await testFalseMathExpression({
         'expression': 'LESS_THAN',
@@ -744,6 +761,15 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to evaluate a literal boolean', async () => {
+      await testMathExpression({
+        'expression': 'LITERAL',
+        'operand': true
+      },
+      {
+      })
+    })
+
     it('should be able to determine the minimum of numbers', async () => {
       await testMathExpression({
         'expression': 'EQUAL',
@@ -792,14 +818,16 @@ describe('discipl-law-reg', () => {
           {
             'expression': 'PRODUCT',
             'operands': [
-              '[1,15]', '[400]', '[100]'
+              {
+                'expression': 'LITERAL',
+                'operand': 1.15
+              }, '[400]', '[100]'
             ]
           },
           '[46000]'
         ]
       },
       {
-        '[1,15]': 1.15,
         '[400]': 400,
         '[100]': 100,
         '[46000]': 46000

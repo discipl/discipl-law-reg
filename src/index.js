@@ -247,6 +247,12 @@ class LawReg {
         const finalMaxResult = hasUndefined ? undefined : maxResult
         logger.debug('Resolved MAX as', finalMaxResult)
         return finalMaxResult
+      case 'LITERAL':
+        let literalValue = fact.operand
+        if (typeof literalValue === 'number') {
+          literalValue = Big(literalValue)
+        }
+        return literalValue
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {
