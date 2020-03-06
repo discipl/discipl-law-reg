@@ -400,7 +400,7 @@ class LawReg {
         logger.debug('Found earlier act', act)
 
         if (act.data[DISCIPL_FLINT_ACT].create != null && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
-          possibleCreatingActions.push(actLink)
+          possibleCreatingActions.push(actionLink)
         }
 
         if (act.data[DISCIPL_FLINT_ACT].terminate != null && act.data[DISCIPL_FLINT_ACT].terminate.includes(fact)) {
@@ -411,14 +411,18 @@ class LawReg {
       actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
     }
 
-    if (possibleCreatingActions.length === 1) {
-      return possibleCreatingActions[0]
-    }
-    else if (possibleCreatingActions.length === 0) {
+    if (possibleCreatingActions.length === 0) {
       return false
     }
 
-    throw new Error("Not implemented, multiple creating acts")
+    const result = context.factResolver(fact, context.flintItem, context.listNames || [], context.listIndices || [], possibleCreatingActions)
+    let resolvedResult = await Promise.resolve(result)
+
+    if (!possibleCreatingActions.includes(resolvedResult)) {
+      throw new Error("Invalid choice for creating action: " + resolvedResult)
+    }
+
+    return resolvedResult
   }
 
   /**
@@ -833,7 +837,7 @@ class LawReg {
 
     const factsSupplied = {}
 
-    const capturingFactResolver = async (fact, flintItem, listNames, listIndices) => {
+    const defaultFactResolver = async (fact, flintItem, listNames, listIndices, possibleCreatingActions) => {
       let factsObject = factsSupplied
       for (let i = 0; i < listNames.length; i++) {
         const listName = listNames[i]
@@ -844,14 +848,17 @@ class LawReg {
 
         factsObject = factsObject[listName][listIndex]
       }
-
-      const result = factsObject[fact] || factResolver(fact, flintItem, listNames, listIndices)
+      let maybeCreatingAction = null;
+      if (possibleCreatingActions && possibleCreatingActions.length === 1) {
+        maybeCreatingAction = possibleCreatingActions[0]
+      }
+      const result = factsObject[fact] || maybeCreatingAction|| factResolver(fact, flintItem, listNames, listIndices, possibleCreatingActions)
       factsObject[fact] = await result
       return result
     }
 
     logger.debug('Checking if action is possible from perspective of', ssid.did)
-    let checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': capturingFactResolver, 'caseLink': caseLink }, true)
+    let checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink }, true)
     if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
       return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink,

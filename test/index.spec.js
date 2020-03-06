@@ -1330,6 +1330,7 @@ describe('discipl-law-reg', () => {
       expect(action.data).to.deep.equal({
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
         'DISCIPL_FLINT_FACTS_SUPPLIED': {
+          '[aanvraag]': actionLink,
           '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]': true
         },
         'DISCIPL_FLINT_GLOBAL_CASE': needLink,
