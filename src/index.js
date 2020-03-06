@@ -388,6 +388,8 @@ class LawReg {
     const core = this.abundance.getCoreAPI()
     let actionLink = context.caseLink
 
+    const possibleCreatingActions = []
+
     while (actionLink != null) {
       let lastAction = await core.get(actionLink, ssid)
 
@@ -398,17 +400,25 @@ class LawReg {
         logger.debug('Found earlier act', act)
 
         if (act.data[DISCIPL_FLINT_ACT].create != null && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
-          return true
+          possibleCreatingActions.push(actLink)
         }
 
         if (act.data[DISCIPL_FLINT_ACT].terminate != null && act.data[DISCIPL_FLINT_ACT].terminate.includes(fact)) {
+          // TODO: Account for multiple creating acts
           return false
         }
       }
       actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
     }
 
-    return false
+    if (possibleCreatingActions.length === 1) {
+      return possibleCreatingActions[0]
+    }
+    else if (possibleCreatingActions.length === 0) {
+      return false
+    }
+
+    throw new Error("Not implemented, multiple creating acts")
   }
 
   /**
