@@ -1481,6 +1481,80 @@ describe('discipl-law-reg', () => {
       'duties': []
     }
 
+    it('should be able to perform an action where the object originates from one of two other actions', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<bake cookie>>',
+            'actor': '[baker]',
+            'object': '[dough]',
+            'recipient': '[bakery]',
+            'preconditions': '[]',
+            'create': ['[cookie]']
+          },
+          {
+            'act': '<<eat cookie>>',
+            'actor': '[baker]',
+            'object': '[cookie]',
+            'recipient': '[bakery]',
+            'preconditions': '[]',
+            'terminate': ['[cookie]']
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[cookie]',
+            'function': '<<>>'
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[dough]': true, '[bakery]': true}
+      const util = new Util(lawReg)
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      let { ssids, modelLink } = await util.setupModel(model, ['baker'], { 'baker': '[baker]' })
+
+      let needLink = await core.claim(ssids['baker'], {
+        'need': {
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact, _item, _listNames, _listIndices, creatingOptions) => {
+        if (['[dough]', '[bakery]', '[baker]'].includes(fact)) {
+          return true
+        }
+        console.log(fact)
+        // Last option corresponds to first bake action because this array is populated backwards
+        return creatingOptions[1]
+      }
+
+      let firstBakeAction = await lawReg.take(ssids['baker'], needLink, '<<bake cookie>>', factResolver);
+      let secondBakeAction = await lawReg.take(ssids['baker'], firstBakeAction, '<<bake cookie>>', factResolver);
+      let eatAction = await lawReg.take(ssids['baker'], secondBakeAction, '<<eat cookie>>', factResolver);
+
+      const eatDetails = await core.get(eatAction, ssids['baker'])
+
+      expect(eatDetails.data["DISCIPL_FLINT_FACTS_SUPPLIED"]).to.deep.equal({
+        "[baker]": true,
+        "[bakery]": true,
+        "[cookie]": firstBakeAction
+      })
+
+      let eatAction2 = await lawReg.take(ssids['baker'], eatAction, '<<eat cookie>>', factResolver);
+
+      const eatDetails2 = await core.get(eatAction2, ssids['baker'])
+
+      expect(eatDetails2.data["DISCIPL_FLINT_FACTS_SUPPLIED"]).to.deep.equal({
+        "[baker]": true,
+        "[bakery]": true,
+        "[cookie]": secondBakeAction
+      })
+
+    })
+
     it('should perform a checkAction', async () => {
       let core = lawReg.getAbundanceService().getCoreAPI()
 
