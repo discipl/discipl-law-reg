@@ -1510,7 +1510,6 @@ describe('discipl-law-reg', () => {
         'duties': []
       }
 
-      const completeFacts = { '[dough]': true, '[bakery]': true}
       const util = new Util(lawReg)
       const core = lawReg.getAbundanceService().getCoreAPI()
 
@@ -1531,28 +1530,27 @@ describe('discipl-law-reg', () => {
         return creatingOptions[1]
       }
 
-      let firstBakeAction = await lawReg.take(ssids['baker'], needLink, '<<bake cookie>>', factResolver);
-      let secondBakeAction = await lawReg.take(ssids['baker'], firstBakeAction, '<<bake cookie>>', factResolver);
-      let eatAction = await lawReg.take(ssids['baker'], secondBakeAction, '<<eat cookie>>', factResolver);
+      let firstBakeAction = await lawReg.take(ssids['baker'], needLink, '<<bake cookie>>', factResolver)
+      let secondBakeAction = await lawReg.take(ssids['baker'], firstBakeAction, '<<bake cookie>>', factResolver)
+      let eatAction = await lawReg.take(ssids['baker'], secondBakeAction, '<<eat cookie>>', factResolver)
 
       const eatDetails = await core.get(eatAction, ssids['baker'])
 
-      expect(eatDetails.data["DISCIPL_FLINT_FACTS_SUPPLIED"]).to.deep.equal({
-        "[baker]": true,
-        "[bakery]": true,
-        "[cookie]": firstBakeAction
+      expect(eatDetails.data['DISCIPL_FLINT_FACTS_SUPPLIED']).to.deep.equal({
+        '[baker]': true,
+        '[bakery]': true,
+        '[cookie]': firstBakeAction
       })
 
-      let eatAction2 = await lawReg.take(ssids['baker'], eatAction, '<<eat cookie>>', factResolver);
+      let eatAction2 = await lawReg.take(ssids['baker'], eatAction, '<<eat cookie>>', factResolver)
 
       const eatDetails2 = await core.get(eatAction2, ssids['baker'])
 
-      expect(eatDetails2.data["DISCIPL_FLINT_FACTS_SUPPLIED"]).to.deep.equal({
-        "[baker]": true,
-        "[bakery]": true,
-        "[cookie]": secondBakeAction
+      expect(eatDetails2.data['DISCIPL_FLINT_FACTS_SUPPLIED']).to.deep.equal({
+        '[baker]': true,
+        '[bakery]': true,
+        '[cookie]': secondBakeAction
       })
-
     })
 
     it('should perform a checkAction', async () => {

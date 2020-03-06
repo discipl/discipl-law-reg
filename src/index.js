@@ -422,7 +422,7 @@ class LawReg {
     let resolvedResult = await Promise.resolve(result)
 
     if (!creatingActions.includes(resolvedResult)) {
-      throw new Error("Invalid choice for creating action: " + resolvedResult)
+      throw new Error('Invalid choice for creating action: ' + resolvedResult)
     }
 
     return resolvedResult
@@ -851,11 +851,11 @@ class LawReg {
 
         factsObject = factsObject[listName][listIndex]
       }
-      let maybeCreatingAction = null;
+      let maybeCreatingAction = null
       if (possibleCreatingActions && possibleCreatingActions.length === 1) {
         maybeCreatingAction = possibleCreatingActions[0]
       }
-      const result = factsObject[fact] || maybeCreatingAction|| factResolver(fact, flintItem, listNames, listIndices, possibleCreatingActions)
+      const result = factsObject[fact] || maybeCreatingAction || factResolver(fact, flintItem, listNames, listIndices, possibleCreatingActions)
       factsObject[fact] = await result
       return result
     }
