@@ -389,6 +389,7 @@ class LawReg {
     let actionLink = context.caseLink
 
     const possibleCreatingActions = []
+    const terminatedCreatingActions = []
 
     while (actionLink != null) {
       let lastAction = await core.get(actionLink, ssid)
@@ -404,21 +405,23 @@ class LawReg {
         }
 
         if (act.data[DISCIPL_FLINT_ACT].terminate != null && act.data[DISCIPL_FLINT_ACT].terminate.includes(fact)) {
-          // TODO: Account for multiple creating acts
-          return false
+          const terminatedLink = lastAction.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
+          terminatedCreatingActions.push(terminatedLink)
         }
       }
       actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
     }
 
-    if (possibleCreatingActions.length === 0) {
+    const creatingActions = possibleCreatingActions.filter((maybeTerminatedLink) => !terminatedCreatingActions.includes(maybeTerminatedLink))
+
+    if (creatingActions.length === 0) {
       return false
     }
 
-    const result = context.factResolver(fact, context.flintItem, context.listNames || [], context.listIndices || [], possibleCreatingActions)
+    const result = context.factResolver(fact, context.flintItem, context.listNames || [], context.listIndices || [], creatingActions)
     let resolvedResult = await Promise.resolve(result)
 
-    if (!possibleCreatingActions.includes(resolvedResult)) {
+    if (!creatingActions.includes(resolvedResult)) {
       throw new Error("Invalid choice for creating action: " + resolvedResult)
     }
 
