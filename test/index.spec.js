@@ -635,20 +635,6 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    it('should be able to compare numbers with a false result', async () => {
-      await testFalseMathExpression({
-        'expression': 'LESS_THAN',
-        'operands': [
-          '[five]',
-          '[three]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5
-      })
-    })
-
     it('should be able to compare numbers equality with a false result', async () => {
       await testFalseMathExpression({
         'expression': 'EQUAL',
