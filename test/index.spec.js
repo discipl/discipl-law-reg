@@ -24,7 +24,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '',
             'create': '<verwelkomen>',
             'terminate': '',
@@ -38,7 +38,7 @@ describe('discipl-law-reg', () => {
             'action': '[fdsa]',
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '',
             'create': '<verwelkomen>',
             'terminate': '',
@@ -52,7 +52,7 @@ describe('discipl-law-reg', () => {
             'action': '[fdsa fads]',
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '',
             'create': '<verwelkomen>',
             'terminate': '',
@@ -114,7 +114,7 @@ describe('discipl-law-reg', () => {
           'action': '[aanvragen]',
           'actor': '[ingezetene]',
           'object': '[verwelkomst]',
-          'interested-party': '[overheid]',
+          'recipient': '[overheid]',
           'preconditions': '',
           'create': '<verwelkomen>',
           'terminate': '',
@@ -158,7 +158,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '[]',
             'create': '<verwelkomen>',
             'terminate': '',
@@ -217,7 +217,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '[]',
             'create': '<verwelkomen>',
             'terminate': '',
@@ -286,7 +286,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ouder]',
             'object': '[verzoek]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': {
               'expression': 'LIST',
               'name': 'leeftijden',
@@ -380,7 +380,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ouder]',
             'object': '[verzoek]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': {
               'expression': 'LIST',
               'name': 'kinderen',
@@ -496,7 +496,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '[]',
             'create': '<verwelkomen>',
             'terminate': '',
@@ -511,7 +511,7 @@ describe('discipl-law-reg', () => {
             'action': '[aangeven]',
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '[]',
             'create': '',
             'terminate': '<verwelkomen>',
@@ -581,7 +581,7 @@ describe('discipl-law-reg', () => {
             'act': '<<compute mathematical expression>>',
             'actor': '[mathematician]',
             'object': '[expression]',
-            'interested-party': '[user]',
+            'recipient': '[user]',
             'preconditions': precondition
           }
         ],
@@ -619,6 +619,23 @@ describe('discipl-law-reg', () => {
         '[three]': 3,
         '[five]': 5
       })
+    })
+
+    it('should be able to compare literals', async () => {
+      await testMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          {
+            'expression': 'LITERAL',
+            'operand': 3
+          },
+          {
+            'expression': 'LITERAL',
+            'operand': 5
+          }
+        ]
+      },
+      {})
     })
 
     it('should be able to compare numbers with a false result', async () => {
@@ -669,6 +686,28 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to add in a list', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'SUM',
+            'operands': [
+              {
+                'expression': 'LIST',
+                'items': '[number]'
+              }
+            ]
+          },
+          '[eight]'
+        ]
+      },
+      {
+        '[number]': [3, 5, false],
+        '[eight]': 8
+      })
+    })
+
     it('should be able to add numbers with a false result', async () => {
       await testFalseMathExpression({
         'expression': 'EQUAL',
@@ -689,27 +728,99 @@ describe('discipl-law-reg', () => {
       })
     })
 
-    it('should be able to multiply numbers', async () => {
+    it('should be able to determine the minimum of numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'MIN',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[three]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
+    it('should be able to evaluate a literal boolean', async () => {
+      await testMathExpression({
+        'expression': 'LITERAL',
+        'operand': true
+      },
+      {
+      })
+    })
+
+    it('should be able to determine the minimum of numbers', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'MIN',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          '[three]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
+    it('should be able to multiply in a list', async () => {
       await testMathExpression({
         'expression': 'EQUAL',
         'operands': [
           {
             'expression': 'PRODUCT',
             'operands': [
-              '[three]', '[five]'
+              {
+                'expression': 'LIST',
+                'items': '[number]'
+              }
             ]
           },
           '[fifteen]'
         ]
       },
       {
-        '[three]': 3,
-        '[five]': 5,
+        '[number]': [3, 5, false],
         '[fifteen]': 15
       })
     })
 
-    it('should be able to add numbers with a false result', async () => {
+    it('should be able to multiply numbers with arbitrary precision', async () => {
+      await testMathExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'PRODUCT',
+            'operands': [
+              {
+                'expression': 'LITERAL',
+                'operand': 1.15
+              }, '[400]', '[100]'
+            ]
+          },
+          '[46000]'
+        ]
+      },
+      {
+        '[400]': 400,
+        '[100]': 100,
+        '[46000]': 46000
+      })
+    })
+
+    it('should be able to multiply numbers with a false result', async () => {
       await testFalseMathExpression({
         'expression': 'EQUAL',
         'operands': [
@@ -798,7 +909,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '[]',
             'create': '<verwelkomen>',
             'terminate': '',
@@ -813,7 +924,7 @@ describe('discipl-law-reg', () => {
             'action': '[aangeven]',
             'actor': '[ingezetene]',
             'object': '[verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '[]',
             'create': '',
             'terminate': '<verwelkomen>',
@@ -888,7 +999,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ingezetene]',
             'object': '[aanvraag verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': '[]',
             'create': '<verwelkomen>',
             'terminate': '',
@@ -948,7 +1059,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ouder]',
             'object': '[verzoek]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': {
               'expression': 'LIST',
               'name': 'leeftijden',
@@ -995,7 +1106,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ouder]',
             'object': '[verzoek]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': {
               'expression': 'LESS_THAN',
               'operands': [
@@ -1043,7 +1154,7 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'actor': '[ingezetene]',
             'object': '[aanvraag verwelkomst]',
-            'interested-party': '[overheid]',
+            'recipient': '[overheid]',
             'preconditions': 'NIET [langer dan een jaar geleden gearriveerd]',
             'create': '<verwelkomen>',
             'terminate': '',
@@ -1293,7 +1404,7 @@ describe('discipl-law-reg', () => {
         'action': '[aanvragen]',
         'actor': '[aanvrager]',
         'object': '[verwelkomst]',
-        'interested-party': '[overheid]',
+        'recipient': '[overheid]',
         'preconditions': '[]',
         'create': '<verwelkomen>',
         'terminate': '',
@@ -1432,7 +1543,7 @@ describe('discipl-law-reg', () => {
       expect(result).to.deep.equal({
         'invalidReasons': [
           'object',
-          'interested-party'
+          'recipient'
         ],
         'valid': false
       })
