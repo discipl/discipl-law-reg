@@ -89,22 +89,22 @@ describe('discipl-law-reg', () => {
         ]
       }
 
-      let abundancesvc = lawReg.getAbundanceService()
-      let core = abundancesvc.getCoreAPI()
+      const abundancesvc = lawReg.getAbundanceService()
+      const core = abundancesvc.getCoreAPI()
 
-      let ssid = await core.newSsid('ephemeral')
+      const ssid = await core.newSsid('ephemeral')
 
-      let modelLink = await lawReg.publish(ssid, model)
+      const modelLink = await lawReg.publish(ssid, model)
 
-      let modelReference = await core.get(modelLink, ssid)
+      const modelReference = await core.get(modelLink, ssid)
 
-      let actsLink = modelReference.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
-      let factsLink = modelReference.data['DISCIPL_FLINT_MODEL'].facts[2]['[betrokkene]']
-      let dutiesLink = modelReference.data['DISCIPL_FLINT_MODEL'].duties[0]['<verwelkomen binnen 14 dagen na aanvragen>']
+      const actsLink = modelReference.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
+      const factsLink = modelReference.data['DISCIPL_FLINT_MODEL'].facts[2]['[betrokkene]']
+      const dutiesLink = modelReference.data['DISCIPL_FLINT_MODEL'].duties[0]['<verwelkomen binnen 14 dagen na aanvragen>']
 
-      let actDetails = await lawReg.getActDetails(actsLink, ssid)
-      let factReference = await core.get(factsLink, ssid)
-      let dutyReference = await core.get(dutiesLink, ssid)
+      const actDetails = await lawReg.getActDetails(actsLink, ssid)
+      const factReference = await core.get(factsLink, ssid)
+      const dutyReference = await core.get(dutiesLink, ssid)
 
       expect(Object.keys(modelReference.data['DISCIPL_FLINT_MODEL'])).to.have.members(['model', 'acts', 'facts', 'duties'])
 
@@ -148,7 +148,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to take an action', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
@@ -174,26 +174,26 @@ describe('discipl-law-reg', () => {
         'duties': []
       }
       const util = new Util(lawReg)
-      let { ssids, modelLink } = await util.setupModel(model, ['ingezetene'], { '[ingezetene]': 'ingezetene' }, false)
+      const { ssids, modelLink } = await util.setupModel(model, ['ingezetene'], { '[ingezetene]': 'ingezetene' }, false)
 
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
 
-      let retrievedModel = await core.get(modelLink)
+      const retrievedModel = await core.get(modelLink)
 
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let factResolver = (fact) => true
+      const factResolver = (fact) => true
 
-      let actionLink = await lawReg.take(ssids['ingezetene'], needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
+      const actionLink = await lawReg.take(ssids['ingezetene'], needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
 
-      let action = await core.get(actionLink, ssids['ingezetene'])
+      const action = await core.get(actionLink, ssids['ingezetene'])
 
       expect(action.data).to.deep.equal({
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
@@ -207,7 +207,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to take an action with an async factresolver', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
@@ -233,33 +233,33 @@ describe('discipl-law-reg', () => {
         'duties': []
       }
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
+      const lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
 
-      let actorSsid = await core.newSsid('ephemeral')
+      const actorSsid = await core.newSsid('ephemeral')
 
-      let modelLink = await lawReg.publish(lawmakerSsid, model, {
+      const modelLink = await lawReg.publish(lawmakerSsid, model, {
         '[ingezetene]':
           'IS:' + actorSsid.did
       })
 
-      let retrievedModel = await core.get(modelLink)
+      const retrievedModel = await core.get(modelLink)
 
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let factResolver = async (fact) => true
+      const factResolver = async (fact) => true
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
+      const actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
 
-      let action = await core.get(actionLink, actorSsid)
+      const action = await core.get(actionLink, actorSsid)
 
       expect(action).to.deep.equal({
         'data': {
@@ -276,7 +276,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to take an action with a list', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
       const model = {
         'model': 'Fictieve kinderbijslag',
@@ -306,26 +306,26 @@ describe('discipl-law-reg', () => {
         'duties': []
       }
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
+      const lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
 
-      let actorSsid = await core.newSsid('ephemeral')
+      const actorSsid = await core.newSsid('ephemeral')
 
-      let modelLink = await lawReg.publish(lawmakerSsid, model, {})
+      const modelLink = await lawReg.publish(lawmakerSsid, model, {})
 
-      let retrievedModel = await core.get(modelLink)
+      const retrievedModel = await core.get(modelLink)
 
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<kinderbijslag aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let factResolver = (fact, flintItem, listNames, listIndices) => {
+      const factResolver = (fact, flintItem, listNames, listIndices) => {
         if (listNames && listNames[0] === 'leeftijden') {
           if (listIndices[0] === 0) {
             return 8
@@ -339,9 +339,9 @@ describe('discipl-law-reg', () => {
         return true
       }
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<kinderbijslag aanvragen>>', factResolver)
+      const actionLink = await lawReg.take(actorSsid, needLink, '<<kinderbijslag aanvragen>>', factResolver)
 
-      let action = await core.get(actionLink, actorSsid)
+      const action = await core.get(actionLink, actorSsid)
 
       expect(action).to.deep.equal({
         'data': {
@@ -370,7 +370,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to take an action with a nested list', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
       const model = {
         'model': 'Fictieve kinderbijslag',
@@ -404,26 +404,26 @@ describe('discipl-law-reg', () => {
         'duties': []
       }
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
+      const lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
 
-      let actorSsid = await core.newSsid('ephemeral')
+      const actorSsid = await core.newSsid('ephemeral')
 
-      let modelLink = await lawReg.publish(lawmakerSsid, model, {})
+      const modelLink = await lawReg.publish(lawmakerSsid, model, {})
 
-      let retrievedModel = await core.get(modelLink)
+      const retrievedModel = await core.get(modelLink)
 
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<kinderbijslag aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let factResolver = (fact, flintItem, listNames, listIndices) => {
+      const factResolver = (fact, flintItem, listNames, listIndices) => {
         if (listNames && listNames[0] === 'kinderen') {
           if (listIndices[0] === 0 && listIndices[1] === 0) {
             return 'BSc Technische Wiskunde'
@@ -437,9 +437,9 @@ describe('discipl-law-reg', () => {
         return true
       }
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<kinderbijslag aanvragen>>', factResolver)
+      const actionLink = await lawReg.take(actorSsid, needLink, '<<kinderbijslag aanvragen>>', factResolver)
 
-      let action = await core.get(actionLink, actorSsid)
+      const action = await core.get(actionLink, actorSsid)
 
       expect(action).to.deep.equal({
         'data': {
@@ -486,7 +486,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to determine active duties', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
@@ -542,34 +542,34 @@ describe('discipl-law-reg', () => {
         ]
       }
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
+      const lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
       await core.allow(needSsid)
 
-      let actorSsid = await core.newSsid('ephemeral')
+      const actorSsid = await core.newSsid('ephemeral')
       await core.allow(actorSsid)
 
-      let overheidSsid = await core.newSsid('ephemeral')
+      const overheidSsid = await core.newSsid('ephemeral')
 
-      let modelLink = await lawReg.publish(lawmakerSsid, model, {
+      const modelLink = await lawReg.publish(lawmakerSsid, model, {
         '[ingezetene]':
           'IS:' + actorSsid.did,
         '[overheid]': 'IS:' + overheidSsid.did
       })
 
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let factResolver = (fact) => true
+      const factResolver = (fact) => true
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
-      let activeDuties = (await lawReg.getActiveDuties(actionLink, actorSsid)).map(dutyInformation => dutyInformation.duty)
-      let activeDuties2 = (await lawReg.getActiveDuties(actionLink, overheidSsid)).map(dutyInformation => dutyInformation.duty)
+      const actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
+      const activeDuties = (await lawReg.getActiveDuties(actionLink, actorSsid)).map(dutyInformation => dutyInformation.duty)
+      const activeDuties2 = (await lawReg.getActiveDuties(actionLink, overheidSsid)).map(dutyInformation => dutyInformation.duty)
       expect(activeDuties).to.deep.equal([])
       expect(activeDuties2).to.deep.equal(['<verwelkomen>'])
     })
@@ -592,7 +592,7 @@ describe('discipl-law-reg', () => {
       const completeFacts = { '[expression]': true, '[user]': true, '[mathematician]': true, ...facts }
       const util = new Util(lawReg)
 
-      let { ssids, modelLink } = await util.setupModel(model, ['mathematician'], { 'mathematician': '[mathematician]' })
+      const { ssids, modelLink } = await util.setupModel(model, ['mathematician'], { 'mathematician': '[mathematician]' })
 
       await util.scenarioTest(ssids, modelLink, [{ 'act': '<<compute mathematical expression>>', 'actor': 'mathematician' }], completeFacts)
     }
@@ -636,20 +636,6 @@ describe('discipl-law-reg', () => {
         ]
       },
       {})
-    })
-
-    it('should be able to compare numbers with a false result', async () => {
-      await testFalseMathExpression({
-        'expression': 'LESS_THAN',
-        'operands': [
-          '[five]',
-          '[three]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5
-      })
     })
 
     it('should be able to compare numbers with a false result', async () => {
@@ -913,7 +899,7 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to determine active duties being terminated', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
@@ -969,41 +955,41 @@ describe('discipl-law-reg', () => {
         ]
       }
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
+      const lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
       await core.allow(needSsid)
 
-      let actorSsid = await core.newSsid('ephemeral')
+      const actorSsid = await core.newSsid('ephemeral')
       await core.allow(actorSsid)
 
-      let overheidSsid = await core.newSsid('ephemeral')
+      const overheidSsid = await core.newSsid('ephemeral')
 
-      let modelLink = await lawReg.publish(lawmakerSsid, model, {
+      const modelLink = await lawReg.publish(lawmakerSsid, model, {
         '[ingezetene]':
           'IS:' + actorSsid.did,
         '[overheid]': 'IS:' + overheidSsid.did
       })
 
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let factResolver = (fact) => true
+      const factResolver = (fact) => true
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
-      let actionLink2 = await lawReg.take(actorSsid, actionLink, '<<ingezetene geeft aan dat verwelkomen niet nodig is>>', factResolver)
-      let activeDuties = (await lawReg.getActiveDuties(actionLink2, actorSsid)).map(dutyInformation => dutyInformation.duty)
-      let activeDuties2 = (await lawReg.getActiveDuties(actionLink2, overheidSsid)).map(dutyInformation => dutyInformation.duty)
+      const actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
+      const actionLink2 = await lawReg.take(actorSsid, actionLink, '<<ingezetene geeft aan dat verwelkomen niet nodig is>>', factResolver)
+      const activeDuties = (await lawReg.getActiveDuties(actionLink2, actorSsid)).map(dutyInformation => dutyInformation.duty)
+      const activeDuties2 = (await lawReg.getActiveDuties(actionLink2, overheidSsid)).map(dutyInformation => dutyInformation.duty)
       expect(activeDuties).to.deep.equal([])
       expect(activeDuties2).to.deep.equal([])
     })
 
     it('should be able to determine available acts', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
@@ -1032,40 +1018,40 @@ describe('discipl-law-reg', () => {
         ]
       }
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
+      const lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
       await core.allow(needSsid)
 
-      let ingezeteneSsid = await core.newSsid('ephemeral')
+      const ingezeteneSsid = await core.newSsid('ephemeral')
       await core.allow(ingezeteneSsid)
 
-      let overheidSsid = await core.newSsid('ephemeral')
+      const overheidSsid = await core.newSsid('ephemeral')
 
-      let modelLink = await lawReg.publish(lawmakerSsid, model, {
+      const modelLink = await lawReg.publish(lawmakerSsid, model, {
         '[ingezetene]':
           'IS:' + ingezeteneSsid.did,
         '[overheid]': 'IS:' + overheidSsid.did
       })
 
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let possibleActs = await lawReg.getAvailableActs(needLink, ingezeteneSsid, [], [])
+      const possibleActs = await lawReg.getAvailableActs(needLink, ingezeteneSsid, [], [])
       expect(possibleActs).to.deep.equal([])
 
-      let possibleActs2 = (await lawReg.getAvailableActs(needLink, ingezeteneSsid, ['[aanvraag verwelkomst]'], [])).map((actInfo) => actInfo.act)
+      const possibleActs2 = (await lawReg.getAvailableActs(needLink, ingezeteneSsid, ['[aanvraag verwelkomst]'], [])).map((actInfo) => actInfo.act)
       expect(possibleActs2).to.deep.equal(['<<ingezetene kan verwelkomst van overheid aanvragen>>'])
     })
 
     it('should be able to determine possible actions with a list', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
-      let util = new Util(lawReg)
-      let { ssids, modelLink } = await util.setupModel({
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel({
         'model': 'Fictieve kinderbijslag',
         'acts': [
           {
@@ -1093,26 +1079,26 @@ describe('discipl-law-reg', () => {
         'duties': []
       }, ['actor'], {})
 
-      let needLink = await core.claim(ssids['actor'], {
+      const needLink = await core.claim(ssids['actor'], {
         'need': {
           'act': '<<kinderbijslag aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let possibleActs = (await lawReg.getAvailableActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
+      const possibleActs = (await lawReg.getAvailableActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
 
       expect(possibleActs).to.deep.equal([])
 
-      let potentialActs = (await lawReg.getPotentialActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
+      const potentialActs = (await lawReg.getPotentialActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
 
       expect(potentialActs).to.deep.equal(['<<kinderbijslag aanvragen>>'])
     })
 
     it('should be able to determine possible actions with a less than', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
-      let util = new Util(lawReg)
-      let { ssids, modelLink } = await util.setupModel({
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel({
         'model': 'Fictieve kinderbijslag',
         'acts': [
           {
@@ -1141,24 +1127,24 @@ describe('discipl-law-reg', () => {
         'duties': []
       }, ['actor'], {})
 
-      let needLink = await core.claim(ssids['actor'], {
+      const needLink = await core.claim(ssids['actor'], {
         'need': {
           'act': '<<kinderbijslag aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let possibleActs = (await lawReg.getAvailableActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
+      const possibleActs = (await lawReg.getAvailableActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
 
       expect(possibleActs).to.deep.equal([])
 
-      let potentialActs = (await lawReg.getPotentialActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
+      const potentialActs = (await lawReg.getPotentialActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
 
       expect(potentialActs).to.deep.equal(['<<kinderbijslag aanvragen>>'])
     })
 
     it('should not show an act as available when only a not prevents it', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
@@ -1187,62 +1173,62 @@ describe('discipl-law-reg', () => {
         ]
       }
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
+      const lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
       await core.allow(needSsid)
 
-      let actorSsid = await core.newSsid('ephemeral')
+      const actorSsid = await core.newSsid('ephemeral')
       await core.allow(actorSsid)
 
-      let overheidSsid = await core.newSsid('ephemeral')
+      const overheidSsid = await core.newSsid('ephemeral')
 
-      let modelLink = await lawReg.publish(lawmakerSsid, model, {
+      const modelLink = await lawReg.publish(lawmakerSsid, model, {
         '[ingezetene]':
           'IS:' + actorSsid.did,
         '[overheid]': 'IS:' + overheidSsid.did
       })
 
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let possibleActs = await lawReg.getAvailableActs(needLink, actorSsid, [], [])
+      const possibleActs = await lawReg.getAvailableActs(needLink, actorSsid, [], [])
       expect(possibleActs).to.deep.equal([])
 
-      let possibleActs2 = (await lawReg.getAvailableActs(needLink, actorSsid, ['[aanvraag verwelkomst]'], [])).map((actInfo) => actInfo.act)
+      const possibleActs2 = (await lawReg.getAvailableActs(needLink, actorSsid, ['[aanvraag verwelkomst]'], [])).map((actInfo) => actInfo.act)
       expect(possibleActs2).to.deep.equal([])
     })
 
     it('should be able to take an action dependent on recursive facts', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
+      const lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
 
-      let actorSsid = await core.newSsid('ephemeral')
+      const actorSsid = await core.newSsid('ephemeral')
 
-      let modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
+      const modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
         '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
           'IS:' + actorSsid.did
       })
 
-      let retrievedModel = await core.get(modelLink)
+      const retrievedModel = await core.get(modelLink)
 
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<indienen verzoek een besluit te nemen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let factResolver = (fact) => {
+      const factResolver = (fact) => {
         if (typeof fact === 'string') {
           return fact === '[verzoek een besluit te nemen]' ||
             fact === '[wetgevende macht]'
@@ -1250,9 +1236,9 @@ describe('discipl-law-reg', () => {
         return false
       }
 
-      let actionLink = await lawReg.take(actorSsid, needLink, '<<indienen verzoek een besluit te nemen>>', factResolver)
+      const actionLink = await lawReg.take(actorSsid, needLink, '<<indienen verzoek een besluit te nemen>>', factResolver)
 
-      let action = await core.get(actionLink, actorSsid)
+      const action = await core.get(actionLink, actorSsid)
 
       expect(action).to.deep.equal({
         'data': {
@@ -1270,45 +1256,45 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to take an action where the object originates from another action - AWB', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
-      let lawmakerSsid = await core.newSsid('ephemeral')
+      const lawmakerSsid = await core.newSsid('ephemeral')
       await core.allow(lawmakerSsid)
 
-      let belanghebbendeSsid = await core.newSsid('ephemeral')
+      const belanghebbendeSsid = await core.newSsid('ephemeral')
       await core.allow(belanghebbendeSsid)
-      let bestuursorgaanSsid = await core.newSsid('ephemeral')
+      const bestuursorgaanSsid = await core.newSsid('ephemeral')
       await core.allow(bestuursorgaanSsid)
 
-      let modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
+      const modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
         '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
           'IS:' + belanghebbendeSsid.did,
         '[wetgevende macht]':
           'IS:' + bestuursorgaanSsid.did
       })
 
-      let retrievedModel = await core.get(modelLink)
+      const retrievedModel = await core.get(modelLink)
 
-      let needSsid = await core.newSsid('ephemeral')
+      const needSsid = await core.newSsid('ephemeral')
 
       await core.allow(needSsid)
-      let needLink = await core.claim(needSsid, {
+      const needLink = await core.claim(needSsid, {
         'need': {
           'act': '<<indienen verzoek een besluit te nemen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
       })
 
-      let belanghebbendeFactresolver = (fact) => {
+      const belanghebbendeFactresolver = (fact) => {
         if (typeof fact === 'string') {
           return fact === '[verzoek een besluit te nemen]'
         }
         return false
       }
 
-      let actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', belanghebbendeFactresolver)
+      const actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', belanghebbendeFactresolver)
 
-      let bestuursorgaanFactresolver = (fact) => {
+      const bestuursorgaanFactresolver = (fact) => {
         if (typeof fact === 'string') {
           // interested party
           return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
@@ -1318,11 +1304,11 @@ describe('discipl-law-reg', () => {
         return false
       }
 
-      let secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', bestuursorgaanFactresolver)
+      const secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', bestuursorgaanFactresolver)
 
       expect(secondActionLink).to.be.a('string')
 
-      let action = await core.get(secondActionLink, bestuursorgaanSsid)
+      const action = await core.get(secondActionLink, bestuursorgaanSsid)
 
       const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
         .filter(item => Object.keys(item).includes('<<besluiten de aanvraag niet te behandelen>>'))
@@ -1338,10 +1324,10 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to fill functions of single and multiple facts', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
-      let ssid = await core.newSsid('ephemeral')
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const ssid = await core.newSsid('ephemeral')
 
-      let model = {
+      const model = {
         'acts': [],
         'facts': [
           {
@@ -1393,14 +1379,14 @@ describe('discipl-law-reg', () => {
         'duties': []
       }
 
-      let modelLink = await lawReg.publish(ssid, { ...model, 'model': 'AWB' }, {
+      const modelLink = await lawReg.publish(ssid, { ...model, 'model': 'AWB' }, {
         '[uitreiking besluit aan aanvrager]':
           'IS:did:discipl:ephemeral:1234',
         '[toezending besluit aan aanvrager]':
           'IS:did:discipl:ephemeral:1234'
       })
 
-      let retrievedModel = await core.get(modelLink, ssid)
+      const retrievedModel = await core.get(modelLink, ssid)
 
       let retrievedFact = await core.get(retrievedModel.data['DISCIPL_FLINT_MODEL'].facts[3]['[uitreiking besluit aan aanvrager]'], ssid)
 
@@ -1481,24 +1467,24 @@ describe('discipl-law-reg', () => {
     }
 
     it('should perform a checkAction', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
-      let model = checkActionModel
+      const model = checkActionModel
 
-      let ssid = await core.newSsid('ephemeral')
-      let modelLink = await lawReg.publish(ssid, model, {
+      const ssid = await core.newSsid('ephemeral')
+      const modelLink = await lawReg.publish(ssid, model, {
         '[aanvrager]':
           'IS:' + ssid.did
       })
-      let modelRef = await core.get(modelLink, ssid)
+      const modelRef = await core.get(modelLink, ssid)
 
-      let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
+      const actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
 
       const factResolver = (fact) => {
         return true
       }
 
-      let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
+      const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
       expect(result).to.deep.equal({
         'invalidReasons': [
@@ -1508,24 +1494,24 @@ describe('discipl-law-reg', () => {
     })
 
     it('should perform a checkAction with async factResolver', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
-      let model = checkActionModel
+      const model = checkActionModel
 
-      let ssid = await core.newSsid('ephemeral')
-      let modelLink = await lawReg.publish(ssid, model, {
+      const ssid = await core.newSsid('ephemeral')
+      const modelLink = await lawReg.publish(ssid, model, {
         '[aanvrager]':
           'IS:' + ssid.did
       })
-      let modelRef = await core.get(modelLink, ssid)
+      const modelRef = await core.get(modelLink, ssid)
 
-      let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
+      const actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
 
       const factResolver = async (fact) => {
         return true
       }
 
-      let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
+      const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
       expect(result).to.deep.equal({
         'invalidReasons': [
@@ -1535,24 +1521,24 @@ describe('discipl-law-reg', () => {
     })
 
     it('should perform a checkAction with false result', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
-      let model = checkActionModel
+      const model = checkActionModel
 
-      let ssid = await core.newSsid('ephemeral')
-      let modelLink = await lawReg.publish(ssid, model, {
+      const ssid = await core.newSsid('ephemeral')
+      const modelLink = await lawReg.publish(ssid, model, {
         '[aanvrager]':
           'IS:' + ssid.did
       })
-      let modelRef = await core.get(modelLink, ssid)
+      const modelRef = await core.get(modelLink, ssid)
 
-      let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
+      const actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
 
       const factResolver = (fact) => {
         return false
       }
 
-      let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
+      const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
       expect(result).to.deep.equal({
         'invalidReasons': [
@@ -1564,24 +1550,24 @@ describe('discipl-law-reg', () => {
     })
 
     it('should short-circuit a checkAction if needed', async () => {
-      let core = lawReg.getAbundanceService().getCoreAPI()
+      const core = lawReg.getAbundanceService().getCoreAPI()
 
-      let model = checkActionModel
+      const model = checkActionModel
 
-      let ssid = await core.newSsid('ephemeral')
-      let modelLink = await lawReg.publish(ssid, model, {
+      const ssid = await core.newSsid('ephemeral')
+      const modelLink = await lawReg.publish(ssid, model, {
         '[aanvrager]':
           'IS:' + ssid.did
       })
-      let modelRef = await core.get(modelLink, ssid)
+      const modelRef = await core.get(modelLink, ssid)
 
-      let actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
+      const actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
 
       const factResolver = sinon.stub()
 
       factResolver.returns(false)
 
-      let result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver }, true)
+      const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver }, true)
 
       expect(result).to.deep.equal({
         'invalidReasons': [

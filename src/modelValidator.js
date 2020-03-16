@@ -18,7 +18,7 @@ class ModelValidator {
     this.referencePaths = {}
 
     const identifierFields = [['acts', 'act'], ['facts', 'fact'], ['duties', 'duty']]
-    for (let identifierField of identifierFields) {
+    for (const identifierField of identifierFields) {
       this.identifierPaths = this.model[identifierField[0]].reduce((acc, _item, index) => {
         const path = [identifierField[0], index, identifierField[1]]
         const node = jsonc.findNodeAtLocation(this.tree, path)
@@ -31,7 +31,7 @@ class ModelValidator {
       ['acts', 'preconditions'],
       ['facts', 'fact'], ['facts', 'function'],
       ['duties', 'duty'], ['duties', 'duty-components'], ['duties', 'duty-holder'], ['duties', 'duty-holder'], ['duties', 'claimant'], ['duties', 'create'], ['duties', 'terminate']]
-    for (let indexField of indexedFields) {
+    for (const indexField of indexedFields) {
       if (this.model[indexField[0]]) {
         this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
           // console.log("Reducing");
@@ -43,7 +43,7 @@ class ModelValidator {
       }
 
       const indexedSubFields = [['acts', 'create'], ['acts', 'terminate']]
-      for (let indexField of indexedSubFields) {
+      for (const indexField of indexedSubFields) {
         this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
           if (item[indexField[1]]) {
             for (let subIndex = 0; subIndex < item[indexField[1]].length; subIndex++) {
@@ -62,7 +62,7 @@ class ModelValidator {
     if (node) {
       const identifiers = this._extractIdentifiersFromString(node.value)
       if (identifiers) {
-        for (let identifier of identifiers) {
+        for (const identifier of identifiers) {
           if (acc[identifier]) {
             acc[identifier].push(path)
           } else {
@@ -165,7 +165,7 @@ class ModelValidator {
 
     let identifier
     while (true) {
-      let m = regex.exec(value)
+      const m = regex.exec(value)
       if (!m) {
         break
       }
@@ -207,10 +207,10 @@ class ModelValidator {
    * @private
    */
   _checkIdentifiers (flintItems, flintItem, pattern) {
-    const identifierValidationErrors = this.model[flintItems]
+    return this.model[flintItems]
       .filter((item) => typeof item[flintItem] !== 'string' || !item[flintItem].match(pattern))
       .map((item) => {
-        // console.log(item[flintItem])
+      // console.log(item[flintItem])
         const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]])
         const beginPosition = node.offset
         const endPosition = node.offset + node.length
@@ -224,8 +224,6 @@ class ModelValidator {
           path: this.identifierPaths[item[flintItem]]
         }
       })
-
-    return identifierValidationErrors
   }
 
   _checkReferences () {
@@ -300,7 +298,7 @@ class ModelValidator {
     const operandsNode = jsonc.findNodeAtLocation(expression, ['operands'])
 
     if (operandsNode) {
-      for (let subNode of operandsNode.children) {
+      for (const subNode of operandsNode.children) {
         errors = errors.concat(this._validateParsedExpressionNode(subNode))
       }
     }
@@ -341,7 +339,7 @@ class ModelValidator {
     }
 
     if (expression.operands) {
-      for (let operand of expression.operands) {
+      for (const operand of expression.operands) {
         errors = errors.concat(this._validateParsedExpression(operand, beginOffset, exceptions))
       }
     }
