@@ -40,7 +40,6 @@ const factFunctionSpec = {
 }
 
 const setupModel = async () => {
-  console.log('Setup model')
   const util = new Util(lawReg)
   return util.setupModel(lb, ['belanghebbende', 'bestuursorgaan', 'bevoegdGezag'], factFunctionSpec)
 }

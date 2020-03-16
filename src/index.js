@@ -1,8 +1,10 @@
 import { AbundanceService } from '@discipl/abundance-service'
 import { ModelValidator } from './modelValidator'
+import { BigUtil } from './big_util'
 
 import * as log from 'loglevel'
 import { BaseConnector } from '@discipl/core-baseconnector'
+import Big from 'big.js'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -94,10 +96,14 @@ class LawReg {
         context.listNames.push(fact.name)
 
         const listIndex = context.listIndices.push(0) - 1
+        const listContentResult = []
         while (true) {
           const op = fact.items
           const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in LIST', operandResult, 'for operand', op, 'and index', context.listIndices[listIndex])
+
+          listContentResult.push(operandResult)
+
           if (operandResult === false) {
             logger.debug('Stopping LIST concatenation, because', op, 'is false')
             break
@@ -114,7 +120,7 @@ class LawReg {
         context.listNames.pop()
         const resultIndex = context.listIndices.pop()
 
-        const listResult = hasUndefined ? undefined : resultIndex !== 0
+        const listResult = hasUndefined ? undefined : (resultIndex !== 0 ? listContentResult : false)
         logger.debug('Resolved LIST as', listResult)
         return listResult
       case 'LESS_THAN':
@@ -124,8 +130,8 @@ class LawReg {
           const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
           if (typeof lastOperandResult !== 'undefined') {
-            if (operandResult <= lastOperandResult) {
-              logger.debug('Resolved LESS_THAN as false, because', lastOperandResult, 'is not less than', operandResult)
+            if (BigUtil.lessThan(operandResult, lastOperandResult)) {
+              logger.debug('Resolved LESS_THAN as false, because', String(lastOperandResult), 'is not less than', String(operandResult))
               return false
             }
           }
@@ -137,17 +143,17 @@ class LawReg {
           }
         }
         const lessThanResult = hasUndefined ? undefined : true
-        logger.debug('Resolved LESS_THAN as', lessThanResult)
+        logger.debug('Resolved LESS_THAN as', String(lessThanResult))
         return lessThanResult
       case 'EQUAL':
-        logger.debug('Switch case: LESS_THAN')
+        logger.debug('Switch case: EQUAL')
         let lastEqualOperandResult
         for (const op of fact.operands) {
           const operandResult = await this.checkExpression(op, ssid, context)
-          logger.debug('OperandResult in EQUAL', operandResult, 'for operand', op)
+          logger.debug('OperandResult in EQUAL', String(operandResult), 'for operand', op)
           if (typeof lastEqualOperandResult !== 'undefined') {
-            if (operandResult !== lastEqualOperandResult) {
-              logger.debug('Resolved EQUAL as false, because', lastEqualOperandResult, 'does not equal', operandResult)
+            if (!BigUtil.equal(operandResult, lastEqualOperandResult)) {
+              logger.debug('Resolved EQUAL as false, because', String(lastEqualOperandResult), 'does not equal', String(operandResult))
               return false
             }
           }
@@ -159,37 +165,53 @@ class LawReg {
           }
         }
         const equalResult = hasUndefined ? undefined : true
-        logger.debug('Resolved LESS_THAN as', equalResult)
+        logger.debug('Resolved EQUAL as', String(equalResult))
         return equalResult
       case 'SUM':
         logger.debug('Switch case: SUM')
         let sumResult = 0
         for (const op of fact.operands) {
           const operandResult = await this.checkExpression(op, ssid, context)
-          logger.debug('OperandResult in SUM', operandResult, 'for operand', op)
-          sumResult += operandResult
+          logger.debug('OperandResult in SUM', String(operandResult), 'for operand', op)
+          if (Array.isArray(operandResult)) {
+            for (const arrayOp of operandResult) {
+              if (arrayOp) {
+                sumResult = BigUtil.add(sumResult, arrayOp)
+              }
+            }
+          } else {
+            sumResult = BigUtil.add(sumResult, operandResult)
+          }
 
           if (typeof operandResult === 'undefined') {
             hasUndefined = true
           }
         }
         const finalSumResult = hasUndefined ? undefined : sumResult
-        logger.debug('Resolved SUM as', finalSumResult)
+        logger.debug('Resolved SUM as', String(finalSumResult))
         return finalSumResult
       case 'PRODUCT':
         logger.debug('Switch case: PRODUCT')
         let productResult = 1
         for (const op of fact.operands) {
           const operandResult = await this.checkExpression(op, ssid, context)
-          logger.debug('OperandResult in PRODUCT', operandResult, 'for operand', op)
-          productResult *= operandResult
+          logger.debug('OperandResult in PRODUCT', String(operandResult), 'for operand', op)
+          if (Array.isArray(operandResult)) {
+            for (const arrayOp of operandResult) {
+              if (arrayOp) {
+                productResult = BigUtil.multiply(arrayOp, productResult)
+              }
+            }
+          } else {
+            productResult = BigUtil.multiply(operandResult, productResult)
+          }
 
           if (typeof operandResult === 'undefined') {
             hasUndefined = true
           }
         }
         const finalProductResult = hasUndefined ? undefined : productResult
-        logger.debug('Resolved PRODUCT as', finalProductResult)
+        logger.debug('Resolved PRODUCT as', String(finalProductResult))
         return finalProductResult
       case 'MIN':
         logger.debug('Switch case: MIN')
@@ -225,6 +247,12 @@ class LawReg {
         const finalMaxResult = hasUndefined ? undefined : maxResult
         logger.debug('Resolved MAX as', finalMaxResult)
         return finalMaxResult
+      case 'LITERAL':
+        let literalValue = fact.operand
+        if (typeof literalValue === 'number') {
+          literalValue = Big(literalValue)
+        }
+        return literalValue
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {
@@ -338,8 +366,12 @@ class LawReg {
     const listNames = context.listNames || []
     const listIndices = context.listIndices || []
     const result = context.factResolver(factToCheck, context.flintItem, listNames, listIndices)
-    const resolvedResult = Promise.resolve(result)
-    logger.debug('Resolving fact', fact, 'as', resolvedResult, 'via', factToCheck, 'by factresolver')
+    let resolvedResult = await Promise.resolve(result)
+    if (typeof resolvedResult === 'number') {
+      resolvedResult = Big(resolvedResult)
+    }
+
+    logger.debug('Resolving fact', fact, 'as', String(resolvedResult), 'via', factToCheck, 'by factresolver')
     return resolvedResult
   }
 
@@ -466,12 +498,12 @@ class LawReg {
       }
     }
 
-    const interestedParty = actReference.data[DISCIPL_FLINT_ACT]['interested-party']
-    logger.debug('Original interestedparty', interestedParty)
-    const checkedInterestedParty = await this.checkFact(interestedParty, ssid, { ...context, 'facts': factReference, 'flintItem': 'interested-party' })
+    const recipient = actReference.data[DISCIPL_FLINT_ACT]['recipient']
+    logger.debug('Original recipient', recipient)
+    const checkedInterestedParty = await this.checkFact(recipient, ssid, { ...context, 'facts': factReference, 'flintItem': 'recipient' })
 
     if (!checkedInterestedParty) {
-      invalidReasons.push('interested-party')
+      invalidReasons.push('recipient')
       if (earlyEscape) {
         return {
           'valid': false,
@@ -792,8 +824,6 @@ class LawReg {
     const factsSupplied = {}
 
     const capturingFactResolver = async (fact, flintItem, listNames, listIndices) => {
-      const result = factResolver(fact, flintItem, listNames, listIndices)
-
       let factsObject = factsSupplied
       for (let i = 0; i < listNames.length; i++) {
         const listName = listNames[i]
@@ -805,6 +835,7 @@ class LawReg {
         factsObject = factsObject[listName][listIndex]
       }
 
+      const result = factsObject[fact] || factResolver(fact, flintItem, listNames, listIndices)
       factsObject[fact] = await result
       return result
     }

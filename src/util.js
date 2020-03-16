@@ -259,7 +259,6 @@ class Util {
       }
     })
 
-    console.log('Starting case')
     let caseLink = needLink
 
     const factResolver = (fact) => {
