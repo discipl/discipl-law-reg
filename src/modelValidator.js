@@ -148,8 +148,7 @@ class ModelValidator {
     return Object.entries(this.identifierPaths).filter((identifierPath) => {
       return identifierPath[1][0] === type
     }).map((identifierPath) => {
-      const unknown = identifierPath[1]
-      const node = jsonc.findNodeAtLocation(this.tree, unknown)
+      const node = jsonc.findNodeAtLocation(this.tree, identifierPath[1])
       return {
         identifier: identifierPath[0],
         offset: node.offset
