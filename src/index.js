@@ -45,12 +45,12 @@ class LawReg {
    */
   async checkExpression (fact, ssid, context) {
     let hasUndefined = false
-    let expr = fact.expression
+    const expr = fact.expression
     switch (expr) {
       case 'OR':
         logger.debug('Switch case: OR')
-        for (let op of fact.operands) {
-          let operandResult = await this.checkExpression(op, ssid, context)
+        for (const op of fact.operands) {
+          const operandResult = await this.checkExpression(op, ssid, context)
           if (operandResult === true) {
             logger.debug('Resolved OR as true, because', op, 'is true')
             return true
@@ -61,13 +61,13 @@ class LawReg {
           }
         }
 
-        let result = hasUndefined ? undefined : false
+        const result = hasUndefined ? undefined : false
         logger.debug('Resolved OR as', result)
         return result
       case 'AND':
         logger.debug('Switch case: AND')
-        for (let op of fact.operands) {
-          let operandResult = await this.checkExpression(op, ssid, context)
+        for (const op of fact.operands) {
+          const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in AND', operandResult, 'for operand', op)
           if (operandResult === false) {
             logger.debug('Resolved AND as false, because', op, 'is false')
@@ -78,12 +78,12 @@ class LawReg {
             hasUndefined = true
           }
         }
-        let andResult = hasUndefined ? undefined : true
+        const andResult = hasUndefined ? undefined : true
         logger.debug('Resolved AND as', andResult)
         return andResult
       case 'NOT':
         logger.debug('Switch case: NOT')
-        let value = await this.checkExpression(fact.operand, ssid, context)
+        const value = await this.checkExpression(fact.operand, ssid, context)
         return typeof value === 'boolean' ? !value : undefined
       case 'LIST':
         logger.debug('Switch case: LIST')
@@ -95,8 +95,8 @@ class LawReg {
 
         const listIndex = context.listIndices.push(0) - 1
         while (true) {
-          let op = fact.items
-          let operandResult = await this.checkExpression(op, ssid, context)
+          const op = fact.items
+          const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in LIST', operandResult, 'for operand', op, 'and index', context.listIndices[listIndex])
           if (operandResult === false) {
             logger.debug('Stopping LIST concatenation, because', op, 'is false')
@@ -112,16 +112,16 @@ class LawReg {
         }
 
         context.listNames.pop()
-        let resultIndex = context.listIndices.pop()
+        const resultIndex = context.listIndices.pop()
 
-        let listResult = hasUndefined ? undefined : resultIndex !== 0
+        const listResult = hasUndefined ? undefined : resultIndex !== 0
         logger.debug('Resolved LIST as', listResult)
         return listResult
       case 'LESS_THAN':
         logger.debug('Switch case: LESS_THAN')
         let lastOperandResult
-        for (let op of fact.operands) {
-          let operandResult = await this.checkExpression(op, ssid, context)
+        for (const op of fact.operands) {
+          const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
           if (typeof lastOperandResult !== 'undefined') {
             if (operandResult <= lastOperandResult) {
@@ -136,14 +136,14 @@ class LawReg {
             hasUndefined = true
           }
         }
-        let lessThanResult = hasUndefined ? undefined : true
+        const lessThanResult = hasUndefined ? undefined : true
         logger.debug('Resolved LESS_THAN as', lessThanResult)
         return lessThanResult
       case 'EQUAL':
         logger.debug('Switch case: LESS_THAN')
         let lastEqualOperandResult
-        for (let op of fact.operands) {
-          let operandResult = await this.checkExpression(op, ssid, context)
+        for (const op of fact.operands) {
+          const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in EQUAL', operandResult, 'for operand', op)
           if (typeof lastEqualOperandResult !== 'undefined') {
             if (operandResult !== lastEqualOperandResult) {
@@ -158,14 +158,14 @@ class LawReg {
             hasUndefined = true
           }
         }
-        let equalResult = hasUndefined ? undefined : true
+        const equalResult = hasUndefined ? undefined : true
         logger.debug('Resolved LESS_THAN as', equalResult)
         return equalResult
       case 'SUM':
         logger.debug('Switch case: SUM')
         let sumResult = 0
-        for (let op of fact.operands) {
-          let operandResult = await this.checkExpression(op, ssid, context)
+        for (const op of fact.operands) {
+          const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in SUM', operandResult, 'for operand', op)
           sumResult += operandResult
 
@@ -173,14 +173,14 @@ class LawReg {
             hasUndefined = true
           }
         }
-        let finalSumResult = hasUndefined ? undefined : sumResult
+        const finalSumResult = hasUndefined ? undefined : sumResult
         logger.debug('Resolved SUM as', finalSumResult)
         return finalSumResult
       case 'PRODUCT':
         logger.debug('Switch case: PRODUCT')
         let productResult = 1
-        for (let op of fact.operands) {
-          let operandResult = await this.checkExpression(op, ssid, context)
+        for (const op of fact.operands) {
+          const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in PRODUCT', operandResult, 'for operand', op)
           productResult *= operandResult
 
@@ -194,8 +194,8 @@ class LawReg {
       case 'MIN':
         logger.debug('Switch case: MIN')
         let minResult
-        for (let op of fact.operands) {
-          let operandResult = await this.checkExpression(op, ssid, context)
+        for (const op of fact.operands) {
+          const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in MIN', operandResult, 'for operand', op)
           if (typeof minResult === 'undefined' || operandResult < minResult) {
             minResult = operandResult
@@ -211,8 +211,8 @@ class LawReg {
       case 'MAX':
         logger.debug('Switch case: MAX')
         let maxResult
-        for (let op of fact.operands) {
-          let operandResult = await this.checkExpression(op, ssid, context)
+        for (const op of fact.operands) {
+          const operandResult = await this.checkExpression(op, ssid, context)
           logger.debug('OperandResult in MAX', operandResult, 'for operand', op)
           if (typeof maxResult === 'undefined' || operandResult > maxResult) {
             maxResult = operandResult
@@ -265,7 +265,7 @@ class LawReg {
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
     if (functionRef === '<<>>') {
-      let result = await this.checkCreatedFact(fact, ssid, context)
+      const result = await this.checkCreatedFact(fact, ssid, context)
       logger.debug('Resolving fact', fact, 'as', result, 'by determining earlier creation')
       return result
     }
@@ -357,12 +357,12 @@ class LawReg {
     let actionLink = context.caseLink
 
     while (actionLink != null) {
-      let lastAction = await core.get(actionLink, ssid)
+      const lastAction = await core.get(actionLink, ssid)
 
-      let actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
+      const actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
 
       if (actLink != null) {
-        let act = await core.get(actLink, ssid)
+        const act = await core.get(actLink, ssid)
         logger.debug('Found earlier act', act)
 
         if (act.data[DISCIPL_FLINT_ACT].create != null && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
@@ -386,7 +386,7 @@ class LawReg {
    * @returns {object} object instead of the given array
    */
   arrayToObject (arr) {
-    let obj = {}
+    const obj = {}
     Object.keys(arr).forEach(element => {
       Object.assign(obj, arr[element])
     })
@@ -401,8 +401,8 @@ class LawReg {
    * @returns {object}
    */
   async getActDetails (actLink, ssid) {
-    let core = this.abundance.getCoreAPI()
-    let claimData = await core.get(actLink, ssid)
+    const core = this.abundance.getCoreAPI()
+    const claimData = await core.get(actLink, ssid)
     return claimData.data[DISCIPL_FLINT_ACT]
   }
 
@@ -427,11 +427,11 @@ class LawReg {
    */
   async checkAction (modelLink, actLink, ssid, context, earlyEscape = false) {
     logger.debug('Checking action', actLink)
-    let core = this.abundance.getCoreAPI()
-    let modelReference = await core.get(modelLink, ssid)
+    const core = this.abundance.getCoreAPI()
+    const modelReference = await core.get(modelLink, ssid)
     logger.debug('Obtained modelReference', modelReference)
-    let actReference = await core.get(actLink, ssid)
-    let factReference = this.arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].facts)
+    const actReference = await core.get(actLink, ssid)
+    const factReference = this.arrayToObject(modelReference.data[DISCIPL_FLINT_MODEL].facts)
     logger.debug('Fact reference obtained from model', factReference)
 
     const actor = actReference.data[DISCIPL_FLINT_ACT].actor
@@ -504,9 +504,9 @@ class LawReg {
       }
     }
 
-    let definitivelyNotPossible = checkedActor === false || checkedObject === false || checkedInterestedParty === false || checkedPreConditions === false
+    const definitivelyNotPossible = checkedActor === false || checkedObject === false || checkedInterestedParty === false || checkedPreConditions === false
 
-    let validity = definitivelyNotPossible ? false : undefined
+    const validity = definitivelyNotPossible ? false : undefined
 
     logger.info('Pre-act check failed due to', invalidReasons, definitivelyNotPossible ? 'It is impossible.' : 'It might work with more information')
     return {
@@ -546,12 +546,12 @@ class LawReg {
 
     const allowedActs = []
     logger.debug('Checking', acts, 'for available acts')
-    for (let actWithLink of acts) {
+    for (const actWithLink of acts) {
       logger.debug('Checking whether', actWithLink, 'is an available option')
 
       const link = Object.values(actWithLink)[0]
 
-      let checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
+      const checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
 
       if (checkActionInfo.valid) {
         const actionInformation = {
@@ -587,8 +587,8 @@ class LawReg {
 
     const allowedActs = []
     logger.debug('Checking', acts, 'for available acts')
-    for (let actWithLink of acts) {
-      let unknownItems = []
+    for (const actWithLink of acts) {
+      const unknownItems = []
       const factResolver = (fact, flintItem) => {
         if (facts.includes(fact)) {
           return true
@@ -630,10 +630,10 @@ class LawReg {
    */
   async getActiveDuties (caseLink, ssid) {
     const core = this.abundance.getCoreAPI()
-    let firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
-    let modelLink = await this._getModelLink(firstCaseLink, ssid)
+    const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
+    const modelLink = await this._getModelLink(firstCaseLink, ssid)
 
-    let model = await core.get(modelLink, ssid)
+    const model = await core.get(modelLink, ssid)
 
     const duties = this.arrayToObject(model.data[DISCIPL_FLINT_MODEL].duties)
 
@@ -645,12 +645,12 @@ class LawReg {
     const activeDuties = []
 
     while (actionLink != null) {
-      let lastAction = await core.get(actionLink, ssid)
+      const lastAction = await core.get(actionLink, ssid)
 
-      let actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
+      const actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
 
       if (actLink != null) {
-        let act = await core.get(actLink, ssid)
+        const act = await core.get(actLink, ssid)
         logger.debug('Found earlier act', act)
 
         if (typeof act.data[DISCIPL_FLINT_ACT].create === 'string') {
@@ -670,7 +670,7 @@ class LawReg {
     logger.debug('Active duties', activeDuties, '. Checking ownership now.')
     const ownedDuties = []
 
-    for (let duty of activeDuties) {
+    for (const duty of activeDuties) {
       const dutyLink = duties[duty]
 
       if (dutyLink != null) {
@@ -680,7 +680,7 @@ class LawReg {
 
         if (dutyHolder != null) {
           logger.debug('Checking duty-holder')
-          let checkActor = await this.checkFact(dutyHolder, ssid, { 'facts': factReference, 'myself': true, 'flintItem': 'actor', 'caseLink': caseLink })
+          const checkActor = await this.checkFact(dutyHolder, ssid, { 'facts': factReference, 'myself': true, 'flintItem': 'actor', 'caseLink': caseLink })
           if (checkActor) {
             logger.info('Duty', duty, 'is held by', dutyHolder)
             ownedDuties.push({
@@ -703,25 +703,25 @@ class LawReg {
    */
   async publish (ssid, flintModel, factFunctions = {}) {
     logger.debug('Publishing model')
-    let core = this.abundance.getCoreAPI()
-    let result = { model: flintModel.model, acts: [], facts: [], duties: [] }
-    for (let fact of flintModel.facts) {
+    const core = this.abundance.getCoreAPI()
+    const result = { model: flintModel.model, acts: [], facts: [], duties: [] }
+    for (const fact of flintModel.facts) {
       let resultFact = fact
       if (fact.function === '[]' && factFunctions[fact.fact] != null) {
         logger.debug('Setting function for', fact.fact, 'to', factFunctions[fact.fact])
 
         resultFact = { ...fact, 'function': factFunctions[fact.fact] }
       }
-      let link = await core.claim(ssid, { [DISCIPL_FLINT_FACT]: resultFact })
+      const link = await core.claim(ssid, { [DISCIPL_FLINT_FACT]: resultFact })
       result.facts.push({ [fact.fact]: link })
     }
 
-    for (let act of flintModel.acts) {
-      let link = await core.claim(ssid, { [DISCIPL_FLINT_ACT]: act })
+    for (const act of flintModel.acts) {
+      const link = await core.claim(ssid, { [DISCIPL_FLINT_ACT]: act })
       result.acts.push({ [act.act]: link })
     }
-    for (let duty of flintModel.duties) {
-      let link = await core.claim(ssid, { [DISCIPL_FLINT_DUTY]: duty })
+    for (const duty of flintModel.duties) {
+      const link = await core.claim(ssid, { [DISCIPL_FLINT_DUTY]: duty })
       result.duties.push({ [duty.duty]: link })
     }
 
@@ -745,7 +745,7 @@ class LawReg {
     const core = this.abundance.getCoreAPI()
     let actionLink = caseLink
 
-    let acts = []
+    const acts = []
 
     while (actionLink != null) {
       const lastAction = await core.get(actionLink, ssid)
@@ -774,14 +774,14 @@ class LawReg {
    * @returns {Promise<*>}
    */
   async take (ssid, caseLink, act, factResolver = () => false) {
-    let core = this.abundance.getCoreAPI()
+    const core = this.abundance.getCoreAPI()
 
-    let firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
-    let modelLink = await this._getModelLink(firstCaseLink, ssid)
+    const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
+    const modelLink = await this._getModelLink(firstCaseLink, ssid)
 
-    let model = await core.get(modelLink, ssid)
+    const model = await core.get(modelLink, ssid)
 
-    let actLink = await model.data[DISCIPL_FLINT_MODEL].acts.filter((actWithLink) => {
+    const actLink = await model.data[DISCIPL_FLINT_MODEL].acts.filter((actWithLink) => {
       return Object.keys(actWithLink).includes(act)
     }).map((actWithLink) => Object.values(actWithLink)[0])[0]
 
@@ -810,7 +810,7 @@ class LawReg {
     }
 
     logger.debug('Checking if action is possible from perspective of', ssid.did)
-    let checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': capturingFactResolver, 'caseLink': caseLink }, true)
+    const checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': capturingFactResolver, 'caseLink': caseLink }, true)
     if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
       return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink,
@@ -823,19 +823,19 @@ class LawReg {
   }
 
   async _getModelLink (firstCaseLink, ssid) {
-    let core = this.abundance.getCoreAPI()
-    let firstCase = await core.get(firstCaseLink, ssid)
+    const core = this.abundance.getCoreAPI()
+    const firstCase = await core.get(firstCaseLink, ssid)
 
-    let modelLink = firstCase.data['need'][DISCIPL_FLINT_MODEL_LINK]
+    const modelLink = firstCase.data['need'][DISCIPL_FLINT_MODEL_LINK]
     logger.debug('Determined model link to be', modelLink)
     return modelLink
   }
 
   async _getFirstCaseLink (caseLink, ssid) {
-    let core = this.abundance.getCoreAPI()
-    let caseClaim = await core.get(caseLink, ssid)
-    let isFirstActionInCase = !Object.keys(caseClaim.data).includes(DISCIPL_FLINT_ACT_TAKEN)
-    let firstCaseLink = isFirstActionInCase ? caseLink : caseClaim.data[DISCIPL_FLINT_GLOBAL_CASE]
+    const core = this.abundance.getCoreAPI()
+    const caseClaim = await core.get(caseLink, ssid)
+    const isFirstActionInCase = !Object.keys(caseClaim.data).includes(DISCIPL_FLINT_ACT_TAKEN)
+    const firstCaseLink = isFirstActionInCase ? caseLink : caseClaim.data[DISCIPL_FLINT_GLOBAL_CASE]
     logger.debug('Determined first case link to be', firstCaseLink)
     return firstCaseLink
   }

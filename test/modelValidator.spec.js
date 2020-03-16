@@ -26,7 +26,7 @@ describe('The Flint Model validator', () => {
     const referenceOffset = sampleModelString.indexOf('<<congratulate>>', definitionOffset + 1)
 
     // Test an offset in the middle of the word
-    let congratulateDefitinion = modelValidator.getDefinitionForOffset(referenceOffset + 6)
+    const congratulateDefitinion = modelValidator.getDefinitionForOffset(referenceOffset + 6)
 
     // The offset includes the quote at the beginning
     expect(congratulateDefitinion).to.deep.equal({

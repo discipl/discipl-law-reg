@@ -1,4 +1,16 @@
 {
   "parser": "babel-eslint",
-  "extends": "standard"
+  "extends": "standard",
+  "rules": {
+    "no-var": [
+      "error"
+    ],
+    "prefer-const": [
+      "warn",
+      {
+        "destructuring": "all",
+        "ignoreReadBeforeAssign": true
+      }
+    ]
+  }
 }
