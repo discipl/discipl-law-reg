@@ -1,6 +1,5 @@
 import * as jsonc from 'jsonc-parser'
 import { ValidationError } from './validationError'
-import { JSONPath } from 'jsonc-parser'
 
 class ModelValidator {
   /**
