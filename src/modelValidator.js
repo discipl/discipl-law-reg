@@ -1,11 +1,12 @@
 import * as jsonc from 'jsonc-parser'
+import { ValidationError } from './validationError'
 
 class ModelValidator {
   /**
-     * Construct a new model validator from raw string data
-     *
-     * @param {string} rawData
-     */
+   * Construct a new model validator from raw string data
+   *
+   * @param {string} rawData
+   */
   constructor (rawData) {
     const errors = []
     this.tree = jsonc.parseTree(rawData)
@@ -60,21 +61,21 @@ class ModelValidator {
     }
   }
 
-  /***
-     * This method populates 'multiIdentifierPaths' with multiple positions of a identifier
-     * as Key (String): Value (Collection).
-     *
-     * @private
-     */
+  /**
+   * This method populates 'multiIdentifierPaths' with multiple positions of a identifier
+   * as Key (String): Value (Collection).
+   * @param {Array<Array<string>>} identifierFields
+   * @private
+   */
   _populateMultiIdentifierPaths (identifierFields) {
     for (let identifierField of identifierFields) {
       this.multiIdentifierPaths = this.model[identifierField[0]]
-        .reduce((acc, _item, index) => {
-          const path = [identifierField[0], index, identifierField[1]]
-          const node = jsonc.findNodeAtLocation(this.tree, path)
-          acc[node.value] = [...(acc[node.value] || []), path]
-          return acc
-        }, this.multiIdentifierPaths)
+      .reduce((acc, _item, index) => {
+        const path = [identifierField[0], index, identifierField[1]]
+        const node = jsonc.findNodeAtLocation(this.tree, path)
+        acc[node.value] = [...(acc[node.value] || []), path]
+        return acc
+      }, this.multiIdentifierPaths)
     }
   }
 
@@ -95,19 +96,19 @@ class ModelValidator {
   }
 
   /**
-     * Identifier information
-     * @typedef  {Object} IdentifierInfo
-     *
-     * @property {string} identifier - The identifier in question
-     * @property {string} offset - Start location in raw string
-     */
+   * Identifier information
+   * @typedef  {Object} IdentifierInfo
+   *
+   * @property {string} identifier - The identifier in question
+   * @property {string} offset - Start location in raw string
+   */
 
   /**
-     * Finds definition for identifier located at a particular offset
-     *
-     * @param {number} offset - Offset that is located in the identifier
-     * @return {IdentifierInfo|undefined} The identifier and offset of the definition if it exists,
-     */
+   * Finds definition for identifier located at a particular offset
+   *
+   * @param {number} offset - Offset that is located in the identifier
+   * @return {IdentifierInfo|undefined} The identifier and offset of the definition if it exists,
+   */
   getDefinitionForOffset (offset) {
     const identifier = this._extractIdentifier(offset)
     if (this.identifierPaths[identifier]) {
@@ -137,11 +138,11 @@ class ModelValidator {
   }
 
   /**
-     * Returns all definitions for a given type
-     *
-     * @param {('acts'|'facts'|'duties')} type
-     * @return {IdentifierInfo[]} The identifier information for all defitions of the chosen type
-     */
+   * Returns all definitions for a given type
+   *
+   * @param {('acts'|'facts'|'duties')} type
+   * @return {IdentifierInfo[]} The identifier information for all defitions of the chosen type
+   */
   getDefinitionsForType (type) {
     return Object.entries(this.identifierPaths).filter((identifierPath) => {
       return identifierPath[1][0] === type
@@ -155,11 +156,11 @@ class ModelValidator {
   }
 
   /**
-     * Get all the references to an identifier located at the given offset
-     *
-     * @param {number} offset - offset located inside the identifier
-     * @return {IdentifierInfo[]} The identifier information for all references to the identifier
-     */
+   * Get all the references to an identifier located at the given offset
+   *
+   * @param {number} offset - offset located inside the identifier
+   * @return {IdentifierInfo[]} The identifier information for all references to the identifier
+   */
   getReferencesForOffset (offset) {
     const identifier = this._extractIdentifier(offset)
     if (this.referencePaths[identifier]) {
@@ -200,16 +201,9 @@ class ModelValidator {
   }
 
   /**
-     * @typedef {Object} ValidationError
-     * @property {string} code - Unique code to relate back to the error
-     * @property {string} message - Human readable message describing the problem
-     * @property {number} offset - Begin offset of the error
-     * @property {number} endOffset - End offset of the error
-     * @property {('ERROR'|'WARNING')} severity - Severity of the error
-     * @property {string|undefined} source - Text that relates to the cause of the error
-     * @property {Array|undefined} path - Path to the error
-     */
-
+   * Get the validation errors for the model
+   * @returns {ValidationError[]} Validation errors
+   */
   getDiagnostics () {
     const actNameValidationErrors = this._checkIdentifiers('acts', 'act', /^<<.+>>$/)
     const factNameValidationErrors = this._checkIdentifiers('facts', 'fact', /^\[.+\]$/)
@@ -222,63 +216,63 @@ class ModelValidator {
   }
 
   /***
-     * Does a overall look at duplicate identifiers,
-     * e.g. <<act>> is not only findable on 'ACTS' field but as well
-     * on 'FACTS' field and in between.
-     *
-     * @returns {ValidationError[]} Validation errors
-     * @private
-     */
+   * Does a overall look at duplicate identifiers,
+   * e.g. <<act>> is not only findable on 'ACTS' field but as well
+   * on 'FACTS' field and in between.
+   *
+   * @returns {ValidationError[]} Validation errors
+   * @private
+   */
   _findOverallDuplicateIdentifiers () {
     const validationError = []
     Object.keys(this.multiIdentifierPaths).filter(value =>
       this.multiIdentifierPaths[value].length > 1)
-      .forEach(key => {
-        const errors = this.multiIdentifierPaths[key]
-          .map(path => {
-            const node = jsonc.findNodeAtLocation(this.tree, path)
-            const beginPosition = node.offset
-            const endPosition = node.offset + node.length
-            return new ValidationMessage(
-              'LR0003',
-              'Duplicate identifier',
-              [beginPosition, endPosition],
-              'ERROR',
-              key,
-              path
-            )
-          })
-        validationError.push(errors)
+    .forEach(key => {
+      const errors = this.multiIdentifierPaths[key]
+      .map(path => {
+        const node = jsonc.findNodeAtLocation(this.tree, path)
+        const beginPosition = node.offset
+        const endPosition = node.offset + node.length
+        return new ValidationError(
+          'LR0003',
+          'Duplicate identifier',
+          [beginPosition, endPosition],
+          'ERROR',
+          key,
+          path
+        )
       })
+      validationError.push(errors)
+    })
     return validationError.flatMap(value => value)
   }
 
   /**
-     *
-     * @param flintItems - Plural form of flint items to be checked
-     * @param flintItem - Signular form of flint items to be checked
-     * @param pattern - Regex that should match the identifier
-     * @return {ValidationError[]} Validation errors
-     * @private
-     */
+   *
+   * @param flintItems - Plural form of flint items to be checked
+   * @param flintItem - Signular form of flint items to be checked
+   * @param pattern - Regex that should match the identifier
+   * @return {ValidationError[]} Validation errors
+   * @private
+   */
   _checkIdentifiers (flintItems, flintItem, pattern) {
     const identifierValidationErrors = this.model[flintItems]
-      .filter((item) => typeof item[flintItem] !== 'string' || !item[flintItem].match(pattern))
-      .map((item) => {
-        // console.log(item[flintItem])
-        const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]])
-        const beginPosition = node.offset
-        const endPosition = node.offset + node.length
+    .filter((item) => typeof item[flintItem] !== 'string' || !item[flintItem].match(pattern))
+    .map((item) => {
+      // console.log(item[flintItem])
+      const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]])
+      const beginPosition = node.offset
+      const endPosition = node.offset + node.length
 
-        return {
-          code: 'LR0001',
-          message: 'Invalid name for identifier',
-          offset: [beginPosition, endPosition],
-          severity: 'ERROR',
-          source: item[flintItem].toString(),
-          path: this.identifierPaths[item[flintItem]]
-        }
-      })
+      return new ValidationError(
+        'LR0001',
+        'Invalid name for identifier',
+        [beginPosition, endPosition],
+        'ERROR',
+        item[flintItem].toString(),
+        this.identifierPaths[item[flintItem]]
+      )
+    })
 
     return identifierValidationErrors
   }
@@ -406,17 +400,6 @@ class ModelValidator {
     }
 
     return errors
-  }
-}
-
-class ValidationMessage {
-  constructor (code, message, offset, severity, source, path) {
-    this.code = code
-    this.message = message
-    this.offset = offset
-    this.severity = severity
-    this.source = source
-    this.path = path
   }
 }
 
