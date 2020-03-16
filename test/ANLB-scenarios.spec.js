@@ -52,7 +52,7 @@ describe('in het ANLb model', () => {
     ({ ssids, modelLink } = await util.setupModel(ANLb, actors, factFunctionSpec, true))
   })
 
-  for (let scenario of scenarios) {
+  for (const scenario of scenarios) {
     it(scenario.name, async () => {
       await util.scenarioTest(ssids, modelLink, scenario.acts, scenario.facts, true)
     })

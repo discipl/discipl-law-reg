@@ -26,7 +26,7 @@ describe('The Flint Model validator', () => {
     const referenceOffset = sampleModelString.indexOf('<<congratulate>>', definitionOffset + 1)
 
     // Test an offset in the middle of the word
-    let congratulateDefitinion = modelValidator.getDefinitionForOffset(referenceOffset + 6)
+    const congratulateDefitinion = modelValidator.getDefinitionForOffset(referenceOffset + 6)
 
     // The offset includes the quote at the beginning
     expect(congratulateDefitinion).to.deep.equal({
@@ -159,7 +159,7 @@ describe('The Flint Model validator', () => {
 
   it('should find undefined facts used in acts', async () => {
     const model = JSON.stringify({
-      'acts': [{ 'act': '<<act>>', 'actor': '[canary]', 'object': '[birdfood]', 'interested-party': '[cat]' }],
+      'acts': [{ 'act': '<<act>>', 'actor': '[canary]', 'object': '[birdfood]', 'recipient': '[cat]' }],
       'facts': [],
       'duties': []
     })
@@ -202,13 +202,13 @@ describe('The Flint Model validator', () => {
         'code': 'LR0002',
         'message': 'Undefined item',
         'offset': [
-          87,
-          92
+          80,
+          85
         ],
         'path': [
           'acts',
           0,
-          'interested-party'
+          'recipient'
         ],
         'severity': 'WARNING',
         'source': '[cat]'

@@ -1,5 +1,6 @@
 import * as jsonc from 'jsonc-parser'
 import { ValidationError } from './validationError'
+import { JSONPath } from 'jsonc-parser'
 
 class ModelValidator {
   /**
@@ -20,7 +21,7 @@ class ModelValidator {
     this.multiIdentifierPaths = []
 
     const identifierFields = [['acts', 'act'], ['facts', 'fact'], ['duties', 'duty']]
-    for (let identifierField of identifierFields) {
+    for (const identifierField of identifierFields) {
       this.identifierPaths = this.model[identifierField[0]].reduce((acc, _item, index) => {
         const path = [identifierField[0], index, identifierField[1]]
         const node = jsonc.findNodeAtLocation(this.tree, path)
@@ -31,11 +32,11 @@ class ModelValidator {
 
     this._populateMultiIdentifierPaths(identifierFields)
 
-    const indexedFields = [['acts', 'act'], ['acts', 'actor'], ['acts', 'object'], ['acts', 'interested-party'],
+    const indexedFields = [['acts', 'act'], ['acts', 'actor'], ['acts', 'object'], ['acts', 'recipient'],
       ['acts', 'preconditions'],
       ['facts', 'fact'], ['facts', 'function'],
       ['duties', 'duty'], ['duties', 'duty-components'], ['duties', 'duty-holder'], ['duties', 'duty-holder'], ['duties', 'claimant'], ['duties', 'create'], ['duties', 'terminate']]
-    for (let indexField of indexedFields) {
+    for (const indexField of indexedFields) {
       if (this.model[indexField[0]]) {
         this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
           // console.log("Reducing");
@@ -47,7 +48,7 @@ class ModelValidator {
       }
 
       const indexedSubFields = [['acts', 'create'], ['acts', 'terminate']]
-      for (let indexField of indexedSubFields) {
+      for (const indexField of indexedSubFields) {
         this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
           if (item[indexField[1]]) {
             for (let subIndex = 0; subIndex < item[indexField[1]].length; subIndex++) {
@@ -68,14 +69,14 @@ class ModelValidator {
    * @private
    */
   _populateMultiIdentifierPaths (identifierFields) {
-    for (let identifierField of identifierFields) {
+    for (const identifierField of identifierFields) {
       this.multiIdentifierPaths = this.model[identifierField[0]]
-      .reduce((acc, _item, index) => {
-        const path = [identifierField[0], index, identifierField[1]]
-        const node = jsonc.findNodeAtLocation(this.tree, path)
-        acc[node.value] = [...(acc[node.value] || []), path]
-        return acc
-      }, this.multiIdentifierPaths)
+        .reduce((acc, _item, index) => {
+          const path = [identifierField[0], index, identifierField[1]]
+          const node = jsonc.findNodeAtLocation(this.tree, path)
+          acc[node.value] = [...(acc[node.value] || []), path]
+          return acc
+        }, this.multiIdentifierPaths)
     }
   }
 
@@ -84,7 +85,7 @@ class ModelValidator {
     if (node) {
       const identifiers = this._extractIdentifiersFromString(node.value)
       if (identifiers) {
-        for (let identifier of identifiers) {
+        for (const identifier of identifiers) {
           if (acc[identifier]) {
             acc[identifier].push(path)
           } else {
@@ -100,7 +101,7 @@ class ModelValidator {
    * @typedef  {Object} IdentifierInfo
    *
    * @property {string} identifier - The identifier in question
-   * @property {string} offset - Start location in raw string
+   * @property {string | number} offset - Start location in raw string
    */
 
   /**
@@ -147,7 +148,8 @@ class ModelValidator {
     return Object.entries(this.identifierPaths).filter((identifierPath) => {
       return identifierPath[1][0] === type
     }).map((identifierPath) => {
-      const node = jsonc.findNodeAtLocation(this.tree, identifierPath[1])
+      const unknown = identifierPath[1]
+      const node = jsonc.findNodeAtLocation(this.tree, unknown)
       return {
         identifier: identifierPath[0],
         offset: node.offset
@@ -187,7 +189,7 @@ class ModelValidator {
 
     let identifier
     while (true) {
-      let m = regex.exec(value)
+      const m = regex.exec(value)
       if (!m) {
         break
       }
@@ -227,23 +229,23 @@ class ModelValidator {
     const validationError = []
     Object.keys(this.multiIdentifierPaths).filter(value =>
       this.multiIdentifierPaths[value].length > 1)
-    .forEach(key => {
-      const errors = this.multiIdentifierPaths[key]
-      .map(path => {
-        const node = jsonc.findNodeAtLocation(this.tree, path)
-        const beginPosition = node.offset
-        const endPosition = node.offset + node.length
-        return new ValidationError(
-          'LR0003',
-          'Duplicate identifier',
-          [beginPosition, endPosition],
-          'ERROR',
-          key,
-          path
-        )
+      .forEach(key => {
+        const errors = this.multiIdentifierPaths[key]
+          .map(path => {
+            const node = jsonc.findNodeAtLocation(this.tree, path)
+            const beginPosition = node.offset
+            const endPosition = node.offset + node.length
+            return new ValidationError(
+              'LR0003',
+              'Duplicate identifier',
+              [beginPosition, endPosition],
+              'ERROR',
+              key,
+              path
+            )
+          })
+        validationError.push(errors)
       })
-      validationError.push(errors)
-    })
     return validationError.flatMap(value => value)
   }
 
@@ -256,25 +258,23 @@ class ModelValidator {
    * @private
    */
   _checkIdentifiers (flintItems, flintItem, pattern) {
-    const identifierValidationErrors = this.model[flintItems]
-    .filter((item) => typeof item[flintItem] !== 'string' || !item[flintItem].match(pattern))
-    .map((item) => {
+    return this.model[flintItems]
+      .filter((item) => typeof item[flintItem] !== 'string' || !item[flintItem].match(pattern))
+      .map((item) => {
       // console.log(item[flintItem])
-      const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]])
-      const beginPosition = node.offset
-      const endPosition = node.offset + node.length
+        const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[item[flintItem]])
+        const beginPosition = node.offset
+        const endPosition = node.offset + node.length
 
-      return new ValidationError(
-        'LR0001',
-        'Invalid name for identifier',
-        [beginPosition, endPosition],
-        'ERROR',
-        item[flintItem].toString(),
-        this.identifierPaths[item[flintItem]]
-      )
-    })
-
-    return identifierValidationErrors
+        return new ValidationError(
+          'LR0001',
+          'Invalid name for identifier',
+          [beginPosition, endPosition],
+          'ERROR',
+          item[flintItem].toString(),
+          this.identifierPaths[item[flintItem]]
+        )
+      })
   }
 
   _checkReferences () {
@@ -292,7 +292,7 @@ class ModelValidator {
     const veryStrict = []
     const lessStrict = ['']
     const factStrict = ['<<>>', '[]']
-    const expressionCheckInfo = [['acts', 'actor', veryStrict], ['acts', 'object', veryStrict], ['acts', 'interested-party', veryStrict],
+    const expressionCheckInfo = [['acts', 'actor', veryStrict], ['acts', 'object', veryStrict], ['acts', 'recipient', veryStrict],
       ['acts', 'preconditions', lessStrict], ['facts', 'function', factStrict]]
 
     const expressionErrors = expressionCheckInfo.map((expressionCheckPath) => {
@@ -349,7 +349,7 @@ class ModelValidator {
     const operandsNode = jsonc.findNodeAtLocation(expression, ['operands'])
 
     if (operandsNode) {
-      for (let subNode of operandsNode.children) {
+      for (const subNode of operandsNode.children) {
         errors = errors.concat(this._validateParsedExpressionNode(subNode))
       }
     }
@@ -390,7 +390,7 @@ class ModelValidator {
     }
 
     if (expression.operands) {
-      for (let operand of expression.operands) {
+      for (const operand of expression.operands) {
         errors = errors.concat(this._validateParsedExpression(operand, beginOffset, exceptions))
       }
     }
