@@ -100,7 +100,7 @@ class ModelValidator {
    * @typedef  {Object} IdentifierInfo
    *
    * @property {string} identifier - The identifier in question
-   * @property {string | number} offset - Start location in raw string
+   * @property {number} offset - Start location in raw string
    */
 
   /**
