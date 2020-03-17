@@ -221,7 +221,7 @@ class Util {
     const allActors = actors.concat(['lawmaker'])
     const ssids = {}
     let identityIndex = 1
-    for (let actor of allActors) {
+    for (const actor of allActors) {
       if (usePregenIdentities && CERTS[identityIndex]) {
         ssids[actor] = await ephemeralConnector.newIdentity(CERTS[identityIndex])
         identityIndex += 1
@@ -241,7 +241,7 @@ class Util {
       return factFunctions
     }, {})
 
-    let modelLink = await this.lawReg.publish(ssids['lawmaker'], { ...model, 'model': 'LB' }, factFunctions)
+    const modelLink = await this.lawReg.publish(ssids['lawmaker'], { ...model, 'model': 'LB' }, factFunctions)
 
     return { 'ssids': ssids, 'modelLink': modelLink }
   }
@@ -250,10 +250,10 @@ class Util {
     const ephemeralConnector = await this.core.getConnector('ephemeral')
     const cert = usePregenIdentity ? CERTS[0] : {}
 
-    let needSsid = await ephemeralConnector.newIdentity(cert)
+    const needSsid = await ephemeralConnector.newIdentity(cert)
     await this.core.allow(needSsid)
 
-    let needLink = await this.core.claim(needSsid, {
+    const needLink = await this.core.claim(needSsid, {
       'need': {
         'DISCIPL_FLINT_MODEL_LINK': modelLink
       }
@@ -272,7 +272,7 @@ class Util {
       return false
     }
 
-    for (let act of acts) {
+    for (const act of acts) {
       caseLink = await this.lawReg.take(ssids[act.actor], caseLink, act.act, factResolver)
     }
   }
