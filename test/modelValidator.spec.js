@@ -106,50 +106,50 @@ describe('The Flint Model validator', () => {
       {
         code: 'LR0003',
         message: 'Duplicate identifier',
-        offset: [ 16, 25 ],
+        offset: [16, 25],
         severity: 'ERROR',
         source: '<<act>>',
-        path: [ 'acts', 0, 'act' ]
+        path: ['acts', 0, 'act']
       },
       {
         code: 'LR0003',
         message: 'Duplicate identifier',
-        offset: [ 69, 78 ],
+        offset: [69, 78],
         severity: 'ERROR',
         source: '<<act>>',
-        path: [ 'acts', 3, 'act' ]
+        path: ['acts', 3, 'act']
       },
       {
         code: 'LR0003',
         message: 'Duplicate identifier',
-        offset: [ 51, 60 ],
+        offset: [51, 60],
         severity: 'ERROR',
         source: '<<atc>>',
-        path: [ 'acts', 2, 'act' ]
+        path: ['acts', 2, 'act']
       },
       {
         code: 'LR0003',
         message: 'Duplicate identifier',
-        offset: [ 87, 96 ],
+        offset: [87, 96],
         severity: 'ERROR',
         source: '<<atc>>',
-        path: [ 'acts', 4, 'act' ]
+        path: ['acts', 4, 'act']
       },
       {
         code: 'LR0003',
         message: 'Duplicate identifier',
-        offset: [ 116, 122 ],
+        offset: [116, 122],
         severity: 'ERROR',
         source: 'test',
-        path: [ 'facts', 0, 'fact' ]
+        path: ['facts', 0, 'fact']
       },
       {
         code: 'LR0003',
         message: 'Duplicate identifier',
-        offset: [ 192, 198 ],
+        offset: [192, 198],
         severity: 'ERROR',
         source: 'test',
-        path: [ 'duties', 0, 'duty' ]
+        path: ['duties', 0, 'duty']
       }
     ]
     )
@@ -299,7 +299,8 @@ describe('The Flint Model validator', () => {
   it('should find undefined facts used in acts in fact functions', async () => {
     const model = JSON.stringify({
       'acts': [],
-      'facts': [{ 'fact': '[factname]',
+      'facts': [{
+        'fact': '[factname]',
         'function': {
           'expression': 'AND',
           'operands': [
@@ -383,7 +384,8 @@ describe('The Flint Model validator', () => {
   it('should find undefined facts used in lists', async () => {
     const model = JSON.stringify({
       'acts': [],
-      'facts': [{ 'fact': '[factname]',
+      'facts': [{
+        'fact': '[factname]',
         'function': {
           'name': 'SomeList',
           'expression': 'LIST',
@@ -414,5 +416,111 @@ describe('The Flint Model validator', () => {
         'source': '[cats]'
       }
     ])
+  })
+
+  it('should find json validation errors when invalid json', () => {
+    const model = `{"acts":[{"act":"<<congratulate>>", {}}],"facts":[],"duties":[{"duty":"<being nice>","terminate":"<<congratulate>>"}]}`
+
+    const modelValidator = new ModelValidator(model)
+
+    const diagnostics = modelValidator.getDiagnostics()
+
+    expect(diagnostics).to.deep.equal([
+      {
+        'code': 'LR0004',
+        'message': 'Property name expected',
+        'offset': [
+          36,
+          37
+        ],
+        'path': undefined,
+        'severity': 'ERROR',
+        'source': undefined
+      },
+      {
+        'code': 'LR0004',
+        'message': 'Value expected',
+        'offset': [
+          37,
+          38
+        ],
+        'path': undefined,
+        'severity': 'ERROR',
+        'source': undefined
+      },
+      {
+        'code': 'LR0004',
+        'message': 'Comma expected',
+        'offset': [
+          38,
+          39
+        ],
+        'path': undefined,
+        'severity': 'ERROR',
+        'source': undefined
+      },
+      {
+        'code': 'LR0004',
+        'message': 'Value expected',
+        'offset': [
+          38,
+          39
+        ],
+        'path': undefined,
+        'severity': 'ERROR',
+        'source': undefined
+      }
+    ])
+  })
+
+  it('should find undefined definition for offset when invalid json', () => {
+    const model = `{"acts":[{"act":"<<congratulate>>", {}}],"facts":[],"duties":[{"duty":"<being nice>","terminate":"<<congratulate>>"}]}`
+
+    const modelValidator = new ModelValidator(model)
+
+    const definitionOffset = model.indexOf('<<congratulate>>')
+    const referenceOffset = model.indexOf('<<congratulate>>', definitionOffset + 1)
+
+    const congratulateDefinition = modelValidator.getDefinitionForOffset(referenceOffset + 6)
+    expect(congratulateDefinition).to.equal(undefined)
+  })
+
+  it('should find no references for offset when invalid json', () => {
+    const model = `{"acts":[{"act":"<<congratulate>>", {}}],"facts":[],"duties":[{"duty":"<being nice>","terminate":"<<congratulate>>"}]}`
+
+    const modelValidator = new ModelValidator(model)
+
+    const definitionOffset = model.indexOf('<<congratulate>>')
+    const referenceOffset = model.indexOf('<<congratulate>>', definitionOffset + 1)
+
+    const congratulateReference = modelValidator.getReferencesForOffset(referenceOffset + 5)
+    expect(congratulateReference).to.deep.equal([])
+  })
+
+  it('should find no defintions for type when invalid json', () => {
+    const model = `{"acts":[{"act":"<<congratulate>>", {}}],"facts":[],"duties":[{"duty":"<being nice>","terminate":"<<congratulate>>"}]}`
+
+    const modelValidator = new ModelValidator(model)
+
+    const acts = modelValidator.getDefinitionsForType('acts')
+    expect(acts).to.deep.equal([])
+  })
+
+  it('should find no definition for invalid offset', () => {
+    const modelValidator = new ModelValidator(sampleModelString)
+
+    const definitionOffset = sampleModelString.length
+
+    const congratulateReference = modelValidator.getDefinitionForOffset(definitionOffset + 5)
+    expect(congratulateReference).to.equal(undefined)
+  })
+
+  it('should find no references for invalid offset', () => {
+    const modelValidator = new ModelValidator(sampleModelString)
+
+    const referenceOffset = sampleModelString.length
+
+    const congratulateReference = modelValidator.getReferencesForOffset(referenceOffset + 5)
+    expect(congratulateReference).to.deep.equal([])
   })
 })
