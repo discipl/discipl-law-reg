@@ -8,57 +8,60 @@ class ModelValidator {
    * @param {string} rawData
    */
   constructor (rawData) {
-    const errors = []
-    this.tree = jsonc.parseTree(rawData)
-    this.model = jsonc.parse(rawData, errors)
-    this.rawData = rawData
+    this.errors = []
+    this.model = jsonc.parse(rawData, this.errors)
 
-    // TODO check errors
+    if (this._isValidJson()) {
+      this.tree = jsonc.parseTree(rawData)
+      this.rawData = rawData
+      this.identifierPaths = {}
+      this.referencePaths = {}
+      this.multiIdentifierPaths = []
 
-    this.identifierPaths = {}
-    this.referencePaths = {}
-    this.multiIdentifierPaths = []
-
-    const identifierFields = [['acts', 'act'], ['facts', 'fact'], ['duties', 'duty']]
-    for (const identifierField of identifierFields) {
-      this.identifierPaths = this.model[identifierField[0]].reduce((acc, _item, index) => {
-        const path = [identifierField[0], index, identifierField[1]]
-        const node = jsonc.findNodeAtLocation(this.tree, path)
-        acc[node.value] = path
-        return acc
-      }, this.identifierPaths)
-    }
-
-    this._populateMultiIdentifierPaths(identifierFields)
-
-    const indexedFields = [['acts', 'act'], ['acts', 'actor'], ['acts', 'object'], ['acts', 'recipient'],
-      ['acts', 'preconditions'],
-      ['facts', 'fact'], ['facts', 'function'],
-      ['duties', 'duty'], ['duties', 'duty-components'], ['duties', 'duty-holder'], ['duties', 'duty-holder'], ['duties', 'claimant'], ['duties', 'create'], ['duties', 'terminate']]
-    for (const indexField of indexedFields) {
-      if (this.model[indexField[0]]) {
-        this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
-          // console.log("Reducing");
-          const path = [indexField[0], index, indexField[1]]
-          this._accumulateIdentifiers(path, acc)
-
+      const identifierFields = [['acts', 'act'], ['facts', 'fact'], ['duties', 'duty']]
+      for (const identifierField of identifierFields) {
+        this.identifierPaths = this.model[identifierField[0]].reduce((acc, _item, index) => {
+          const path = [identifierField[0], index, identifierField[1]]
+          const node = jsonc.findNodeAtLocation(this.tree, path)
+          acc[node.value] = path
           return acc
-        }, this.referencePaths)
+        }, this.identifierPaths)
       }
 
-      const indexedSubFields = [['acts', 'create'], ['acts', 'terminate']]
-      for (const indexField of indexedSubFields) {
-        this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
-          if (item[indexField[1]]) {
-            for (let subIndex = 0; subIndex < item[indexField[1]].length; subIndex++) {
-              const path = [indexField[0], index, indexField[1], subIndex]
-              this._accumulateIdentifiers(path, acc)
+      this._populateMultiIdentifierPaths(identifierFields)
+
+      const indexedFields = [['acts', 'act'], ['acts', 'actor'], ['acts', 'object'], ['acts', 'recipient'],
+        ['acts', 'preconditions'],
+        ['facts', 'fact'], ['facts', 'function'],
+        ['duties', 'duty'], ['duties', 'duty-components'], ['duties', 'duty-holder'], ['duties', 'duty-holder'], ['duties', 'claimant'], ['duties', 'create'], ['duties', 'terminate']]
+      for (const indexField of indexedFields) {
+        if (this.model[indexField[0]]) {
+          this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
+            const path = [indexField[0], index, indexField[1]]
+            this._accumulateIdentifiers(path, acc)
+
+            return acc
+          }, this.referencePaths)
+        }
+
+        const indexedSubFields = [['acts', 'create'], ['acts', 'terminate']]
+        for (const indexField of indexedSubFields) {
+          this.referencePaths = this.model[indexField[0]].reduce((acc, item, index) => {
+            if (item[indexField[1]]) {
+              for (let subIndex = 0; subIndex < item[indexField[1]].length; subIndex++) {
+                const path = [indexField[0], index, indexField[1], subIndex]
+                this._accumulateIdentifiers(path, acc)
+              }
             }
-          }
-          return acc
-        }, this.referencePaths)
+            return acc
+          }, this.referencePaths)
+        }
       }
     }
+  }
+
+  _isValidJson () {
+    return this.errors.length === 0
   }
 
   /**
@@ -110,6 +113,9 @@ class ModelValidator {
    * @return {IdentifierInfo|undefined} The identifier and offset of the definition if it exists,
    */
   getDefinitionForOffset (offset) {
+    if (!this._isValidJson()) {
+      return
+    }
     const identifier = this._extractIdentifier(offset)
     if (this.identifierPaths[identifier]) {
       const node = jsonc.findNodeAtLocation(this.tree, this.identifierPaths[identifier])
@@ -144,6 +150,9 @@ class ModelValidator {
    * @return {IdentifierInfo[]} The identifier information for all defitions of the chosen type
    */
   getDefinitionsForType (type) {
+    if (!this._isValidJson()) {
+      return []
+    }
     return Object.entries(this.identifierPaths).filter((identifierPath) => {
       return identifierPath[1][0] === type
     }).map((identifierPath) => {
@@ -162,6 +171,9 @@ class ModelValidator {
    * @return {IdentifierInfo[]} The identifier information for all references to the identifier
    */
   getReferencesForOffset (offset) {
+    if (!this._isValidJson()) {
+      return []
+    }
     const identifier = this._extractIdentifier(offset)
     if (this.referencePaths[identifier]) {
       return this.referencePaths[identifier].map((referencePath) => {
@@ -177,8 +189,17 @@ class ModelValidator {
     return []
   }
 
+  /**
+   * Get the identifier at a given offset
+   * @param {number} offset
+   * @returns {string | undefined}
+   * @private
+   */
   _extractIdentifier (offset) {
     const location = jsonc.getLocation(this.rawData, offset)
+    if (!location.previousNode) {
+      return
+    }
     const value = location.previousNode.value
     const offsetInValue = offset - location.previousNode.offset
 
@@ -205,6 +226,9 @@ class ModelValidator {
    * @returns {ValidationError[]} Validation errors
    */
   getDiagnostics () {
+    if (!this._isValidJson()) {
+      return this.errors.map(error => this._validationErrorFromParseError(error))
+    }
     const actNameValidationErrors = this._checkIdentifiers('acts', 'act', /^<<.+>>$/)
     const factNameValidationErrors = this._checkIdentifiers('facts', 'fact', /^\[.+\]$/)
     const dutyNameValidationErrors = this._checkIdentifiers('duties', 'duty', /^<.+>$/)
@@ -309,6 +333,46 @@ class ModelValidator {
     return createTerminateErrors.concat(expressionErrors)
   }
 
+  /**
+   * @typedef {Object} ParseError
+   * @property {number} error
+   * @property {number} offset
+   * @property {number} length
+   */
+
+  /**
+   * Convert a parse error to a validation error.
+   * @param parseError
+   * @returns {ValidationError}
+   * @private
+   */
+  _validationErrorFromParseError (parseError) {
+    const parseErrorMessages = [
+      'Invalid symbol',
+      'Invalid number format',
+      'Property name expected',
+      'Value expected',
+      'Colon expected',
+      'Comma expected',
+      'Close brace expected',
+      'Close bracket expected',
+      'End of file expected',
+      'Invalid comment token',
+      'Unexpected end of comment',
+      'Unexpected end of string',
+      'Unexpected end of number',
+      'Invalid unicode',
+      'Invalid escape character',
+      'Invalid character'
+    ]
+    return new ValidationError(
+      'LR0004',
+      parseErrorMessages[parseError.error - 1],
+      [parseError.offset, parseError.offset + parseError.length],
+      'ERROR'
+    )
+  }
+
   _checkCreateTerminate (referenceString, node) {
     const createTerminateErrors = []
     const parsedReferences = typeof referenceString === 'string' ? referenceString.split(';').map(item => item.trim()) : referenceString
@@ -331,14 +395,14 @@ class ModelValidator {
   _validateReference (reference, beginOffset) {
     if (!this.identifierPaths[reference]) {
       const path = jsonc.getNodePath(jsonc.findNodeAtOffset(this.tree, beginOffset))
-      return {
-        code: 'LR0002',
-        message: 'Undefined item',
-        offset: [beginOffset, beginOffset + reference.length],
-        severity: 'WARNING',
-        source: reference,
-        path: path
-      }
+      return new ValidationError(
+        'LR0002',
+        'Undefined item',
+        [beginOffset, beginOffset + reference.length],
+        'WARNING',
+        reference,
+        path
+      )
     }
   }
 
