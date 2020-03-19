@@ -93,6 +93,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(action.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[aanvraag]': actionLink,
         '[aanvrager heeft de gelegenheid gehad de aanvraag aan te vullen]': true,
         '[aanvrager heeft voldaan aan enig wettelijk voorschrift voor het in behandeling nemen van de aanvraag]': false,
         '[de aanvraag is binnen de afgelopen 4 weken aangevuld]': true
@@ -265,6 +266,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(action.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[aanvraag]': actionLink2,
         '[budget volledig benut]': false,
         '[leraar die bij aanvang van het studiejaar waarvoor de subsidie bestemd de graad Bachelor mag voeren]': true,
         '[leraar die ingeschreven staat in registerleraar.nl]': true,
@@ -350,6 +352,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(thirdAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedThirdActLink[0])[0],
       'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[aanvraagformulieren studiekosten op de website van de Dienst Uitvoering Onderwijs]': actionLink,
         '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]': true,
         '[ingevuld aanvraagformulier studiekosten op de website van de Dienst Uitvoering Onderwijs]': true
       },
@@ -427,6 +430,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[aanvraag subsidie voor studiekosten]': actionLink2,
         '[binnen twee maanden na het verstrekken van de subsidie]': true
       },
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
@@ -493,6 +497,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     expect(lastAction.data).to.deep.equal({
       'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
       'DISCIPL_FLINT_FACTS_SUPPLIED': {
+        '[besluit tot verlenen subsidie voor studiekosten van een leraar in verband met het volgen van een opleiding]': actionLink3,
         '[subsidieverlening aan een leraar]': true
       },
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
