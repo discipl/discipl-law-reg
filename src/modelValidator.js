@@ -419,7 +419,7 @@ class ModelValidator {
     const operandNode = jsonc.findNodeAtLocation(expression, ['operand'])
 
     if (operandNode) {
-      errors = errors.concat(this._validateParsedExpressionNode(operandNode.value))
+      errors = errors.concat(this._validateParsedExpressionNode(operandNode))
     }
 
     const itemsNode = jsonc.findNodeAtLocation(expression, ['items'])

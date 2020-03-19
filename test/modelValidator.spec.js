@@ -418,6 +418,46 @@ describe('The Flint Model validator', () => {
     ])
   })
 
+  it('should yield warning for undefined fact in not expression', () => {
+    const model = JSON.stringify({
+      'acts': [],
+      'facts': [
+        {
+          'fact': '[factname]',
+          'function': {
+            'name': 'SomeNot',
+            'expression': 'NOT',
+            'operand': '[aUndefinedFact]'
+          }
+        }
+      ],
+      'duties': []
+    })
+
+    const modelValidator = new ModelValidator(model)
+
+    const errors = modelValidator.getDiagnostics()
+
+    expect(errors).to.deep.equal([
+      {
+        'code': 'LR0002',
+        'message': 'Undefined item',
+        'offset': [
+          100,
+          116
+        ],
+        'path': [
+          'facts',
+          0,
+          'function',
+          'operand'
+        ],
+        'severity': 'WARNING',
+        'source': '[aUndefinedFact]'
+      }
+    ])
+  })
+
   it('should find json validation errors when invalid json', () => {
     const model = `{"acts":[{"act":"<<congratulate>>", {}}],"facts":[],"duties":[{"duty":"<being nice>","terminate":"<<congratulate>>"}]}`
 
