@@ -419,7 +419,7 @@ class LawReg {
     }
 
     const result = context.factResolver(fact, context.flintItem, context.listNames || [], context.listIndices || [], creatingActions)
-    let resolvedResult = await Promise.resolve(result)
+    const resolvedResult = await Promise.resolve(result)
 
     if (!creatingActions.includes(resolvedResult)) {
       throw new Error('Invalid choice for creating action: ' + resolvedResult)
@@ -593,6 +593,8 @@ class LawReg {
       }
     }
 
+    const defaultFactResolver = this._wrapWithDefault(factResolver, {})
+
     const allowedActs = []
     logger.debug('Checking', acts, 'for available acts')
     for (const actWithLink of acts) {
@@ -600,7 +602,7 @@ class LawReg {
 
       const link = Object.values(actWithLink)[0]
 
-      const checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
+      const checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink })
 
       if (checkActionInfo.valid) {
         const actionInformation = {
@@ -647,10 +649,12 @@ class LawReg {
           return false
         }
       }
+
+      const defaultFactResolver = this._wrapWithDefault(factResolver, {})
       logger.debug('Checking whether', actWithLink, 'is an available option')
 
       const link = Object.values(actWithLink)[0]
-      const checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': factResolver, 'caseLink': caseLink })
+      const checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink })
       logger.debug('Unknown items', unknownItems)
       if (typeof checkActionInfo.valid === 'undefined') {
         const actionInformation = {
@@ -840,7 +844,30 @@ class LawReg {
 
     const factsSupplied = {}
 
-    const defaultFactResolver = async (fact, flintItem, listNames, listIndices, possibleCreatingActions) => {
+    const defaultFactResolver = this._wrapWithDefault(factResolver, factsSupplied)
+
+    logger.debug('Checking if action is possible from perspective of', ssid.did)
+    const checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink }, true)
+    if (checkActionInfo.valid) {
+      logger.info('Registering act', actLink)
+      return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink,
+        [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink,
+        [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink,
+        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied })
+    }
+
+    throw new Error('Action ' + act + ' is not allowed')
+  }
+
+  /**
+   *
+   * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available
+   * @param {Object} factsSupplied - Facts object
+   * @return {function} factResolver - Function used to resolve facts to fall back on if no other method is available
+   * @private
+   */
+  _wrapWithDefault (factResolver, factsSupplied) {
+    return async (fact, flintItem, listNames, listIndices, possibleCreatingActions) => {
       let factsObject = factsSupplied
       for (let i = 0; i < listNames.length; i++) {
         const listName = listNames[i]
@@ -859,18 +886,6 @@ class LawReg {
       factsObject[fact] = await result
       return result
     }
-
-    logger.debug('Checking if action is possible from perspective of', ssid.did)
-    const checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink }, true)
-    if (checkActionInfo.valid) {
-      logger.info('Registering act', actLink)
-      return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink,
-        [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink,
-        [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink,
-        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied })
-    }
-
-    throw new Error('Action ' + act + ' is not allowed')
   }
 
   async _getModelLink (firstCaseLink, ssid) {
