@@ -7,7 +7,7 @@ import Util from './../src/util'
 import lb from './flint-example-lerarenbeurs'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
-log.getLogger('disciplLawReg').setLevel('debug')
+log.getLogger('disciplLawReg').setLevel('warn')
 
 const lawReg = new LawReg()
 const core = lawReg.getAbundanceService().getCoreAPI()
@@ -550,17 +550,12 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
 
     const actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren verstrekken voor subsidie studiekosten op de website van de DUO>>', bestuursorgaanFactresolver)
 
-    const availableActs = await lawReg.getPotentialActs(actionLink, ssids['belanghebbende'], [], [])
+    const potentialActs = await lawReg.getPotentialActs(actionLink, ssids['belanghebbende'], [], [])
 
-    expect(availableActs).to.deep.equal([
-      {
-        'act': '<<indienen verzoek een besluit te nemen>>',
-        'link': 'link:discipl:ephemeral:ixZjrZnIHG8jqXH0mAnY9mm0irwaYWnfxu6qoXa9v4CvOfLEU+awWzWlT/mtmNwECbsOJJJKFeizbmytcpzVTw=='
-      },
-      {
-        'act': '<<leraar vraagt subsidie voor studiekosten aan>>',
-        'link': 'link:discipl:ephemeral:L3JFayfvN0gXkav9jJpAldPtECIEOoCxdAgziSvuEjvlTotQjXbL0XRc22xQQ4V7C82rjQEoyem5IqAE3r4Stw=='
-      }
+    const potentialActNames = potentialActs.map((act) => act.act)
+    expect(potentialActNames).to.deep.equal([
+      '<<indienen verzoek een besluit te nemen>>',
+      '<<leraar vraagt subsidie voor studiekosten aan>>'
     ])
   }).timeout(5000)
 })
