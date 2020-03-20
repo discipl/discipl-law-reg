@@ -7,7 +7,7 @@ import Util from './../src/util'
 import lb from './flint-example-lerarenbeurs'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
-log.getLogger('disciplLawReg').setLevel('warn')
+log.getLogger('disciplLawReg').setLevel('debug')
 
 const lawReg = new LawReg()
 const core = lawReg.getAbundanceService().getCoreAPI()
@@ -409,7 +409,7 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
     const belanghebbendeFactresolver = (fact) => {
       if (typeof fact === 'string') {
         return fact === '[aanvraagformulieren op de website van de Dienst Uitvoering Onderwijs]' ||
-        fact === '[ingevuld aanvraagformulier studiekosten op de website van de Dienst Uitvoering Onderwijs]' ||
+          fact === '[ingevuld aanvraagformulier studiekosten op de website van de Dienst Uitvoering Onderwijs]' ||
           fact === '[inleveren]' ||
           fact === '[indienen 1 april tot en met 30 juni, voorafgaand aan het studiejaar waarvoor subsidie wordt aangevraagd]' ||
           fact === '[binnen twee maanden na het verstrekken van de subsidie]'
@@ -503,5 +503,64 @@ describe('discipl-law-reg in scenarios with lerarenbeurs', () => {
       'DISCIPL_FLINT_GLOBAL_CASE': needLink,
       'DISCIPL_FLINT_PREVIOUS_CASE': actionLink3
     })
+  }).timeout(5000)
+
+  it('should be able to get available actions after fact created from another action', async () => {
+    const needSsid = await core.newSsid('ephemeral')
+    await core.allow(needSsid)
+
+    const needLink = await core.claim(needSsid, {
+      'need': {
+        'act': '<<aanvraagformulieren lerarenbeurs verstrekken>>',
+        'DISCIPL_FLINT_MODEL_LINK': modelLink
+      }
+    })
+
+    const bestuursorgaanFactresolver = (fact) => {
+      if (typeof fact === 'string') {
+        return fact === '[template voor aanvraagformulieren studiekosten]' || fact === '[minister van Onderwijs, Cultuur en Wetenschap]'
+      }
+      return false
+    }
+
+    const actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren verstrekken voor subsidie studiekosten op de website van de DUO>>', bestuursorgaanFactresolver)
+
+    const availableActs = await lawReg.getAvailableActs(actionLink, ssids['belanghebbende'], [], [])
+
+    expect(availableActs).to.deep.equal([])
+  }).timeout(5000)
+
+  it('should be able to get potential actions after fact created from another action', async () => {
+    const needSsid = await core.newSsid('ephemeral')
+    await core.allow(needSsid)
+
+    const needLink = await core.claim(needSsid, {
+      'need': {
+        'act': '<<aanvraagformulieren lerarenbeurs verstrekken>>',
+        'DISCIPL_FLINT_MODEL_LINK': modelLink
+      }
+    })
+
+    const bestuursorgaanFactresolver = (fact) => {
+      if (typeof fact === 'string') {
+        return fact === '[template voor aanvraagformulieren studiekosten]' || fact === '[minister van Onderwijs, Cultuur en Wetenschap]'
+      }
+      return false
+    }
+
+    const actionLink = await lawReg.take(ssids['bestuursorgaan'], needLink, '<<aanvraagformulieren verstrekken voor subsidie studiekosten op de website van de DUO>>', bestuursorgaanFactresolver)
+
+    const availableActs = await lawReg.getPotentialActs(actionLink, ssids['belanghebbende'], [], [])
+
+    expect(availableActs).to.deep.equal([
+      {
+        'act': '<<indienen verzoek een besluit te nemen>>',
+        'link': 'link:discipl:ephemeral:ixZjrZnIHG8jqXH0mAnY9mm0irwaYWnfxu6qoXa9v4CvOfLEU+awWzWlT/mtmNwECbsOJJJKFeizbmytcpzVTw=='
+      },
+      {
+        'act': '<<leraar vraagt subsidie voor studiekosten aan>>',
+        'link': 'link:discipl:ephemeral:L3JFayfvN0gXkav9jJpAldPtECIEOoCxdAgziSvuEjvlTotQjXbL0XRc22xQQ4V7C82rjQEoyem5IqAE3r4Stw=='
+      }
+    ])
   }).timeout(5000)
 })
