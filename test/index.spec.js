@@ -1159,8 +1159,8 @@ describe('discipl-law-reg', () => {
               'operand': true
             },
             'create': ['[aanvraag]']
-            },
-            {
+          },
+          {
             'act': '<<aanvraag kinderbijslag toekennen>>',
             'actor': '[Minister]',
             'object': '[aanvraag]',
@@ -1168,9 +1168,9 @@ describe('discipl-law-reg', () => {
             'preconditions': {
               'expression': 'LITERAL',
               'operand': true
-            },
             }
-          ],
+          }
+        ],
         'facts': [
           {
             'fact': '[aanvraag]',
@@ -1188,7 +1188,7 @@ describe('discipl-law-reg', () => {
       })
 
       const actionLink = await lawReg.take(ssids['actor'], needLink, '<<kinderbijslag aanvragen>>', () => true)
-      const actionLink2  = await lawReg.take(ssids['actor'], actionLink, '<<kinderbijslag aanvragen>>', () => true)
+      const actionLink2 = await lawReg.take(ssids['actor'], actionLink, '<<kinderbijslag aanvragen>>', () => true)
       const possibleActs = (await lawReg.getAvailableActs(actionLink2, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
 
       expect(possibleActs).to.deep.equal([])
