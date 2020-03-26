@@ -1143,6 +1143,61 @@ describe('discipl-law-reg', () => {
       expect(potentialActs).to.deep.equal(['<<kinderbijslag aanvragen>>'])
     })
 
+    it('should be able to determine possible actions with multiple options for created facts', async () => {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel({
+        'model': 'Fictieve kinderbijslag',
+        'acts': [
+          {
+            'act': '<<kinderbijslag aanvragen>>',
+            'actor': '[ouder]',
+            'object': '[verzoek]',
+            'recipient': '[Minister]',
+            'preconditions': {
+              'expression': 'LITERAL',
+              'operand': true
+            },
+            'create': ['[aanvraag]']
+            },
+            {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[Minister]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]',
+            'preconditions': {
+              'expression': 'LITERAL',
+              'operand': true
+            },
+            }
+          ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': '<<>>'
+          }
+        ],
+        'duties': []
+      }, ['actor'], {})
+
+      const needLink = await core.claim(ssids['actor'], {
+        'need': {
+          'act': '<<kinderbijslag aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const actionLink = await lawReg.take(ssids['actor'], needLink, '<<kinderbijslag aanvragen>>', () => true)
+      const actionLink2  = await lawReg.take(ssids['actor'], actionLink, '<<kinderbijslag aanvragen>>', () => true)
+      const possibleActs = (await lawReg.getAvailableActs(actionLink2, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(possibleActs).to.deep.equal([])
+
+      const potentialActs = (await lawReg.getPotentialActs(actionLink2, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(potentialActs).to.deep.equal(['<<kinderbijslag aanvragen>>', '<<aanvraag kinderbijslag toekennen>>'])
+    })
+
     it('should not show an act as available when only a not prevents it', async () => {
       const core = lawReg.getAbundanceService().getCoreAPI()
 
