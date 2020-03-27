@@ -421,7 +421,7 @@ class LawReg {
     const result = context.factResolver(fact, context.flintItem, context.listNames || [], context.listIndices || [], creatingActions)
     const resolvedResult = await Promise.resolve(result)
 
-    if (!creatingActions.includes(resolvedResult)) {
+    if (!creatingActions.includes(resolvedResult) && typeof resolvedResult !== 'undefined') {
       throw new Error('Invalid choice for creating action: ' + resolvedResult)
     }
 
