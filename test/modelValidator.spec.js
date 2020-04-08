@@ -458,6 +458,28 @@ describe('The Flint Model validator', () => {
     ])
   })
 
+  it('should not yield undefined warning for literals', () => {
+    const model = JSON.stringify({
+      'acts': [],
+      'facts': [
+        {
+          'fact': '[factname]',
+          'function': {
+            'expression': 'LITERAL',
+            'operand': '5'
+          }
+        }
+      ],
+      'duties': []
+    })
+
+    const modelValidator = new ModelValidator(model)
+
+    const errors = modelValidator.getDiagnostics()
+
+    expect(errors).to.deep.equal([])
+  })
+
   it('should find json validation errors when invalid json', () => {
     const model = `{"acts":[{"act":"<<congratulate>>", {}}],"facts":[],"duties":[{"duty":"<being nice>","terminate":"<<congratulate>>"}]}`
 
