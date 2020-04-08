@@ -20,7 +20,7 @@ const scenarios = [
     name: 'ondernemer moet tegemoetkoming aan kunnen vragen',
     acts: [
       {
-        act: '<<aanvragen tegemoetkoming schade covid-19>>',
+        act: '<<TOGS: aanvragen tegemoetkoming schade covid-19>>',
         actor: 'onderneming'
       }
     ],
@@ -45,7 +45,7 @@ const scenarios = [
     name: 'horeca-ondernemer met vestiging op prive-adres moet tegemoetkoming aan kunnen vragen',
     acts: [
       {
-        act: '<<aanvragen tegemoetkoming schade covid-19>>',
+        act: '<<TOGS: aanvragen tegemoetkoming schade covid-19>>',
         actor: 'onderneming'
       }
     ],

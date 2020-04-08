@@ -1,7 +1,7 @@
 {
     "acts": [
         {
-            "act": "<<aanvragen tegemoetkoming schade covid-19>>",
+            "act": "<<TOGS: aanvragen tegemoetkoming schade covid-19>>",
             "actor": "[onderneming]",
             "action": "[aanvragen]",
             "object": "[verzoek]",
@@ -27,11 +27,35 @@
             "terminate": [],
             "sources": [],
             "explanation": ""
+        },
+        {
+            "act": "<<TOZO: aanvragen inkomensondersteuning>>",
+            "actor": "[ondernemer]",
+            "action": "[aanvragen]",
+            "object": "[verzoek]",
+            "recipient": "[gemeente]",
+            "preconditions": "",
+            "create": [],
+            "terminate": [],
+            "sources": [],
+            "explanation": ""
         }
     ],
     "facts": [
         {
             "fact": "[onderneming]",
+            "function": "[]",
+            "sources": [],
+            "explanation": ""
+        },
+        {
+            "fact": "[ondernemer]",
+            "function": "[]",
+            "sources": [],
+            "explanation": ""
+        },
+        {
+            "fact": "[gemeente]",
             "function": "[]",
             "sources": [],
             "explanation": ""
