@@ -3,7 +3,7 @@ import Util from './../src/util'
 import VW from './tegemoetkoming-schade-covid19.flint'
 import { LawReg } from '../src'
 import * as log from 'loglevel'
-log.getLogger('disciplLawReg').setLevel('debug')
+log.getLogger('disciplLawReg').setLevel('warn')
 const lawReg = new LawReg()
 
 const util = new Util(lawReg)
@@ -26,8 +26,9 @@ const scenarios = [
     ],
     facts: {
       '[verzoek]': true,
-      '[onderneming is voor 15 maart 2020 opgericht en ingeschreven in het KVK Handelsregister]': true,
-      '[bij onderneming werken maximaal 250 personen]': true,
+      '[datum van oprichting van onderneming]': 20180101,
+      '[datum van inschrijving van onderneming in het KVK Handelsregister]': 20180102,
+      '[aantal personen dat werkt bij onderneming]': 10,
       '[SBI-code hoofdactiviteit onderneming]': '47.19.1',
       '[onderneming heeft een fysieke vestiging in Nederland]': true,
       '[onderneming heeft ten minste één vestiging met een ander adres te hebben dan het privéadres van de eigenaar/eigenaren]': true,
@@ -50,8 +51,9 @@ const scenarios = [
     ],
     facts: {
       '[verzoek]': true,
-      '[onderneming is voor 15 maart 2020 opgericht en ingeschreven in het KVK Handelsregister]': true,
-      '[bij onderneming werken maximaal 250 personen]': true,
+      '[datum van oprichting van onderneming]': 20180101,
+      '[datum van inschrijving van onderneming in het KVK Handelsregister]': 20180102,
+      '[aantal personen dat werkt bij onderneming]': 10,
       '[SBI-code hoofdactiviteit onderneming]': '56.10.1',
       '[onderneming heeft een fysieke vestiging in Nederland]': true,
       '[onderneming heeft ten minste één vestiging met een ander adres te hebben dan het privéadres van de eigenaar/eigenaren]': false,
