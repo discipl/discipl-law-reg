@@ -34,7 +34,23 @@
             "action": "[aanvragen]",
             "object": "[verzoek]",
             "recipient": "[gemeente]",
-            "preconditions": "",
+            "preconditions": {
+                "expression": "AND",
+                "operands": [
+                    "[inkomen onder het sociaal minimum]",
+                    "[leeftijd tussen 18 en AOW-gerechtigd]",
+                    "[woonachtig in Nederland]",
+                    "[Nederlander of daarmee gelijkgesteld]",
+                    "[bedrijf is in Nederland gevestigd of de werkzaamheden van je bedrijf vinden hoofdzakelijk in Nederland plaats]",
+                    "[bedrijf is economisch actief, tenzij dit als gevolg van de coronacrisis niet mogelijk is]",
+                    "[voldoet aan wettelijke vereisten voor de uitoefening van je eigen bedrijf]",
+                    "[bezit van alle noodzakelijke vergunningen]",
+                    "[onderneming voor 17 maart 2020 om 18.45 uur gestart en ingeschreven bij KVK]",
+                    "[voldoet over 2019 aan het urencriterium]",
+                    "[Voor een directeur-grootaandeelhouder (DGA) geldt daarbij nog dat hij, alleen of samen met de andere in de BV werkzame directeuren, ten minste 50% van de aandelen bezit]",
+                    "[uitsluitingsgronden zoals genoemd in artikel 13 van de Participatiewet zijn niet op jou van toepassing]"
+                ]
+            },
             "create": [],
             "terminate": [],
             "sources": [],
