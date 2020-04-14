@@ -12,7 +12,7 @@ const actors = ['onderneming', 'RVO']
 
 const factFunctionSpec = {
   '[onderneming]': 'onderneming',
-  '[RVO]': 'RVO'
+  '[Minister van Economische Zaken en Klimaat]': 'RVO'
 }
 
 const scenarios = [
@@ -20,51 +20,74 @@ const scenarios = [
     name: 'ondernemer moet tegemoetkoming aan kunnen vragen',
     acts: [
       {
-        act: '<<TOGS: aanvragen tegemoetkoming schade covid-19>>',
+        act: '<<indienen aanvraag tegemoetkoming in de schade geleden door de maatregelen ter bestrijding van de verdere verspreiding van COVID-19>>',
         actor: 'onderneming'
       }
     ],
     facts: {
-      '[verzoek]': true,
+      '[verzoek tegemoetkoming in de schade geleden door de maatregelen ter bestrijding van de verdere verspreiding van COVID-19]': true,
       '[datum van oprichting van onderneming]': 20180101,
       '[datum van inschrijving van onderneming in het KVK Handelsregister]': 20180102,
-      '[aantal personen dat werkt bij onderneming]': 10,
+      '[aantal personen dat werkt bij onderneming blijkend uit de inschrijving in het handelsregister op 15 maart 2020]': 10,
       '[SBI-code hoofdactiviteit onderneming]': '47.19.1',
-      '[onderneming heeft een fysieke vestiging in Nederland]': true,
-      '[onderneming heeft ten minste één vestiging met een ander adres te hebben dan het privéadres van de eigenaar/eigenaren]': true,
-      '[bankrekeningnummer op dat op naam van de onderneming staat]': true,
+      '[in Nederland gevestigde onderneming als bedoeld in artikel 5 van de Handelsregisterwet 2007]': true,
+      '[onderneming heeft ten minste één vestiging met een ander adres dan het privéadres van de eigenaar of eigenaren van de onderneming]': true,
+      '[naam contactpersoon bij de gedupeerde onderneming]': true,
+      '[telefoonnummer contactpersoon bij de gedupeerde onderneming]': true,
+      '[e-,mailadres contactpersoon bij de gedupeerde onderneming]': true,
+      '[aanvraag omvat het postadres van de gedupeerde onderneming]': true,
+      '[aanvraag omvat het bezoekadres van de gedupeerde onderneming]': true,
+      '[aanvraag omvat het rekeningnummer dat op naam van de gedupeerde onderneming staat]': true,
       '[onderneming is niet failliet]': true,
       '[onderneming heeft geen verzoek tot verlening van surseance van betaling ingediend bij de rechtbank]': true,
-      '[verwacht omzetverlies in de periode van 16 maart 2020 t/m 15 juni 2020 van ten minste € 4.000]': true,
+      '[verklaring verwacht omzetverlies gedupeerde onderneming in de periode van 16 maart 2020 tot en met 15 juni 2020]': true,
+      '[verklaring over vaste lasten gedupeerde onderneming in de periode van 16 maart 2020 tot en met 15 juni 2020]': true,
+      '[gedupeerde onderneming verwacht in de periode van 16 maart 2020 tot en met 15 juni 2020 ten minste € 4000,- aan omzetverlies te lijden als gevolg van de maatregelen ter bestrijding van de verdere verspreiding van COVID-19]': true,
+      '[aanvraag omvat een verklaring waarin de gedupeerde onderneming aangeeft dat de onderneming in de periode van 16 maart 2020 tot en met 15 juni 2020 verwacht ten minste € 4000,– aan vaste lasten te hebben, ook na gebruik van andere door de overheid beschikbaar gestelde steunmaatregelen in het kader van de bestrijding van de verdere verspreiding van COVID-19]': true,
+      '[gedupeerde onderneming verwacht ten minste € 4.000,- aan vaste lasten te hebben, ook na gebruik van andere door de overheid beschikbaar gestelde steunmaatregelen in het kader van de bestrijding van de verdere verspreiding van COVID-19]': true,
       '[verwachte vaste lasten na gebruik van andere door de overheid beschikbaar gestelde steunmaatregelen in de periode van 16 maart 2020 t/m 15 juni 2020 ten minste € 4.000]': true,
-      '[ontvangen overheidssteuen over het huidige en de afgelopen 2 belastingjaren is niet meer dan € 200.000 aan overheidssteun]': true,
-      '[onderneming is geen overheidsbedrijf]': true
+      '[het totale bedrag aan de-minimissteun dat per lidstaat aan één onderneming wordt verleend, ligt hoger dan 200 000 EUR over een periode van drie belastingjaren]': true,
+      '[aanvraag omvat een verklaring dat de gedupeerde onderneming geen overheidsbedrijf is]': true,
+      '[aanvraag omvat een verklaring dat de gedupeerde onderneming op het moment van aanvraag voldoet aan de bij deze beleidsregel gestelde eisen]': true,
+      '[aanvraag aanvraag is ingediend in de periode van 27 maart 2020 tot en met 26 juni 2020]': true
     }
-  },
+  }
+  ,
   {
     name: 'horeca-ondernemer met vestiging op prive-adres moet tegemoetkoming aan kunnen vragen',
     acts: [
       {
-        act: '<<TOGS: aanvragen tegemoetkoming schade covid-19>>',
+        act: '<<indienen aanvraag tegemoetkoming in de schade geleden door de maatregelen ter bestrijding van de verdere verspreiding van COVID-19>>',
         actor: 'onderneming'
       }
     ],
     facts: {
-      '[verzoek]': true,
+            '[verzoek tegemoetkoming in de schade geleden door de maatregelen ter bestrijding van de verdere verspreiding van COVID-19]': true,
       '[datum van oprichting van onderneming]': 20180101,
       '[datum van inschrijving van onderneming in het KVK Handelsregister]': 20180102,
-      '[aantal personen dat werkt bij onderneming]': 10,
+      '[aantal personen dat werkt bij onderneming blijkend uit de inschrijving in het handelsregister op 15 maart 2020]': 10,
       '[SBI-code hoofdactiviteit onderneming]': '56.10.1',
-      '[onderneming heeft een fysieke vestiging in Nederland]': true,
-      '[onderneming heeft ten minste één vestiging met een ander adres te hebben dan het privéadres van de eigenaar/eigenaren]': false,
-      '[onderneming huurt, pacht of heeft in eigendom in elk geval één horecagelegenheid]': true,
-      '[bankrekeningnummer op dat op naam van de onderneming staat]': true,
+      '[in Nederland gevestigde onderneming als bedoeld in artikel 5 van de Handelsregisterwet 2007]': true,
+      '[onderneming heeft ten minste één vestiging met een ander adres dan het privéadres van de eigenaar of eigenaren van de onderneming]': false,
+      '[horecaonderneming die ten minste één horecagelegenheid huurt, pacht of in eigendom heeft]': true,
+      '[naam contactpersoon bij de gedupeerde onderneming]': true,
+      '[telefoonnummer contactpersoon bij de gedupeerde onderneming]': true,
+      '[e-,mailadres contactpersoon bij de gedupeerde onderneming]': true,
+      '[aanvraag omvat het postadres van de gedupeerde onderneming]': true,
+      '[aanvraag omvat het bezoekadres van de gedupeerde onderneming]': true,
+      '[aanvraag omvat het rekeningnummer dat op naam van de gedupeerde onderneming staat]': true,
       '[onderneming is niet failliet]': true,
       '[onderneming heeft geen verzoek tot verlening van surseance van betaling ingediend bij de rechtbank]': true,
-      '[verwacht omzetverlies in de periode van 16 maart 2020 t/m 15 juni 2020 van ten minste € 4.000]': true,
+      '[verklaring verwacht omzetverlies gedupeerde onderneming in de periode van 16 maart 2020 tot en met 15 juni 2020]': true,
+      '[verklaring over vaste lasten gedupeerde onderneming in de periode van 16 maart 2020 tot en met 15 juni 2020]': true,
+      '[gedupeerde onderneming verwacht in de periode van 16 maart 2020 tot en met 15 juni 2020 ten minste € 4000,- aan omzetverlies te lijden als gevolg van de maatregelen ter bestrijding van de verdere verspreiding van COVID-19]': true,
+      '[aanvraag omvat een verklaring waarin de gedupeerde onderneming aangeeft dat de onderneming in de periode van 16 maart 2020 tot en met 15 juni 2020 verwacht ten minste € 4000,– aan vaste lasten te hebben, ook na gebruik van andere door de overheid beschikbaar gestelde steunmaatregelen in het kader van de bestrijding van de verdere verspreiding van COVID-19]': true,
+      '[gedupeerde onderneming verwacht ten minste € 4.000,- aan vaste lasten te hebben, ook na gebruik van andere door de overheid beschikbaar gestelde steunmaatregelen in het kader van de bestrijding van de verdere verspreiding van COVID-19]': true,
       '[verwachte vaste lasten na gebruik van andere door de overheid beschikbaar gestelde steunmaatregelen in de periode van 16 maart 2020 t/m 15 juni 2020 ten minste € 4.000]': true,
-      '[ontvangen overheidssteuen over het huidige en de afgelopen 2 belastingjaren is niet meer dan € 200.000 aan overheidssteun]': true,
-      '[onderneming is geen overheidsbedrijf]': true
+      '[het totale bedrag aan de-minimissteun dat per lidstaat aan één onderneming wordt verleend, ligt hoger dan 200 000 EUR over een periode van drie belastingjaren]': true,
+      '[aanvraag omvat een verklaring dat de gedupeerde onderneming geen overheidsbedrijf is]': true,
+      '[aanvraag omvat een verklaring dat de gedupeerde onderneming op het moment van aanvraag voldoet aan de bij deze beleidsregel gestelde eisen]': true,
+      '[aanvraag aanvraag is ingediend in de periode van 27 maart 2020 tot en met 26 juni 2020]': true
     }
   }
 
