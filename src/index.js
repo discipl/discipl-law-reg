@@ -595,7 +595,7 @@ class LawReg {
    * @param {function} factResolver - Returns the value of a fact if known, and undefined otherwise
    * @returns {Promise<Array>}
    */
-  async getAvailableActsWithResolver(caseLink, ssid, factResolver) {
+  async getAvailableActsWithResolver (caseLink, ssid, factResolver) {
     const core = this.abundance.getCoreAPI()
 
     const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
@@ -604,7 +604,6 @@ class LawReg {
     const model = await core.get(modelLink, ssid)
 
     const acts = await model.data[DISCIPL_FLINT_MODEL].acts
-
 
     const defaultFactResolver = this._wrapWithDefault(factResolver, {})
 
@@ -630,7 +629,7 @@ class LawReg {
   }
 
   /**
-   * Returns the names of all acts that could be taken potentially if more facts are supplied, 
+   * Returns the names of all acts that could be taken potentially if more facts are supplied,
    * given the current caseLink, ssid of the actor and a list of facts and nonFacts
    *
    * @param {string} caseLink - Link to the case, last action that was taken
@@ -654,7 +653,7 @@ class LawReg {
   }
 
   /**
-   * Returns the names of all acts that could be taken potentially if more facts are supplied, 
+   * Returns the names of all acts that could be taken potentially if more facts are supplied,
    * given the current caseLink, ssid of the actor and a factResolver
    *
    * @param {string} caseLink - Link to the case, last action that was taken
