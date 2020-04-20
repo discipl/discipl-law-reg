@@ -48,12 +48,20 @@ class LawReg {
   async checkExpression (fact, ssid, context) {
     let hasUndefined = false
     const expr = fact.expression
+    if (context.explanation && fact.expression) {
+      context.explanation.expression = fact.expression
+    }
     switch (expr) {
       case 'OR':
         logger.debug('Switch case: OR')
         for (const op of fact.operands) {
-          const operandResult = await this.checkExpression(op, ssid, context)
+          const newContext = this._extendContextWithExplanation(context)
+          const operandResult = await this.checkExpression(op, ssid, newContext)
+
           if (operandResult === true) {
+            if (context.explanation) {
+              context.explanation.value = operandResult
+            }
             logger.debug('Resolved OR as true, because', op, 'is true')
             return true
           }
@@ -64,15 +72,22 @@ class LawReg {
         }
 
         const result = hasUndefined ? undefined : false
+        if (context.explanation) {
+          context.explanation.value = result
+        }
         logger.debug('Resolved OR as', result)
         return result
       case 'AND':
         logger.debug('Switch case: AND')
         for (const op of fact.operands) {
-          const operandResult = await this.checkExpression(op, ssid, context)
+          const newContext = this._extendContextWithExplanation(context)
+          const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in AND', operandResult, 'for operand', op)
           if (operandResult === false) {
             logger.debug('Resolved AND as false, because', op, 'is false')
+            if (context.explanation) {
+              context.explanation.value = operandResult
+            }
             return false
           }
 
@@ -82,11 +97,19 @@ class LawReg {
         }
         const andResult = hasUndefined ? undefined : true
         logger.debug('Resolved AND as', andResult)
+        if (context.explanation) {
+          context.explanation.value = andResult
+        }
         return andResult
       case 'NOT':
         logger.debug('Switch case: NOT')
-        const value = await this.checkExpression(fact.operand, ssid, context)
-        return typeof value === 'boolean' ? !value : undefined
+        const newContext = this._extendContextWithExplanation(context)
+        const value = await this.checkExpression(fact.operand, ssid, newContext)
+        const notResult = typeof value === 'boolean' ? !value : undefined
+        if (context.explanation) {
+          context.explanation.value = notResult
+        }
+        return notResult
       case 'LIST':
         logger.debug('Switch case: LIST')
         if (!context.listNames) {
@@ -99,7 +122,8 @@ class LawReg {
         const listContentResult = []
         while (true) {
           const op = fact.items
-          const operandResult = await this.checkExpression(op, ssid, context)
+          const newContext = this._extendContextWithExplanation(context)
+          const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in LIST', operandResult, 'for operand', op, 'and index', context.listIndices[listIndex])
 
           listContentResult.push(operandResult)
@@ -122,16 +146,23 @@ class LawReg {
 
         const listResult = hasUndefined ? undefined : (resultIndex !== 0 ? listContentResult : false)
         logger.debug('Resolved LIST as', listResult)
+        if (context.explanation) {
+          context.explanation.value = listResult
+        }
         return listResult
       case 'LESS_THAN':
         logger.debug('Switch case: LESS_THAN')
         let lastOperandResult
         for (const op of fact.operands) {
-          const operandResult = await this.checkExpression(op, ssid, context)
+          const newContext = this._extendContextWithExplanation(context)
+          const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
           if (typeof lastOperandResult !== 'undefined') {
             if (BigUtil.lessThan(operandResult, lastOperandResult)) {
               logger.debug('Resolved LESS_THAN as false, because', String(lastOperandResult), 'is not less than', String(operandResult))
+              if (context.explanation) {
+                context.explanation.value = false
+              }
               return false
             }
           }
@@ -144,16 +175,23 @@ class LawReg {
         }
         const lessThanResult = hasUndefined ? undefined : true
         logger.debug('Resolved LESS_THAN as', String(lessThanResult))
+        if (context.explanation) {
+          context.explanation.value = lessThanResult
+        }
         return lessThanResult
       case 'EQUAL':
         logger.debug('Switch case: EQUAL')
         let lastEqualOperandResult
         for (const op of fact.operands) {
-          const operandResult = await this.checkExpression(op, ssid, context)
+          const newContext = this._extendContextWithExplanation(context)
+          const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in EQUAL', String(operandResult), 'for operand', op)
           if (typeof lastEqualOperandResult !== 'undefined') {
             if (!BigUtil.equal(operandResult, lastEqualOperandResult)) {
               logger.debug('Resolved EQUAL as false, because', String(lastEqualOperandResult), 'does not equal', String(operandResult))
+              if (context.explanation) {
+                context.explanation.value = false
+              }
               return false
             }
           }
@@ -166,12 +204,16 @@ class LawReg {
         }
         const equalResult = hasUndefined ? undefined : true
         logger.debug('Resolved EQUAL as', String(equalResult))
+        if (context.explanation) {
+          context.explanation.value = equalResult
+        }
         return equalResult
       case 'SUM':
         logger.debug('Switch case: SUM')
         let sumResult = 0
         for (const op of fact.operands) {
-          const operandResult = await this.checkExpression(op, ssid, context)
+          const newContext = this._extendContextWithExplanation(context)
+          const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in SUM', String(operandResult), 'for operand', op)
           if (Array.isArray(operandResult)) {
             for (const arrayOp of operandResult) {
@@ -189,12 +231,16 @@ class LawReg {
         }
         const finalSumResult = hasUndefined ? undefined : sumResult
         logger.debug('Resolved SUM as', String(finalSumResult))
+        if (context.explanation) {
+          context.explanation.value = finalSumResult
+        }
         return finalSumResult
       case 'PRODUCT':
         logger.debug('Switch case: PRODUCT')
         let productResult = 1
         for (const op of fact.operands) {
-          const operandResult = await this.checkExpression(op, ssid, context)
+          const newContext = this._extendContextWithExplanation(context)
+          const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in PRODUCT', String(operandResult), 'for operand', op)
           if (Array.isArray(operandResult)) {
             for (const arrayOp of operandResult) {
@@ -212,12 +258,16 @@ class LawReg {
         }
         const finalProductResult = hasUndefined ? undefined : productResult
         logger.debug('Resolved PRODUCT as', String(finalProductResult))
+        if (context.explanation) {
+          context.explanation.value = finalProductResult
+        }
         return finalProductResult
       case 'MIN':
         logger.debug('Switch case: MIN')
         let minResult
         for (const op of fact.operands) {
-          const operandResult = await this.checkExpression(op, ssid, context)
+          const newContext = this._extendContextWithExplanation(context)
+          const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in MIN', operandResult, 'for operand', op)
           if (typeof minResult === 'undefined' || operandResult < minResult) {
             minResult = operandResult
@@ -229,12 +279,16 @@ class LawReg {
         }
         const finalMinResult = hasUndefined ? undefined : minResult
         logger.debug('Resolved MIN as', finalMinResult)
+        if (context.explanation) {
+          context.explanation.value = finalMinResult
+        }
         return finalMinResult
       case 'MAX':
         logger.debug('Switch case: MAX')
         let maxResult
         for (const op of fact.operands) {
-          const operandResult = await this.checkExpression(op, ssid, context)
+          const newContext = this._extendContextWithExplanation(context)
+          const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in MAX', operandResult, 'for operand', op)
           if (typeof maxResult === 'undefined' || operandResult > maxResult) {
             maxResult = operandResult
@@ -246,20 +300,49 @@ class LawReg {
         }
         const finalMaxResult = hasUndefined ? undefined : maxResult
         logger.debug('Resolved MAX as', finalMaxResult)
+        if (context.explanation) {
+          context.explanation.value = finalMaxResult
+        }
         return finalMaxResult
       case 'LITERAL':
         let literalValue = fact.operand
         if (typeof literalValue === 'number') {
           literalValue = Big(literalValue)
         }
+        if (context.explanation) {
+          context.explanation.value = literalValue
+        }
         return literalValue
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {
-          return this.checkFact(fact, ssid, context)
+          // Purposely do not alter context for explanation, this happens in checkFact
+          const result = await this.checkFact(fact, ssid, context)
+
+          if (context.explanation) {
+            context.explanation.value = result
+          }
+          return result
         }
 
         throw new Error('Unknown expression type')
+    }
+  }
+
+  _extendContextWithExplanation (context) {
+    if (context.explanation) {
+      const newExplanation = {}
+      if (Array.isArray(context.explanation.operandExplanations)) {
+        context.explanation.operandExplanations.push(newExplanation)
+      } else {
+        context.explanation.operandExplanations = [
+          newExplanation
+        ]
+      }
+
+      return { ...context, explanation: newExplanation }
+    } else {
+      return context
     }
   }
 
@@ -314,6 +397,14 @@ class LawReg {
   }
 
   /**
+   * @typedef {Object} Explanation
+   * @property {string|undefined} fact - Name of the fact under consideration
+   * @property {*} value - Value of this fact
+   * @property {string|undefined} expression - Expression type of this fact
+   * @property {Array<Explanation>|undefined} - operandExplanations Subexplanations of operands
+   */
+
+  /**
    * @typedef {Object} Context
    * @property {function} factResolver - Function to resolve facts if it cannot be done another way
    * @property {string} caseLink - Link to the current case
@@ -324,6 +415,7 @@ class LawReg {
    * @property {string} [flintItem] - The FLINT item (actor, object, etc) that is currently under consideration
    * @property {array} [listNames] - Names of (subsequent) lists that belong to the current context
    * @property {array} [listIndices] - Index of current location in the list
+   * @property {Explanation} [explanation] - Object containing nested explanations
    */
   /**
    * Checks a fact by doing
@@ -340,12 +432,30 @@ class LawReg {
   async checkFact (fact, ssid, context) {
     logger.debug('Checking fact', fact)
     const factLink = context.facts ? context.facts[fact] : null
+
     if (factLink) {
-      return this.checkFactLink(factLink, fact, ssid, context)
+      if (context.explanation) {
+        context.explanation.fact = fact
+      }
+      const newContext = this._extendContextWithExplanation(context)
+      const result = await this.checkFactLink(factLink, fact, ssid, newContext)
+
+      if (context.explanation) {
+        context.explanation.value = result
+      }
+      return result
     }
 
     if (typeof fact === 'string') {
-      return LawReg.checkFactWithResolver(fact, ssid, context)
+      if (context.explanation) {
+        context.explanation.fact = fact
+      }
+      const newContext = this._extendContextWithExplanation(context)
+      const result = await LawReg.checkFactWithResolver(fact, ssid, newContext)
+      if (context.explanation) {
+        context.explanation.value = result
+      }
+      return result
     } else {
       return this.checkExpression(fact, ssid, context)
     }
@@ -487,7 +597,9 @@ class LawReg {
 
     const invalidReasons = []
 
-    const checkedActor = await this.checkFact(actor, ssid, { ...context, 'facts': factReference, 'myself': true, 'flintItem': 'actor' })
+    const actorContext = this._extendContextWithExplanation(context)
+
+    const checkedActor = await this.checkFact(actor, ssid, { ...actorContext, 'facts': factReference, 'myself': true, 'flintItem': 'actor' })
 
     if (!checkedActor) {
       invalidReasons.push('actor')
@@ -503,7 +615,8 @@ class LawReg {
 
     logger.debug('Original object', object)
 
-    const checkedObject = await this.checkFact(object, ssid, { ...context, 'facts': factReference, 'flintItem': 'object' })
+    const objectContext = this._extendContextWithExplanation(context)
+    const checkedObject = await this.checkFact(object, ssid, { ...objectContext, 'facts': factReference, 'flintItem': 'object' })
 
     if (!checkedObject) {
       invalidReasons.push('object')
@@ -517,7 +630,8 @@ class LawReg {
 
     const recipient = actReference.data[DISCIPL_FLINT_ACT]['recipient']
     logger.debug('Original recipient', recipient)
-    const checkedInterestedParty = await this.checkFact(recipient, ssid, { ...context, 'facts': factReference, 'flintItem': 'recipient' })
+    const interestedPartyContext = this._extendContextWithExplanation(context)
+    const checkedInterestedParty = await this.checkFact(recipient, ssid, { ...interestedPartyContext, 'facts': factReference, 'flintItem': 'recipient' })
 
     if (!checkedInterestedParty) {
       invalidReasons.push('recipient')
@@ -533,7 +647,8 @@ class LawReg {
 
     logger.debug('Original preconditions', preconditions)
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
-    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...context, 'facts': factReference, 'flintItem': 'preconditions' }) : true
+    const preconditionContext = this._extendContextWithExplanation(context)
+    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference, 'flintItem': 'preconditions' }) : true
 
     if (!checkedPreConditions) {
       invalidReasons.push('preconditions')
@@ -853,20 +968,7 @@ class LawReg {
    * @returns {Promise<*>}
    */
   async take (ssid, caseLink, act, factResolver = () => false) {
-    const core = this.abundance.getCoreAPI()
-
-    const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
-    const modelLink = await this._getModelLink(firstCaseLink, ssid)
-
-    const model = await core.get(modelLink, ssid)
-
-    const actLink = await model.data[DISCIPL_FLINT_MODEL].acts.filter((actWithLink) => {
-      return Object.keys(actWithLink).includes(act)
-    }).map((actWithLink) => Object.values(actWithLink)[0])[0]
-
-    if (actLink == null) {
-      throw new Error('Act not found ' + act)
-    }
+    const { core, modelLink, actLink, firstCaseLink } = await this._getModelAndActFromCase(caseLink, ssid, act)
 
     const factsSupplied = {}
 
@@ -883,6 +985,42 @@ class LawReg {
     }
 
     throw new Error('Action ' + act + ' is not allowed')
+  }
+
+  /**
+   * Denotes a given act in the context of a case as taken, if it is possible. See {@link checkAction} is used to check the conditions
+   *
+   * @param {object} ssid - Identity of the actor
+   * @param {string} caseLink - Link to the case, which is either an earlier action, or a need
+   * @param {string} act - description of the act to be taken
+   * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
+   * @returns {Promise<*>}
+   */
+  async explain (ssid, caseLink, act, factResolver) {
+    const { modelLink, actLink } = await this._getModelAndActFromCase(caseLink, ssid, act)
+
+    const defaultFactResolver = this._wrapWithDefault(factResolver, {})
+    const context = { 'factResolver': defaultFactResolver, 'caseLink': caseLink, explanation: {} }
+    logger.debug('Checking if action is possible from perspective of', ssid.did)
+    const checkActionResult = await this.checkAction(modelLink, actLink, ssid, context, true)
+
+    context.explanation.value = checkActionResult.validity
+
+    return context.explanation
+  }
+
+  async _getModelAndActFromCase (caseLink, ssid, act) {
+    const core = this.abundance.getCoreAPI()
+    const firstCaseLink = await this._getFirstCaseLink(caseLink, ssid)
+    const modelLink = await this._getModelLink(firstCaseLink, ssid)
+    const model = await core.get(modelLink, ssid)
+    const actLink = await model.data[DISCIPL_FLINT_MODEL].acts.filter((actWithLink) => {
+      return Object.keys(actWithLink).includes(act)
+    }).map((actWithLink) => Object.values(actWithLink)[0])[0]
+    if (actLink == null) {
+      throw new Error('Act not found ' + act)
+    }
+    return { core, modelLink, actLink, firstCaseLink }
   }
 
   /**

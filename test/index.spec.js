@@ -9,7 +9,7 @@ import Util from '../src/util'
 import awb from './flint-example-awb'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
-log.getLogger('disciplLawReg').setLevel('warn')
+log.getLogger('disciplLawReg').setLevel('debug')
 
 const lawReg = new LawReg()
 
@@ -1707,6 +1707,63 @@ describe('discipl-law-reg', () => {
       expect(factResolver.callCount).to.equal(1)
       expect(factResolver.args[0][0]).to.equal('[verwelkomst]')
       expect(factResolver.args[0][1]).to.equal('object')
+    })
+
+    it('should be able to give a positive explanation', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<explain everything>>',
+            'actor': '[person]',
+            'object': '[explanation]',
+            'recipient': '[everyone]',
+            'preconditions': '[banana eater]',
+            'create': []
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[banana eater]',
+            'function': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'LITERAL',
+                  'value': 'banana'
+                },
+                '[favourite meal]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const util = new Util(lawReg)
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      let { ssids, modelLink } = await util.setupModel(model, ['person'], { 'person': '[person]' })
+
+      let needLink = await core.claim(ssids['person'], {
+        'need': {
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factSpec = {
+        '[favourite meal]': 'banana',
+        '[everyone]': true,
+        '[explanation]': true
+      }
+      const factResolver = (fact, _item, _listNames, _listIndices, creatingOptions) => {
+        if (factSpec.hasOwnProperty(fact)) {
+          return factSpec[fact]
+        }
+      }
+
+      const explanation = await lawReg.explain(ssids['person'], needLink, '<<explain everything>>', factResolver)
+
+      expect(explanation).to.deep.equal({})
     })
   })
 })
