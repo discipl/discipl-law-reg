@@ -59,10 +59,8 @@ class LawReg {
           const operandResult = await this.checkExpression(op, ssid, newContext)
 
           if (operandResult === true) {
-            if (context.explanation) {
-              context.explanation.value = operandResult
-            }
             logger.debug('Resolved OR as true, because', op, 'is true')
+            this._extendContextExplanationWithResult(context, true)
             return true
           }
 
@@ -72,9 +70,7 @@ class LawReg {
         }
 
         const result = hasUndefined ? undefined : false
-        if (context.explanation) {
-          context.explanation.value = result
-        }
+        this._extendContextExplanationWithResult(context, result)
         logger.debug('Resolved OR as', result)
         return result
       case 'AND':
@@ -85,9 +81,7 @@ class LawReg {
           logger.debug('OperandResult in AND', operandResult, 'for operand', op)
           if (operandResult === false) {
             logger.debug('Resolved AND as false, because', op, 'is false')
-            if (context.explanation) {
-              context.explanation.value = operandResult
-            }
+            this._extendContextExplanationWithResult(context, false)
             return false
           }
 
@@ -97,18 +91,14 @@ class LawReg {
         }
         const andResult = hasUndefined ? undefined : true
         logger.debug('Resolved AND as', andResult)
-        if (context.explanation) {
-          context.explanation.value = andResult
-        }
+        this._extendContextExplanationWithResult(context, andResult)
         return andResult
       case 'NOT':
         logger.debug('Switch case: NOT')
         const newContext = this._extendContextWithExplanation(context)
         const value = await this.checkExpression(fact.operand, ssid, newContext)
         const notResult = typeof value === 'boolean' ? !value : undefined
-        if (context.explanation) {
-          context.explanation.value = notResult
-        }
+        this._extendContextExplanationWithResult(context, notResult)
         return notResult
       case 'LIST':
         logger.debug('Switch case: LIST')
@@ -146,9 +136,7 @@ class LawReg {
 
         const listResult = hasUndefined ? undefined : (resultIndex !== 0 ? listContentResult : false)
         logger.debug('Resolved LIST as', listResult)
-        if (context.explanation) {
-          context.explanation.value = listResult
-        }
+        this._extendContextExplanationWithResult(context, listResult)
         return listResult
       case 'LESS_THAN':
         logger.debug('Switch case: LESS_THAN')
@@ -160,9 +148,7 @@ class LawReg {
           if (typeof lastOperandResult !== 'undefined') {
             if (BigUtil.lessThan(operandResult, lastOperandResult)) {
               logger.debug('Resolved LESS_THAN as false, because', String(lastOperandResult), 'is not less than', String(operandResult))
-              if (context.explanation) {
-                context.explanation.value = false
-              }
+              this._extendContextExplanationWithResult(context, false)
               return false
             }
           }
@@ -175,9 +161,7 @@ class LawReg {
         }
         const lessThanResult = hasUndefined ? undefined : true
         logger.debug('Resolved LESS_THAN as', String(lessThanResult))
-        if (context.explanation) {
-          context.explanation.value = lessThanResult
-        }
+        this._extendContextExplanationWithResult(context, lessThanResult)
         return lessThanResult
       case 'EQUAL':
         logger.debug('Switch case: EQUAL')
@@ -189,9 +173,7 @@ class LawReg {
           if (typeof lastEqualOperandResult !== 'undefined') {
             if (!BigUtil.equal(operandResult, lastEqualOperandResult)) {
               logger.debug('Resolved EQUAL as false, because', String(lastEqualOperandResult), 'does not equal', String(operandResult))
-              if (context.explanation) {
-                context.explanation.value = false
-              }
+              this._extendContextExplanationWithResult(context, false)
               return false
             }
           }
@@ -204,9 +186,7 @@ class LawReg {
         }
         const equalResult = hasUndefined ? undefined : true
         logger.debug('Resolved EQUAL as', String(equalResult))
-        if (context.explanation) {
-          context.explanation.value = equalResult
-        }
+        this._extendContextExplanationWithResult(context, equalResult)
         return equalResult
       case 'SUM':
         logger.debug('Switch case: SUM')
@@ -231,9 +211,7 @@ class LawReg {
         }
         const finalSumResult = hasUndefined ? undefined : sumResult
         logger.debug('Resolved SUM as', String(finalSumResult))
-        if (context.explanation) {
-          context.explanation.value = finalSumResult
-        }
+        this._extendContextExplanationWithResult(context, finalSumResult)
         return finalSumResult
       case 'PRODUCT':
         logger.debug('Switch case: PRODUCT')
@@ -258,9 +236,7 @@ class LawReg {
         }
         const finalProductResult = hasUndefined ? undefined : productResult
         logger.debug('Resolved PRODUCT as', String(finalProductResult))
-        if (context.explanation) {
-          context.explanation.value = finalProductResult
-        }
+        this._extendContextExplanationWithResult(context, finalProductResult)
         return finalProductResult
       case 'MIN':
         logger.debug('Switch case: MIN')
@@ -278,10 +254,8 @@ class LawReg {
           }
         }
         const finalMinResult = hasUndefined ? undefined : minResult
-        logger.debug('Resolved MIN as', finalMinResult)
-        if (context.explanation) {
-          context.explanation.value = finalMinResult
-        }
+        logger.debug('Resolved MIN as', String(finalMinResult))
+        this._extendContextExplanationWithResult(context, finalMinResult)
         return finalMinResult
       case 'MAX':
         logger.debug('Switch case: MAX')
@@ -300,18 +274,16 @@ class LawReg {
         }
         const finalMaxResult = hasUndefined ? undefined : maxResult
         logger.debug('Resolved MAX as', finalMaxResult)
-        if (context.explanation) {
-          context.explanation.value = finalMaxResult
-        }
+        this._extendContextExplanationWithResult(context, finalMaxResult)
         return finalMaxResult
       case 'LITERAL':
-        let literalValue = fact.operand
+        logger.debug('Switch case: LITERAL')
+        let literalValue = fact.value
         if (typeof literalValue === 'number') {
           literalValue = Big(literalValue)
         }
-        if (context.explanation) {
-          context.explanation.value = literalValue
-        }
+
+        this._extendContextExplanationWithResult(context, literalValue)
         return literalValue
       default:
         logger.debug('Switch case: default')
@@ -319,9 +291,7 @@ class LawReg {
           // Purposely do not alter context for explanation, this happens in checkFact
           const result = await this.checkFact(fact, ssid, context)
 
-          if (context.explanation) {
-            context.explanation.value = result
-          }
+          this._extendContextExplanationWithResult(context, result)
           return result
         }
 
@@ -378,11 +348,13 @@ class LawReg {
     if (functionRef === '<<>>') {
       const result = await this.checkCreatedFact(fact, ssid, context)
       logger.debug('Resolving fact', fact, 'as', result, 'by determining earlier creation')
+      this._extendContextExplanationWithResult(context, result)
       return result
     }
 
     if (functionRef === DISCIPL_ANYONE_MARKER) {
       logger.debug('Resolving fact', fact, 'as true, because anyone can be this')
+      this._extendContextExplanationWithResult(context, true)
       return true
     }
 
@@ -390,10 +362,13 @@ class LawReg {
     if (did != null) {
       const result = ssid.did === did || !context.myself
       logger.debug('Resolving fact', fact, 'as', result, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
+      this._extendContextExplanationWithResult(context, result)
       return result
     }
 
-    return this.checkFact(functionRef, ssid, { ...context, previousFact: fact })
+    const result = await this.checkFact(functionRef, ssid, { ...context, previousFact: fact })
+    this._extendContextExplanationWithResult(context, result)
+    return result
   }
 
   /**
@@ -440,9 +415,7 @@ class LawReg {
       const newContext = this._extendContextWithExplanation(context)
       const result = await this.checkFactLink(factLink, fact, ssid, newContext)
 
-      if (context.explanation) {
-        context.explanation.value = result
-      }
+      this._extendContextExplanationWithResult(context, result)
       return result
     }
 
@@ -451,13 +424,24 @@ class LawReg {
         context.explanation.fact = fact
       }
       const newContext = this._extendContextWithExplanation(context)
-      const result = await LawReg.checkFactWithResolver(fact, ssid, newContext)
-      if (context.explanation) {
-        context.explanation.value = result
-      }
+      const result = await this.checkFactWithResolver(fact, ssid, newContext)
+      this._extendContextExplanationWithResult(context, result)
       return result
     } else {
-      return this.checkExpression(fact, ssid, context)
+      const result = await this.checkExpression(fact, ssid, context)
+      this._extendContextExplanationWithResult(context, result)
+
+      return result
+    }
+  }
+
+  _extendContextExplanationWithResult (context, result) {
+    if (context.explanation && context.explanation.value == null) {
+      if (typeof result === 'object') {
+        context.explanation.value = String(result)
+      } else {
+        context.explanation.value = result
+      }
     }
   }
 
@@ -471,7 +455,7 @@ class LawReg {
    * @param {Context} context - context of the checking
    * @returns {boolean}
    */
-  static async checkFactWithResolver (fact, ssid, context) {
+  async checkFactWithResolver (fact, ssid, context) {
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
     const listNames = context.listNames || []
     const listIndices = context.listIndices || []
@@ -482,6 +466,7 @@ class LawReg {
     }
 
     logger.debug('Resolving fact', fact, 'as', String(resolvedResult), 'via', factToCheck, 'by factresolver')
+    this._extendContextExplanationWithResult(context, resolvedResult)
     return resolvedResult
   }
 
@@ -1003,8 +988,7 @@ class LawReg {
     const context = { 'factResolver': defaultFactResolver, 'caseLink': caseLink, explanation: {} }
     logger.debug('Checking if action is possible from perspective of', ssid.did)
     const checkActionResult = await this.checkAction(modelLink, actLink, ssid, context, true)
-
-    context.explanation.value = checkActionResult.validity
+    context.explanation.value = checkActionResult.valid
 
     return context.explanation
   }
