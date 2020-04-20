@@ -278,7 +278,7 @@ class LawReg {
         return finalMaxResult
       case 'LITERAL':
         logger.debug('Switch case: LITERAL')
-        let literalValue = fact.value
+        let literalValue = fact.operand
         if (typeof literalValue === 'number') {
           literalValue = Big(literalValue)
         }

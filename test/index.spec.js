@@ -806,7 +806,7 @@ describe('discipl-law-reg', () => {
             'operands': [
               {
                 'expression': 'LITERAL',
-                'value': 1.15
+                'operand': 1.15
               }, '[400]', '[100]'
             ]
           },
@@ -1769,7 +1769,7 @@ describe('discipl-law-reg', () => {
         'operands': [
           {
             'expression': 'LITERAL',
-            'value': 'banana'
+            'operand': 'banana'
           },
           '[favourite meal]'
         ]
@@ -1811,11 +1811,11 @@ describe('discipl-law-reg', () => {
         'operands': [
           {
             'expression': 'LITERAL',
-            'value': 5
+            'operand': 5
           },
           {
             'expression': 'LITERAL',
-            'value': 6
+            'operand': 6
           }
         ]
       },
@@ -1850,11 +1850,11 @@ describe('discipl-law-reg', () => {
         'operands': [
           {
             'expression': 'LITERAL',
-            'value': 5
+            'operand': 5
           },
           {
             'expression': 'LITERAL',
-            'value': 6
+            'operand': 6
           }
         ]
       },
