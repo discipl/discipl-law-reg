@@ -9,7 +9,7 @@ import Util from '../src/util'
 import awb from './flint-example-awb'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
-log.getLogger('disciplLawReg').setLevel('warn')
+log.getLogger('disciplLawReg').setLevel('debug')
 
 const lawReg = new LawReg()
 
@@ -1707,6 +1707,180 @@ describe('discipl-law-reg', () => {
       expect(factResolver.callCount).to.equal(1)
       expect(factResolver.args[0][0]).to.equal('[verwelkomst]')
       expect(factResolver.args[0][1]).to.equal('object')
+    })
+
+    const explainExpression = async (expression, factSpec, expectedResult) => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<explain something>>',
+            'actor': '[person]',
+            'object': '[explanation]',
+            'recipient': '[everyone]',
+            'preconditions': '[expression]',
+            'create': []
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[expression]',
+            'function': expression
+          },
+          {
+            'fact': '[person]',
+            'function': '[]'
+          }
+        ],
+        'duties': []
+      }
+
+      const util = new Util(lawReg)
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      let { ssids, modelLink } = await util.setupModel(model, ['person'], { '[person]': 'person' })
+
+      let needLink = await core.claim(ssids['person'], {
+        'need': {
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact, _item, _listNames, _listIndices, creatingOptions) => {
+        if (factSpec.hasOwnProperty(fact)) {
+          return factSpec[fact]
+        }
+
+        if (['[everyone]', '[explanation]'].includes(fact)) {
+          return true
+        }
+      }
+
+      const explanation = await lawReg.explain(ssids['person'], needLink, '<<explain something>>', factResolver)
+
+      const expressionExplanation = explanation.operandExplanations.filter(explanation => explanation.fact === '[expression]')[0]
+
+      // console.log(JSON.stringify(expressionExplanation, null, 2))
+      expect(expressionExplanation).to.deep.equal(expectedResult)
+    }
+
+    it('should be able to explain an expression', async () => {
+      await explainExpression({
+        'expression': 'EQUAL',
+        'operands': [
+          {
+            'expression': 'LITERAL',
+            'operand': 'banana'
+          },
+          '[favourite meal]'
+        ]
+      },
+      {
+        '[favourite meal]': 'banana'
+      },
+      {
+        'fact': '[expression]',
+        'operandExplanations': [
+          {
+            'expression': 'EQUAL',
+            'operandExplanations': [
+              {
+                'expression': 'LITERAL',
+                'value': 'banana'
+              },
+              {
+                'fact': '[favourite meal]',
+                'operandExplanations': [
+                  {
+                    'value': 'banana'
+                  }
+                ],
+                'value': 'banana'
+              }
+            ],
+            'value': true
+          }
+        ],
+        'value': true
+      }
+      )
+    })
+
+    it('should be able to explain a less-than expression', async () => {
+      await explainExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          {
+            'expression': 'LITERAL',
+            'operand': 5
+          },
+          {
+            'expression': 'LITERAL',
+            'operand': 6
+          }
+        ]
+      },
+      {
+      },
+      {
+        'fact': '[expression]',
+        'operandExplanations': [
+          {
+            'expression': 'LESS_THAN',
+            'operandExplanations': [
+              {
+                'expression': 'LITERAL',
+                'value': '5'
+              },
+              {
+                'expression': 'LITERAL',
+                'value': '6'
+              }
+            ],
+            'value': true
+          }
+        ],
+        'value': true
+      }
+      )
+    })
+
+    it('should be able to explain a min expression', async () => {
+      await explainExpression({
+        'expression': 'MIN',
+        'operands': [
+          {
+            'expression': 'LITERAL',
+            'operand': 5
+          },
+          {
+            'expression': 'LITERAL',
+            'operand': 6
+          }
+        ]
+      },
+      {
+      },
+      {
+        'fact': '[expression]',
+        'operandExplanations': [
+          {
+            'expression': 'MIN',
+            'operandExplanations': [
+              {
+                'expression': 'LITERAL',
+                'value': '5'
+              },
+              {
+                'expression': 'LITERAL',
+                'value': '6'
+              }
+            ],
+            'value': '5'
+          }
+        ],
+        'value': '5'
+      }
+      )
     })
   })
 })
