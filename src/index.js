@@ -387,7 +387,6 @@ class LawReg {
    * @property {string} [previousFact] - last fact that was considered in the context
    * @property {boolean} [myself] - `IS:` constructions will be resolved iff it concerns the person themselves
    * @property {object} [factReference] - Map from fact names to fact links in a published FLINT model
-   * @property {string} [flintItem] - The FLINT item (actor, object, etc) that is currently under consideration
    * @property {array} [listNames] - Names of (subsequent) lists that belong to the current context
    * @property {array} [listIndices] - Index of current location in the list
    * @property {Explanation} [explanation] - Object containing nested explanations
@@ -459,7 +458,7 @@ class LawReg {
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
     const listNames = context.listNames || []
     const listIndices = context.listIndices || []
-    const result = context.factResolver(factToCheck, context.flintItem, listNames, listIndices)
+    const result = context.factResolver(factToCheck, listNames, listIndices)
     let resolvedResult = await Promise.resolve(result)
     if (typeof resolvedResult === 'number') {
       resolvedResult = Big(resolvedResult)
@@ -513,7 +512,7 @@ class LawReg {
       return false
     }
 
-    const result = context.factResolver(fact, context.flintItem, context.listNames || [], context.listIndices || [], creatingActions)
+    const result = context.factResolver(fact, context.listNames || [], context.listIndices || [], creatingActions)
     const resolvedResult = await Promise.resolve(result)
 
     if (!creatingActions.includes(resolvedResult) && typeof resolvedResult !== 'undefined') {
@@ -584,7 +583,7 @@ class LawReg {
 
     const actorContext = this._extendContextWithExplanation(context)
 
-    const checkedActor = await this.checkFact(actor, ssid, { ...actorContext, 'facts': factReference, 'myself': true, 'flintItem': 'actor' })
+    const checkedActor = await this.checkFact(actor, ssid, { ...actorContext, 'facts': factReference, 'myself': true })
 
     if (!checkedActor) {
       invalidReasons.push('actor')
@@ -601,7 +600,7 @@ class LawReg {
     logger.debug('Original object', object)
 
     const objectContext = this._extendContextWithExplanation(context)
-    const checkedObject = await this.checkFact(object, ssid, { ...objectContext, 'facts': factReference, 'flintItem': 'object' })
+    const checkedObject = await this.checkFact(object, ssid, { ...objectContext, 'facts': factReference })
 
     if (!checkedObject) {
       invalidReasons.push('object')
@@ -616,7 +615,7 @@ class LawReg {
     const recipient = actReference.data[DISCIPL_FLINT_ACT]['recipient']
     logger.debug('Original recipient', recipient)
     const interestedPartyContext = this._extendContextWithExplanation(context)
-    const checkedInterestedParty = await this.checkFact(recipient, ssid, { ...interestedPartyContext, 'facts': factReference, 'flintItem': 'recipient' })
+    const checkedInterestedParty = await this.checkFact(recipient, ssid, { ...interestedPartyContext, 'facts': factReference })
 
     if (!checkedInterestedParty) {
       invalidReasons.push('recipient')
@@ -633,7 +632,7 @@ class LawReg {
     logger.debug('Original preconditions', preconditions)
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
     const preconditionContext = this._extendContextWithExplanation(context)
-    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference, 'flintItem': 'preconditions' }) : true
+    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference }) : true
 
     if (!checkedPreConditions) {
       invalidReasons.push('preconditions')
@@ -739,7 +738,7 @@ class LawReg {
    * @returns {Promise<Array>}
    */
   async getPotentialActs (caseLink, ssid, facts = [], nonFacts = []) {
-    const factResolver = (fact, flintItem) => {
+    const factResolver = (fact) => {
       if (facts.includes(fact)) {
         return true
       }
@@ -859,7 +858,7 @@ class LawReg {
 
         if (dutyHolder != null) {
           logger.debug('Checking duty-holder')
-          const checkActor = await this.checkFact(dutyHolder, ssid, { 'facts': factReference, 'myself': true, 'flintItem': 'actor', 'caseLink': caseLink })
+          const checkActor = await this.checkFact(dutyHolder, ssid, { 'facts': factReference, 'myself': true, 'caseLink': caseLink })
           if (checkActor) {
             logger.info('Duty', duty, 'is held by', dutyHolder)
             ownedDuties.push({
@@ -1015,7 +1014,7 @@ class LawReg {
    * @private
    */
   _wrapWithDefault (factResolver, factsSupplied) {
-    return async (fact, flintItem, listNames, listIndices, possibleCreatingActions) => {
+    return async (fact, listNames, listIndices, possibleCreatingActions) => {
       let factsObject = factsSupplied
       for (let i = 0; i < listNames.length; i++) {
         const listName = listNames[i]
@@ -1030,7 +1029,7 @@ class LawReg {
       if (possibleCreatingActions && possibleCreatingActions.length === 1) {
         maybeCreatingAction = possibleCreatingActions[0]
       }
-      const result = factsObject[fact] || maybeCreatingAction || factResolver(fact, flintItem, listNames, listIndices, possibleCreatingActions)
+      const result = factsObject[fact] || maybeCreatingAction || factResolver(fact, listNames, listIndices, possibleCreatingActions)
       factsObject[fact] = await result
       return result
     }
