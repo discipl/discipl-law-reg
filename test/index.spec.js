@@ -1012,7 +1012,7 @@ describe('discipl-law-reg', () => {
         'facts': [
           { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' },
           { 'fact': '[overheid]', 'function': '[]', 'reference': '' },
-          { 'fact': '[verwelkomst]', 'function': '<<>>', 'reference': '' }
+          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE' }, 'reference': '' }
         ],
         'duties': [
         ]
@@ -1174,7 +1174,7 @@ describe('discipl-law-reg', () => {
         'facts': [
           {
             'fact': '[aanvraag]',
-            'function': '<<>>'
+            'function': { 'expression': 'CREATE' }
           }
         ],
         'duties': []
@@ -1222,7 +1222,7 @@ describe('discipl-law-reg', () => {
         'facts': [
           { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' },
           { 'fact': '[overheid]', 'function': '[]', 'reference': '' },
-          { 'fact': '[verwelkomst]', 'function': '<<>>', 'reference': '' }
+          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE' }, 'reference': '' }
         ],
         'duties': [
         ]
@@ -1545,7 +1545,7 @@ describe('discipl-law-reg', () => {
         'facts': [
           {
             'fact': '[cookie]',
-            'function': '<<>>'
+            'function': { 'expression': 'CREATE' }
           }
         ],
         'duties': []
