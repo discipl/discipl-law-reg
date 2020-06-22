@@ -481,30 +481,29 @@ class LawReg {
   async checkCreatedFact (fact, ssid, context) {
     logger.debug('Checking if', fact, 'was created')
     const core = this.abundance.getCoreAPI()
-    let actionLink = context.caseLink
+    let caseLink = context.caseLink
 
     const possibleCreatingActions = []
     const terminatedCreatingActions = []
 
-    while (actionLink != null) {
-      const lastAction = await core.get(actionLink, ssid)
+    while (caseLink != null) {
+      const caseData = await core.get(caseLink, ssid)
+      const lastTakenAction = caseData.data[DISCIPL_FLINT_ACT_TAKEN]
 
-      const actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
-
-      if (actLink != null) {
-        const act = await core.get(actLink, ssid)
+      if (lastTakenAction != null) {
+        const act = await core.get(lastTakenAction, ssid)
         logger.debug('Found earlier act', act)
 
         if (act.data[DISCIPL_FLINT_ACT].create != null && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
-          possibleCreatingActions.push(actionLink)
+          possibleCreatingActions.push(caseLink)
         }
 
         if (act.data[DISCIPL_FLINT_ACT].terminate != null && act.data[DISCIPL_FLINT_ACT].terminate.includes(fact)) {
-          const terminatedLink = lastAction.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
+          const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
           terminatedCreatingActions.push(terminatedLink)
         }
       }
-      actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
+      caseLink = caseData.data[DISCIPL_FLINT_PREVIOUS_CASE]
     }
 
     const creatingActions = possibleCreatingActions.filter((maybeTerminatedLink) => !terminatedCreatingActions.includes(maybeTerminatedLink))

@@ -898,6 +898,65 @@ describe('discipl-law-reg', () => {
       expect(errorMessage).to.equal('Unknown expression type')
     })
 
+    it('should reject an action when a fact defined with a "CREATE" epxression is supplied', async () => {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel({
+        'model': 'Fictieve kinderbijslag',
+        'acts': [
+          {
+            'act': '<<kinderbijslag aanvragen>>',
+            'actor': '[ouder]',
+            'object': '[verzoek]',
+            'recipient': '[Minister]',
+            'create': []
+          },
+          {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[Minister]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]',
+            'preconditions': {
+              'expression': 'LITERAL',
+              'operand': true
+            }
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': { 'expression': 'CREATE' }
+          }
+        ],
+        'duties': []
+      }, ['ouder', 'minister'], { '[aanvraag]': 'supplied' })
+
+      const needLink = await core.claim(ssids['ouder'], {
+        'need': {
+          'act': '<<kinderbijslag aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+      const actionLink = await lawReg.take(ssids['ouder'], needLink, '<<kinderbijslag aanvragen>>', () => true)
+      const action = await core.get(actionLink, ssids['ouder'])
+      const needLink2 = await core.claim(ssids['minister'], {
+        'need': {
+          'act': '<<aanvraag kinderbijslag toekennen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        },
+        ...action.data
+      })
+
+      let errorMessage = ''
+      try {
+        await lawReg.take(ssids['minister'], needLink2, '<<aanvraag kinderbijslag toekennen>>', () => true)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
+    })
+
     it('should be able to determine active duties being terminated', async () => {
       const core = lawReg.getAbundanceService().getCoreAPI()
 
