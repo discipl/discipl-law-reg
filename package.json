@@ -12,7 +12,7 @@
     "/dist"
   ],
   "scripts": {
-    "prepack": "babel src/ --out-dir dist",
+    "prepack": "NODE_ENV=production babel src/ --out-dir dist",
     "test": "nyc --reporter=html --reporter=text ./node_modules/.bin/mocha --require @babel/register ./test/**/*.spec.js --timeout 10s",
     "lint": "./node_modules/standard/bin/cmd.js --parser babel-eslint",
     "lint-fix": "./node_modules/standard/bin/cmd.js --parser babel-eslint --fix",
