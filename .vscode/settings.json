@@ -1,6 +1,0 @@
-{
-    "editor.codeActionsOnSave": {
-        "source.fixAll.tslint": false,
-        "source.fixAll.eslint": false
-    },
-}
