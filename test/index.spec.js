@@ -1613,9 +1613,9 @@ describe('discipl-law-reg', () => {
       const util = new Util(lawReg)
       const core = lawReg.getAbundanceService().getCoreAPI()
 
-      let { ssids, modelLink } = await util.setupModel(model, ['baker'], { 'baker': '[baker]' })
+      const { ssids, modelLink } = await util.setupModel(model, ['baker'], { 'baker': '[baker]' })
 
-      let needLink = await core.claim(ssids['baker'], {
+      const needLink = await core.claim(ssids['baker'], {
         'need': {
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }
@@ -1630,9 +1630,9 @@ describe('discipl-law-reg', () => {
         return creatingOptions[1]
       }
 
-      let firstBakeAction = await lawReg.take(ssids['baker'], needLink, '<<bake cookie>>', factResolver)
-      let secondBakeAction = await lawReg.take(ssids['baker'], firstBakeAction, '<<bake cookie>>', factResolver)
-      let eatAction = await lawReg.take(ssids['baker'], secondBakeAction, '<<eat cookie>>', factResolver)
+      const firstBakeAction = await lawReg.take(ssids['baker'], needLink, '<<bake cookie>>', factResolver)
+      const secondBakeAction = await lawReg.take(ssids['baker'], firstBakeAction, '<<bake cookie>>', factResolver)
+      const eatAction = await lawReg.take(ssids['baker'], secondBakeAction, '<<eat cookie>>', factResolver)
 
       const eatDetails = await core.get(eatAction, ssids['baker'])
 
@@ -1642,7 +1642,7 @@ describe('discipl-law-reg', () => {
         '[cookie]': firstBakeAction
       })
 
-      let eatAction2 = await lawReg.take(ssids['baker'], eatAction, '<<eat cookie>>', factResolver)
+      const eatAction2 = await lawReg.take(ssids['baker'], eatAction, '<<eat cookie>>', factResolver)
 
       const eatDetails2 = await core.get(eatAction2, ssids['baker'])
 
@@ -1795,9 +1795,9 @@ describe('discipl-law-reg', () => {
       const util = new Util(lawReg)
       const core = lawReg.getAbundanceService().getCoreAPI()
 
-      let { ssids, modelLink } = await util.setupModel(model, ['person'], { '[person]': 'person' })
+      const { ssids, modelLink } = await util.setupModel(model, ['person'], { '[person]': 'person' })
 
-      let needLink = await core.claim(ssids['person'], {
+      const needLink = await core.claim(ssids['person'], {
         'need': {
           'DISCIPL_FLINT_MODEL_LINK': modelLink
         }

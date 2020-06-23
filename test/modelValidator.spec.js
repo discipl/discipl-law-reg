@@ -67,7 +67,7 @@ describe('The Flint Model validator', () => {
   it('should find errors with improperly named acts, facts, duties', async () => {
     const model = JSON.stringify({
       'acts': [{ 'act': 'test' }, { 'act': '<<test' }, { 'act': '<<>>' }, { 'act': '<<act>>' }],
-      'facts': [{ 'fact': 'test' }, { 'fact': '[test' }, { 'fact': '[]' }, { 'fact': '[fact]' }],
+      'facts': [{ 'fact': 'test' }, { 'fact': '[test' }, { 'fact': '<<>>' }, { 'fact': '[]' }, { 'fact': '[fact]' }],
       'duties': [{ 'duty': 'test' }, { 'duty': '<test' }, { 'duty': '<>' }, { 'duty': '<duty>' }]
     })
 
@@ -79,7 +79,7 @@ describe('The Flint Model validator', () => {
       'code': 'LR0001',
       'source': 'test',
       'message': 'Invalid name for identifier',
-      'offset': [168, 174],
+      'offset': [184, 190],
       'path': [
         'duties',
         0,
@@ -88,7 +88,7 @@ describe('The Flint Model validator', () => {
       'severity': 'ERROR'
     })
 
-    expect(errors.length).to.equal(12)
+    expect(errors.length).to.equal(15)
   })
 
   it('should find errors with duplicate identifiers', async () => {

@@ -313,7 +313,7 @@ class ModelValidator {
 
     const veryStrict = []
     const lessStrict = ['']
-    const factStrict = ['<<>>', '[]']
+    const factStrict = ['[]']
     const expressionCheckInfo = [['acts', 'actor', veryStrict], ['acts', 'object', veryStrict], ['acts', 'recipient', veryStrict],
       ['acts', 'preconditions', lessStrict], ['facts', 'function', factStrict]]
 
