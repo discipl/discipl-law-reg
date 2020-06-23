@@ -40,7 +40,7 @@ class LawReg {
   /**
    * Checks a parsed expression by considering the atomic parts and evaluating them
    *
-   * @param {ParsedExpression|string} fact - Parsed fact object (might be string if the object is an atomic fact
+   * @param {ParsedExpression|string} fact - Parsed fact object (might be string if the object is an atomic fact)
    * @param {object} ssid - Identity doing the checking
    * @param {Context} context - Context of the check
    * @returns {Promise<boolean>}
@@ -286,6 +286,13 @@ class LawReg {
 
         this._extendContextExplanationWithResult(context, literalValue)
         return literalValue
+      case 'CREATE':
+        logger.debug('Swithc case: CREATE')
+        const finalCreateResult = await this.checkCreatedFact(context.previousFact, ssid, context)
+        logger.debug('Resolving fact', fact, 'as', finalCreateResult, 'by determining earlier creation')
+        this._extendContextExplanationWithResult(context, finalCreateResult)
+
+        return finalCreateResult
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {
@@ -345,13 +352,6 @@ class LawReg {
     const core = this.abundance.getCoreAPI()
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
-
-    if (functionRef === '<<>>') {
-      const factIsCreated = await this.checkCreatedFact(fact, ssid, context)
-      logger.debug('Resolving fact', fact, 'as', factIsCreated, 'by determining earlier creation')
-      this._extendContextExplanationWithResult(context, factIsCreated)
-      return factIsCreated
-    }
 
     if (functionRef === DISCIPL_ANYONE_MARKER) {
       logger.debug('Resolving fact', fact, 'as true, because anyone can be this')
@@ -446,14 +446,14 @@ class LawReg {
   }
 
   /**
-   * Checks a fact by using the callback provided as factResolver
+   * Checks a fact by using the factResolver from the context.
    * If an empty fact is to be checked, this is because a reference was followed. in this case we fall back
    * to the previousFact, which likely contains information that can be used to resolve this.
    *
    * @param {string} fact - Description of the fact, surrounded with []
    * @param {object} ssid - Identity of entity doing the checking
    * @param {Context} context - context of the checking
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
   async checkFactWithResolver (fact, ssid, context) {
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
@@ -476,35 +476,34 @@ class LawReg {
    * @param {string} fact - Description of the fact, surrounded with []
    * @param {object} ssid - Identity of entity doing the checking
    * @param {Context} context - context of the checking
-   * @returns {boolean}
+   * @returns {Promise<boolean>}
    */
   async checkCreatedFact (fact, ssid, context) {
     logger.debug('Checking if', fact, 'was created')
     const core = this.abundance.getCoreAPI()
-    let actionLink = context.caseLink
+    let caseLink = context.caseLink
 
     const possibleCreatingActions = []
     const terminatedCreatingActions = []
 
-    while (actionLink != null) {
-      const lastAction = await core.get(actionLink, ssid)
+    while (caseLink != null) {
+      const caseData = await core.get(caseLink, ssid)
+      const lastTakenAction = caseData.data[DISCIPL_FLINT_ACT_TAKEN]
 
-      const actLink = lastAction.data[DISCIPL_FLINT_ACT_TAKEN]
-
-      if (actLink != null) {
-        const act = await core.get(actLink, ssid)
+      if (lastTakenAction != null) {
+        const act = await core.get(lastTakenAction, ssid)
         logger.debug('Found earlier act', act)
 
         if (act.data[DISCIPL_FLINT_ACT].create != null && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
-          possibleCreatingActions.push(actionLink)
+          possibleCreatingActions.push(caseLink)
         }
 
         if (act.data[DISCIPL_FLINT_ACT].terminate != null && act.data[DISCIPL_FLINT_ACT].terminate.includes(fact)) {
-          const terminatedLink = lastAction.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
+          const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
           terminatedCreatingActions.push(terminatedLink)
         }
       }
-      actionLink = lastAction.data[DISCIPL_FLINT_PREVIOUS_CASE]
+      caseLink = caseData.data[DISCIPL_FLINT_PREVIOUS_CASE]
     }
 
     const creatingActions = possibleCreatingActions.filter((maybeTerminatedLink) => !terminatedCreatingActions.includes(maybeTerminatedLink))
@@ -879,6 +878,11 @@ class LawReg {
    * in the channel of the given ssid. Each act, fact and duty is stored in a separate vc.
    * Returns a list to the claim holding the whole model with links to individual claims
    * Note that references within the model are not translated into links.
+   *
+   * @param {object} ssid SSID that publishes the model
+   * @param {object} flintModel Model to publish
+   * @param {object} factFunctions Additional factFunction that are declared outside the model
+   * @return {Promise<string>} Link to a verifiable claim that holds the published model
    */
   async publish (ssid, flintModel, factFunctions = {}) {
     logger.debug('Publishing model')
@@ -950,7 +954,7 @@ class LawReg {
    * @param {string} caseLink - Link to the case, which is either an earlier action, or a need
    * @param {string} act - description of the act to be taken
    * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
-   * @returns {Promise<*>}
+   * @returns {Promise<string>} Link to a verifiable claim that holds that taken actions
    */
   async take (ssid, caseLink, act, factResolver = () => false) {
     const { core, modelLink, actLink, firstCaseLink } = await this._getModelAndActFromCase(caseLink, ssid, act)
@@ -973,13 +977,13 @@ class LawReg {
   }
 
   /**
-   * Denotes a given act in the context of a case as taken, if it is possible. See {@link checkAction} is used to check the conditions
+   * Add the result of an action to the explanation part of the context. {@link checkAction} is used to check the conditions.
    *
    * @param {object} ssid - Identity of the actor
    * @param {string} caseLink - Link to the case, which is either an earlier action, or a need
-   * @param {string} act - description of the act to be taken
+   * @param {string} act - description of the act to explain
    * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
-   * @returns {Promise<*>}
+   * @returns {Promise<object>} Explanation object from the context with the action result as value
    */
   async explain (ssid, caseLink, act, factResolver) {
     const { modelLink, actLink } = await this._getModelAndActFromCase(caseLink, ssid, act)
@@ -1008,10 +1012,12 @@ class LawReg {
   }
 
   /**
+   * Create a default resolver and extend it's logic with additional facts and a fallback resolver. The fallback is used
+   * when no other methods are available to resolve the supplied facts.
    *
    * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available
    * @param {Object} factsSupplied - Facts object
-   * @return {function} factResolver - Function used to resolve facts to fall back on if no other method is available
+   * @return {function} Function used to resolve facts to fall back on if no other method is available
    * @private
    */
   _wrapWithDefault (factResolver, factsSupplied) {
