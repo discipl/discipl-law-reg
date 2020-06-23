@@ -325,7 +325,7 @@ describe('discipl-law-reg', () => {
         }
       })
 
-      const factResolver = (fact, flintItem, listNames, listIndices) => {
+      const factResolver = (fact, listNames, listIndices) => {
         if (listNames && listNames[0] === 'leeftijden') {
           if (listIndices[0] === 0) {
             return 8
@@ -423,7 +423,7 @@ describe('discipl-law-reg', () => {
         }
       })
 
-      const factResolver = (fact, flintItem, listNames, listIndices) => {
+      const factResolver = (fact, listNames, listIndices) => {
         if (listNames && listNames[0] === 'kinderen') {
           if (listIndices[0] === 0 && listIndices[1] === 0) {
             return 'BSc Technische Wiskunde'
@@ -1562,7 +1562,7 @@ describe('discipl-law-reg', () => {
         }
       })
 
-      const factResolver = (fact, _item, _listNames, _listIndices, creatingOptions) => {
+      const factResolver = (fact, _listNames, _listIndices, creatingOptions) => {
         if (['[dough]', '[bakery]', '[baker]'].includes(fact)) {
           return true
         }
@@ -1706,7 +1706,6 @@ describe('discipl-law-reg', () => {
 
       expect(factResolver.callCount).to.equal(1)
       expect(factResolver.args[0][0]).to.equal('[verwelkomst]')
-      expect(factResolver.args[0][1]).to.equal('object')
     })
 
     const explainExpression = async (expression, factSpec, expectedResult) => {

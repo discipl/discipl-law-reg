@@ -47,6 +47,7 @@ class LawReg {
    */
   async checkExpression (fact, ssid, context) {
     let hasUndefined = false
+    let newContext = null
     const expr = fact.expression
     if (context.explanation && fact.expression) {
       context.explanation.expression = fact.expression
@@ -55,7 +56,7 @@ class LawReg {
       case 'OR':
         logger.debug('Switch case: OR')
         for (const op of fact.operands) {
-          const newContext = this._extendContextWithExplanation(context)
+          newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
 
           if (operandResult === true) {
@@ -69,10 +70,10 @@ class LawReg {
           }
         }
 
-        const result = hasUndefined ? undefined : false
-        this._extendContextExplanationWithResult(context, result)
-        logger.debug('Resolved OR as', result)
-        return result
+        const orResult = hasUndefined ? undefined : false
+        this._extendContextExplanationWithResult(context, orResult)
+        logger.debug('Resolved OR as', orResult)
+        return orResult
       case 'AND':
         logger.debug('Switch case: AND')
         for (const op of fact.operands) {
@@ -95,7 +96,7 @@ class LawReg {
         return andResult
       case 'NOT':
         logger.debug('Switch case: NOT')
-        const newContext = this._extendContextWithExplanation(context)
+        newContext = this._extendContextWithExplanation(context)
         const value = await this.checkExpression(fact.operand, ssid, newContext)
         const notResult = typeof value === 'boolean' ? !value : undefined
         this._extendContextExplanationWithResult(context, notResult)
@@ -112,7 +113,7 @@ class LawReg {
         const listContentResult = []
         while (true) {
           const op = fact.items
-          const newContext = this._extendContextWithExplanation(context)
+          newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in LIST', operandResult, 'for operand', op, 'and index', context.listIndices[listIndex])
 
@@ -142,7 +143,7 @@ class LawReg {
         logger.debug('Switch case: LESS_THAN')
         let lastOperandResult
         for (const op of fact.operands) {
-          const newContext = this._extendContextWithExplanation(context)
+          newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
           if (typeof lastOperandResult !== 'undefined') {
@@ -167,7 +168,7 @@ class LawReg {
         logger.debug('Switch case: EQUAL')
         let lastEqualOperandResult
         for (const op of fact.operands) {
-          const newContext = this._extendContextWithExplanation(context)
+          newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in EQUAL', String(operandResult), 'for operand', op)
           if (typeof lastEqualOperandResult !== 'undefined') {
@@ -192,7 +193,7 @@ class LawReg {
         logger.debug('Switch case: SUM')
         let sumResult = 0
         for (const op of fact.operands) {
-          const newContext = this._extendContextWithExplanation(context)
+          newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in SUM', String(operandResult), 'for operand', op)
           if (Array.isArray(operandResult)) {
@@ -217,7 +218,7 @@ class LawReg {
         logger.debug('Switch case: PRODUCT')
         let productResult = 1
         for (const op of fact.operands) {
-          const newContext = this._extendContextWithExplanation(context)
+          newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in PRODUCT', String(operandResult), 'for operand', op)
           if (Array.isArray(operandResult)) {
@@ -242,7 +243,7 @@ class LawReg {
         logger.debug('Switch case: MIN')
         let minResult
         for (const op of fact.operands) {
-          const newContext = this._extendContextWithExplanation(context)
+          newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in MIN', operandResult, 'for operand', op)
           if (typeof minResult === 'undefined' || operandResult < minResult) {
@@ -261,7 +262,7 @@ class LawReg {
         logger.debug('Switch case: MAX')
         let maxResult
         for (const op of fact.operands) {
-          const newContext = this._extendContextWithExplanation(context)
+          newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in MAX', operandResult, 'for operand', op)
           if (typeof maxResult === 'undefined' || operandResult > maxResult) {
@@ -346,10 +347,10 @@ class LawReg {
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
     if (functionRef === '<<>>') {
-      const result = await this.checkCreatedFact(fact, ssid, context)
-      logger.debug('Resolving fact', fact, 'as', result, 'by determining earlier creation')
-      this._extendContextExplanationWithResult(context, result)
-      return result
+      const factIsCreated = await this.checkCreatedFact(fact, ssid, context)
+      logger.debug('Resolving fact', fact, 'as', factIsCreated, 'by determining earlier creation')
+      this._extendContextExplanationWithResult(context, factIsCreated)
+      return factIsCreated
     }
 
     if (functionRef === DISCIPL_ANYONE_MARKER) {
@@ -360,10 +361,10 @@ class LawReg {
 
     const did = LawReg.extractDidFromIsConstruction(functionRef)
     if (did != null) {
-      const result = ssid.did === did || !context.myself
-      logger.debug('Resolving fact', fact, 'as', result, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
-      this._extendContextExplanationWithResult(context, result)
-      return result
+      const didIsIdentified = ssid.did === did || !context.myself
+      logger.debug('Resolving fact', fact, 'as', didIsIdentified, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
+      this._extendContextExplanationWithResult(context, didIsIdentified)
+      return didIsIdentified
     }
 
     const result = await this.checkFact(functionRef, ssid, { ...context, previousFact: fact })
@@ -387,7 +388,6 @@ class LawReg {
    * @property {string} [previousFact] - last fact that was considered in the context
    * @property {boolean} [myself] - `IS:` constructions will be resolved iff it concerns the person themselves
    * @property {object} [factReference] - Map from fact names to fact links in a published FLINT model
-   * @property {string} [flintItem] - The FLINT item (actor, object, etc) that is currently under consideration
    * @property {array} [listNames] - Names of (subsequent) lists that belong to the current context
    * @property {array} [listIndices] - Index of current location in the list
    * @property {Explanation} [explanation] - Object containing nested explanations
@@ -459,7 +459,7 @@ class LawReg {
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
     const listNames = context.listNames || []
     const listIndices = context.listIndices || []
-    const result = context.factResolver(factToCheck, context.flintItem, listNames, listIndices)
+    const result = context.factResolver(factToCheck, listNames, listIndices)
     let resolvedResult = await Promise.resolve(result)
     if (typeof resolvedResult === 'number') {
       resolvedResult = Big(resolvedResult)
@@ -513,7 +513,7 @@ class LawReg {
       return false
     }
 
-    const result = context.factResolver(fact, context.flintItem, context.listNames || [], context.listIndices || [], creatingActions)
+    const result = context.factResolver(fact, context.listNames || [], context.listIndices || [], creatingActions)
     const resolvedResult = await Promise.resolve(result)
 
     if (!creatingActions.includes(resolvedResult) && typeof resolvedResult !== 'undefined') {
@@ -584,7 +584,7 @@ class LawReg {
 
     const actorContext = this._extendContextWithExplanation(context)
 
-    const checkedActor = await this.checkFact(actor, ssid, { ...actorContext, 'facts': factReference, 'myself': true, 'flintItem': 'actor' })
+    const checkedActor = await this.checkFact(actor, ssid, { ...actorContext, 'facts': factReference, 'myself': true })
 
     if (!checkedActor) {
       invalidReasons.push('actor')
@@ -601,7 +601,7 @@ class LawReg {
     logger.debug('Original object', object)
 
     const objectContext = this._extendContextWithExplanation(context)
-    const checkedObject = await this.checkFact(object, ssid, { ...objectContext, 'facts': factReference, 'flintItem': 'object' })
+    const checkedObject = await this.checkFact(object, ssid, { ...objectContext, 'facts': factReference })
 
     if (!checkedObject) {
       invalidReasons.push('object')
@@ -616,7 +616,7 @@ class LawReg {
     const recipient = actReference.data[DISCIPL_FLINT_ACT]['recipient']
     logger.debug('Original recipient', recipient)
     const interestedPartyContext = this._extendContextWithExplanation(context)
-    const checkedInterestedParty = await this.checkFact(recipient, ssid, { ...interestedPartyContext, 'facts': factReference, 'flintItem': 'recipient' })
+    const checkedInterestedParty = await this.checkFact(recipient, ssid, { ...interestedPartyContext, 'facts': factReference })
 
     if (!checkedInterestedParty) {
       invalidReasons.push('recipient')
@@ -633,7 +633,7 @@ class LawReg {
     logger.debug('Original preconditions', preconditions)
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
     const preconditionContext = this._extendContextWithExplanation(context)
-    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference, 'flintItem': 'preconditions' }) : true
+    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference }) : true
 
     if (!checkedPreConditions) {
       invalidReasons.push('preconditions')
@@ -739,7 +739,7 @@ class LawReg {
    * @returns {Promise<Array>}
    */
   async getPotentialActs (caseLink, ssid, facts = [], nonFacts = []) {
-    const factResolver = (fact, flintItem) => {
+    const factResolver = (fact) => {
       if (facts.includes(fact)) {
         return true
       }
@@ -859,7 +859,7 @@ class LawReg {
 
         if (dutyHolder != null) {
           logger.debug('Checking duty-holder')
-          const checkActor = await this.checkFact(dutyHolder, ssid, { 'facts': factReference, 'myself': true, 'flintItem': 'actor', 'caseLink': caseLink })
+          const checkActor = await this.checkFact(dutyHolder, ssid, { 'facts': factReference, 'myself': true, 'caseLink': caseLink })
           if (checkActor) {
             logger.info('Duty', duty, 'is held by', dutyHolder)
             ownedDuties.push({
@@ -1015,7 +1015,7 @@ class LawReg {
    * @private
    */
   _wrapWithDefault (factResolver, factsSupplied) {
-    return async (fact, flintItem, listNames, listIndices, possibleCreatingActions) => {
+    return async (fact, listNames, listIndices, possibleCreatingActions) => {
       let factsObject = factsSupplied
       for (let i = 0; i < listNames.length; i++) {
         const listName = listNames[i]
@@ -1030,7 +1030,7 @@ class LawReg {
       if (possibleCreatingActions && possibleCreatingActions.length === 1) {
         maybeCreatingAction = possibleCreatingActions[0]
       }
-      const result = factsObject[fact] || maybeCreatingAction || factResolver(fact, flintItem, listNames, listIndices, possibleCreatingActions)
+      const result = factsObject[fact] || maybeCreatingAction || factResolver(fact, listNames, listIndices, possibleCreatingActions)
       factsObject[fact] = await result
       return result
     }
