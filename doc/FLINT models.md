@@ -35,11 +35,11 @@ An act consists out of the following properties:
 - `actions` - One or few words denoting what action is done on the object.
 - `actor` - A reference to a fact that defines the actor that can take this action.
 - `recipient` - A reference to a fact that defines the recipient of the result of this action.
-- `object` - The object on which the action is executed by the actor, and that is needed by the recipient of this action. The object can be a entity or agent or a reference to such via a fact.  The object can also be a reference to any other fact or even an action and duty referring to their corresponding state.
+- `object` - The object on which the action is executed by the actor, and that is needed by the recipient of this action. The object can be a entity or agent or a reference to such via a fact.
 - `preconditions` - Boolean logic with references to other facts defined in the model. The evaluation of this expression determents if the actions can be taken or not.
 - `create` - An array of references to other acts, facts and/or duties that will follow out of this action. The creation of a fact out of a action can be enforced by defining that fact with a `CREATE` expression as function.
-- `terminate` - An of references to other actions, facts and/or duties that will be terminated (eg. revoked) by taking this action.
-- `reference` -  A jurisdictional reference to law/regulation this action is implied from.
+- `terminate` - An array of references to other actions, facts and/or duties that will be terminated (eg. revoked) by taking this action.
+- `sources` -  An array that contains jurisdictional references to the law/regulation this action is implied from.
 
 ```json
 {
@@ -58,7 +58,15 @@ An act consists out of the following properties:
         "[aanvraag]"
     ],
     "terminate": [],
-    "reference": "rt. 1:2 lid 1"
+    "sources": [
+        {
+            "validFrom": "27-03-2020",
+            "validTo": "31-05-2020",
+            "citation": "bron",
+            "juriconnect": "",
+            "text": "Omschrijvende tekst"
+        }
+    ]
 }
 ```
 <details>
@@ -84,7 +92,15 @@ An act consists out of the following properties:
                 "[aanvraag]"
             ],
             "terminate": [],
-            "reference": "art. 2 lid 1"
+            "sources": [
+                {
+                    "validFrom": "27-03-2020",
+                    "validTo": "31-05-2020",
+                    "citation": "bron",
+                    "juriconnect": "",
+                    "text": "Omschrijvende tekst"
+                }
+            ]
         },
         {
             "act": "<<klacht indienen>>",
@@ -96,7 +112,7 @@ An act consists out of the following properties:
                 "[bezwaarschrift]"
             ],
             "terminates": "",
-            "reference": "art. 2 lid 2"
+             "sources": []
         },
         {
             "act": "<<aanvraag kinderbijslag toekennen>>",
@@ -107,7 +123,7 @@ An act consists out of the following properties:
                 "[besluit]"
             ],
             "recipient": "[ouder]",
-            "reference": "rt. 1:2 lid 2"
+             "sources": []
         },
         {
             "act": "<<aanvraag kinderbijslag afwijzen>>",
@@ -121,7 +137,7 @@ An act consists out of the following properties:
             "terminates": [
                 "[aanvraag]"
             ],
-            "reference": "art. 2 lid 3"
+             "sources": []
         }
     ]
 }
@@ -136,13 +152,13 @@ A fact consists out of the following properties:
 
 - `fact` - A unique text that identifies the fact and is used to refer to within the model. Usually this text is enclosed with `[` and `]` to indicate that the text is referring to a fact.
 - `function` - The function that will evaluate to the eventual value of the fact, this can be a boolean expression or a reference to another fact. The value `[]` indicates that no function is given, in that case the application will fall back to the previous fact and eventually to the custom fact resolver (if given).. A function is evaluated when the fact is referenced in an action that is being taken. The result of the evaluation is logged as verifiable claim if the same result was not logged previously. When the fact is terminated, all those claims will be revoked.
-- `reference` - A jurisdictional reference to law/regulation this fact is implied from.
+- `sources` -  A object that contains jurisdictional references to the law/regulation this fact is implied from.
 
 ```json
 {
     "fact": "[verzoek]",
     "function": { "expression": "CREATE" },
-    "reference": "art. 4:5 lid 1",
+    "sources": []
 }
 ```
 
@@ -169,7 +185,15 @@ A fact consists out of the following properties:
                 "[aanvraag]"
             ],
             "terminate": [],
-            "reference": "art. 2 lid 1"
+            "sources": [
+                {
+                    "validFrom": "27-03-2020",
+                    "validTo": "31-05-2020",
+                    "citation": "bron",
+                    "juriconnect": "",
+                    "text": "Omschrijvende tekst"
+                }
+            ]
         },
         {
             "act": "<<klacht indienen>>",
@@ -181,7 +205,7 @@ A fact consists out of the following properties:
                 "[bezwaarschrift]"
             ],
             "terminates": "",
-            "reference": "art. 2 lid 2"
+            "sources": []
         },
         {
             "act": "<<aanvraag kinderbijslag toekennen>>",
@@ -192,7 +216,7 @@ A fact consists out of the following properties:
                 "[besluit]"
             ],
             "recipient": "[ouder]",
-            "reference": "rt. 1:2 lid 2"
+            "sources": []
         },
         {
             "act": "<<aanvraag kinderbijslag afwijzen>>",
@@ -206,50 +230,50 @@ A fact consists out of the following properties:
             "terminates": [
                 "[aanvraag]"
             ],
-            "reference": "art. 2 lid 3"
+            "sources": []
         }
     ],
     "facts": [
          {
             "fact": "[ouder]",
             "function": "[]",
-            "reference": "art. 2 lid 1.1"
+            "sources": []
         },
         {
             "fact": "[minister]",
             "function": "[]",
-            "reference": "art. 2 lid 1.2"
+            "sources": []
         },
         {
             "fact": "[verzoek]",
             "function": "[]",
-            "reference": "art. 2 lid 1.3"
+            "sources": []
         },
         {
             "fact": "[ouder heeft kinderen]",
             "function": "[]",
-            "reference": "art. 2 lid 1.4"
+            "sources": []
         },
         {
             "fact": "[aanvraag]",
             "function": {
                 "expression": "CREATE"
             },
-            "reference": "art. 2 lid 1.5"
+            "sources": []
         },
         {
             "fact": "[besluit]",
             "function": {
                 "expression": "CREATE"
             },
-            "reference": "art. 2 lid 1.6"
+            "sources": []
         },
         {
             "fact": "[bezwaarschrift]",
             "function": {
                 "expression": "CREATE"
             },
-            "reference": "art. 2 lid 1.7"
+            "sources": []
         }
     ]
 }
@@ -305,7 +329,15 @@ A duty consists of the following properties:
                 "[aanvraag]"
             ],
             "terminate": [],
-            "reference": "art. 2 lid 1"
+            "sources": [
+                {
+                    "validFrom": "27-03-2020",
+                    "validTo": "31-05-2020",
+                    "citation": "bron",
+                    "juriconnect": "",
+                    "text": "Omschrijvende tekst"
+                }
+            ]
         },
         {
             "act": "<<klacht indienen>>",
@@ -317,7 +349,7 @@ A duty consists of the following properties:
                 "[bezwaarschrift]"
             ],
             "terminates": "",
-            "reference": "art. 2 lid 2"
+            "sources": []
         },
         {
             "act": "<<aanvraag kinderbijslag toekennen>>",
@@ -328,7 +360,7 @@ A duty consists of the following properties:
                 "[besluit]"
             ],
             "recipient": "[ouder]",
-            "reference": "rt. 1:2 lid 2"
+            "sources": []
         },
         {
             "act": "<<aanvraag kinderbijslag afwijzen>>",
@@ -342,50 +374,50 @@ A duty consists of the following properties:
             "terminates": [
                 "[aanvraag]"
             ],
-            "reference": "art. 2 lid 3"
+            "sources": []
         }
     ],
     "facts": [
          {
             "fact": "[ouder]",
             "function": "[]",
-            "reference": "art. 2 lid 1.1"
+            "sources": []
         },
         {
             "fact": "[minister]",
             "function": "[]",
-            "reference": "art. 2 lid 1.2"
+            "sources": []
         },
         {
             "fact": "[verzoek]",
             "function": "[]",
-            "reference": "art. 2 lid 1.3"
+            "sources": []
         },
         {
             "fact": "[ouder heeft kinderen]",
             "function": "[]",
-            "reference": "art. 2 lid 1.4"
+            "sources": []
         },
         {
             "fact": "[aanvraag]",
             "function": {
                 "expression": "CREATE"
             },
-            "reference": "art. 2 lid 1.5"
+            "sources": []
         },
         {
             "fact": "[besluit]",
             "function": {
                 "expression": "CREATE"
             },
-            "reference": "art. 2 lid 1.6"
+            "sources": []
         },
         {
             "fact": "[bezwaarschrift]",
             "function": {
                 "expression": "CREATE"
             },
-            "reference": "art. 2 lid 1.7"
+            "sources": []
         }
     ],
     "duties": [
