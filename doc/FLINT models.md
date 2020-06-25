@@ -39,7 +39,7 @@ An act consists out of the following properties:
 - `preconditions` - Boolean logic with references to other facts defined in the model. The evaluation of this expression determents if the actions can be taken or not.
 - `create` - An array of references to other acts, facts and/or duties that will follow out of this action. The creation of a fact out of a action can be enforced by defining that fact with a `CREATE` expression as function.
 - `terminate` - An array of references to other actions, facts and/or duties that will be terminated (eg. revoked) by taking this action.
-- `sources` -  An array that contains jurisdictional references to the law/regulation this action is implied from.
+- `sources` -  A object that contains jurisdictional references to the law/regulation this action is implied from.
 
 ```json
 {
@@ -151,7 +151,7 @@ The `facts` property contains an array of **facts** that are referenced within t
 A fact consists out of the following properties:
 
 - `fact` - A unique text that identifies the fact and is used to refer to within the model. Usually this text is enclosed with `[` and `]` to indicate that the text is referring to a fact.
-- `function` - The function that will evaluate to the eventual value of the fact, this can be a boolean expression or a reference to another fact. The value `[]` indicates that no function is given, in that case the application will fall back to the previous fact and eventually to the custom fact resolver (if given).. A function is evaluated when the fact is referenced in an action that is being taken. The result of the evaluation is logged as verifiable claim if the same result was not logged previously. When the fact is terminated, all those claims will be revoked.
+- `function` - The function that will evaluate to the eventual value of the fact, this can be an expression or a reference to another fact. The value `[]` indicates that no function is given, in that case the application will fall back to the previous fact and eventually to the custom fact resolver (if given).. A function is evaluated when the fact is referenced in an action that is being taken. The result of the evaluation is logged as verifiable claim if the same result was not logged previously. When the fact is terminated, all those claims will be revoked.
 - `sources` -  A object that contains jurisdictional references to the law/regulation this fact is implied from.
 
 ```json
