@@ -1,10 +1,10 @@
 # Expressions
 
-This documentation gives a in depth explanation in how to define and use expressions within a FLINT model.
+This documentation gives a in depth explanation in how to define and use expressions within FLINT models.
 
 ## Usage
 
-Expressions can be used within the  `preConditions`  property of **acts** and the `function` property of **facts**. Within `preConditions` the expressions determines if action can be taken by an actor. If the expressions evaluates to _false_, taking this action is not allowed. Within the `function` property of a fact, the evaluation of the expression will be the eventual value of the fact.
+Expressions can be used within the  `preConditions`  property of **acts** and the `function` property of **facts**. Within `preConditions` the expressions determines if an action can be taken by an actor. If the expressions evaluates to `false`, taking this action is not allowed. Within the `function` property of a fact, the evaluation of the expression will be the eventual value of the fact.
 
 A expression is defined by an object with the type of the expression and one or more operands.
 
@@ -22,11 +22,76 @@ A expression is defined by an object with the type of the expression and one or 
 }
 ```
 
-The value of a operand can be a reference to a fact, another expression or sometimes a static value. This makes them extremely powerful and gives the ability to create complex nested expressions with references to other facts with there own expressions.
+The value of a operand can be a reference to a fact, another expression or sometimes a static value. This makes them extremely powerful and gives the ability to create complex [nested expressions](#nested-expressions) with references to other facts with there own expressions.
 
 ## Expressions
 
-The following paragraph lists all available expressions divided into the categories: mathematical; boolean logic; special.
+The following paragraph lists all available expressions divided into the categories: basic; mathematical; boolean logic.
+
+### Basic
+
+#### LITERAL
+
+The `LITERAL` expression has one operand that holds a static value of a [primitive type](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#Primitive_values) supported by JavaScript. It is often used as fact function and can serve as operand for other expressions.
+
+> JavaScript has some natural problems with big numbers and floating points. To overcome some of this issues, numbers are handled by [big.js](https://github.com/MikeMcl/big.js/).
+
+```json
+{
+    "fact": "[aantal maanden in een jaar]",
+    "function": {
+        "expression": "LITERAL",
+        "operand": 12
+    }
+}
+```
+
+#### LIST
+
+The `LIST` operator can be used to collect data during evaluation of a fact. The fact containing this list can be used as input for other expressions, for example `SUM`.
+
+The `LIST` expression has a somewhat different syntax when compared to other expressions. It needs a unique `name` property for administrative purpose and a `items` property. The `items` property can be either a fact reference or another expressions.
+
+```json
+{
+    "fact": "[totale oppervlakte]",
+    "function": {
+        "expression": "SUM",
+        "operands": [
+            {
+                "expression": "LIST",
+                "name": "perceel",
+                "items": "[oppervlakte van het perceel]"
+            }
+        ]
+    }
+}
+```
+
+#### CREATE
+
+The `CREATE` expression does not accept any operands and can only be used on facts. It ensures that a given facts is the result of an action and not defined elsewhere.
+
+```json
+{
+    "acts": [
+        {
+            "act": "<<kinderbijslag aanvragen>>",
+            "actor": "[ouder]",
+            "recipent": "[minister]",
+            "create": [
+                "[aanvraag]"
+            ]
+        }
+    ],
+    "facts": [
+        {
+            "fact": "[aanvraag]",
+            "function": "CREATE"
+        }
+    ]
+}
+```
 
 ### Mathematical
 
@@ -34,7 +99,7 @@ All expressions in this category work with literal values and can be used to per
 
 #### SUM
 
-The `SUM` expression takes multiple numeric values as operands and calculates the sum. It accepts either fact references or direct [`LITERAL`](#literal) expressions. If one of the operands is `undefined`,  the result of the expression will be `undefined` too.
+The `SUM` expression takes multiple numeric values as operands and calculates the sum. If one of the operands is `undefined`,  the result of the expression will be `undefined` too.
 
 > During evaluation the [unary plus operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unary_plus) is used when non-numeric values are given as operand. An expression with 'ab' and 'cd' as operands will thus evaluate into the string 'abcd'.
 
@@ -56,9 +121,9 @@ The `SUM` expression takes multiple numeric values as operands and calculates th
 
 #### PRODUCT
 
-The `PRODUCT` expression takes multiple numeric operands as values and returns the product of all values. It accepts either fact references or direct [`LITERAL`](#literal) expressions. If one of the operands is `undefined` , the result of the expression will be `undefined` too.
+The `PRODUCT` expression takes multiple numeric values as operand and returns the product of all values. If one of the operands is `undefined` , the result of the expression will be `undefined` too.
 
-> during evaluation the [multiplication operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Multiplication) is used when non-numeric values are given as operand. An expression with 'ab' and 'cd' as operands will thus evaluate to `NaN`.
+> During evaluation the [multiplication operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Multiplication) is used when non-numeric values are given as operand. An expression with 'ab' and 'cd' as operands will thus evaluate into `NaN`.
 
 ```json
 {
@@ -78,7 +143,7 @@ The `PRODUCT` expression takes multiple numeric operands as values and returns t
 
 #### MIN
 
-The `MIN` expression takes multiple numeric values as operands and returns the smallest value.  It accepts either fact references or direct [`LITERAL`](#literal) expressions. If one of the operands is `undefined` , the result of the expression will be `undefined` too.
+The `MIN` expression takes multiple numeric values as operand and returns the smallest value. If one of the operands is `undefined` , the result of the expression will be `undefined` too.
 
 > During evaluation the [less than operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than) is used. An expression non-numeric values like 'ab' and 'cd' as operands will thus evaluate into the string 'ab'.
 
@@ -100,9 +165,9 @@ The `MIN` expression takes multiple numeric values as operands and returns the s
 
 #### MAX
 
-The `MAX` expression takes multiple numeric values as operands and return biggest value. It accepts either fact references or direct [`LITERAL`](#literal) expressions. If one of the operands is `undefined` , the result of the expression will be `undefined` too.
+The `MAX` expression takes multiple numeric values as operands and returns the greatest value. If one of the operands is `undefined` , the result of the expression will be `undefined` too.
 
-> During evaluation the [greather than](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Greater_than) is used. An expression containing non numeric values like 'ab' and 'cd' as operands will thus evaluate into the string 'cd'.
+> During evaluation the [greather than](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Greater_than) is used. An expression containing non-numeric values like 'ab' and 'cd' as operands will thus evaluate into the string 'cd'.
 
 ```json
 {
@@ -122,11 +187,11 @@ The `MAX` expression takes multiple numeric values as operands and return bigges
 
 ### Boolean logic
 
-Expressions in this category will evaluate into a `boolean` value.  
+Expressions in this category will evaluate into a `boolean` value.
 
 #### EQUAL
 
-The `EQUAL` expression takes multiple operands and evaluates to `true` if all operands are **strict equal** to each other. It accepts either fact references or direct [`LITERAL`](#literal) expressions.
+The `EQUAL` expression takes multiple operands and evaluates to `true` if all operands are **strict equal** to each other.
 
 ```json
 {
@@ -146,7 +211,7 @@ The `EQUAL` expression takes multiple operands and evaluates to `true` if all op
 
 #### LESS_THAN
 
-The `LESS_THAN` expression takes multiple operands evaluates `true` if the first operand is smaller than the second operand. If more than two operands are given is evaluates to `true` if all given operands are in acceding order.  It accepts either fact references or direct [`LITERAL`](#literal) expressions.
+The `LESS_THAN` expression takes multiple operands evaluates `true` if the first operand is smaller than the second operand. If more than two operands are given, it evaluates to `true` if all given operands are in acceding order.
 
 > During evaluation the [less than operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than) is used. An expression containing non-numeric values like 'ab' and 'cd' as operands will thus evaluate into `true`.
 
@@ -168,7 +233,7 @@ The `LESS_THAN` expression takes multiple operands evaluates `true` if the first
 
 #### AND
 
-The `AND` expression takes multiple operands and evaluates to `true` if none of the given operand evaluates **strict equal** to `false`. This expression can be used to check if a list of facts exists. It accepts either fact references or direct [`LITERAL`](#literal) expressions.
+The `AND` expression takes multiple operands and evaluates to `true` if none of the given operand evaluates **strict equal** to `false`.
 
 > During evaluation the [strict equality operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality) is used to check if none of the operands is `false`. An expression containing the operands `["string", 0, true]` will thus evaluate to `true`
 
@@ -187,7 +252,7 @@ The `AND` expression takes multiple operands and evaluates to `true` if none of 
 
 #### OR
 
-The `OR` expression takes multiple operands and evaluates to `true` if at least one of the given operands also evaluates **strict equal** to `true`. This expression can be used to check if out of list of facts at least one fact exists.
+The `OR` expression takes multiple operands and evaluates to `true` if at least one of the given operands also evaluates **strict equal** to `true`.
 
 > During evaluation the [strict equality operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Strict_equality) is used to check if at least on of the facts is `true`. An expression containing the operands `["string", 0, true]` will thus evaluate to `true`
 
@@ -218,56 +283,54 @@ The `NOT` expression takes one operand and evaluates to `true` if the given oper
 }
 ```
 
-### Special
+## Examples
 
-#### LITERAL
+### Nested expressions
 
-The `LITERAL` expression has one operand that holds a static value of a [primitive type](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#Primitive_values) supported by JavaScript. It is often used as fact function and can serve as operand for [mathematical](#mathematical) expressions.
-
-> JavaScript has some natural problems with big numbers and floating points. To overcome some of this issues, numbers are handled by [big.js](https://github.com/MikeMcl/big.js/).
+The true power of expressions lies in the fact that these can be nested. For example, combining the `AND`, `OR`, `NOT` expressions makes it possible to define a fact with that only evaluates to true if various conditions are me.
 
 ```json
 {
-    "fact": "[bruto inkomen op jaarbasis]",
+    "fact": "[leraar voldoet aan de subsidiecriteria]",
     "function": {
-        "expression": "LITERAL",
-        "operand": 38000
+        "expression": "AND",
+        "operands": [
+			"[leraar die bij aanvang van het studiejaar waarvoor de subsidie bestemd de graad Bachelor mag voeren]",
+          	"[leraar die op het moment van de subsidieaanvraag in dienst is bij een werkgever]",
+            {
+            	"expression": "OR",
+                "operands": [
+                  "[leraar werkt bij een of meer bekostigde onderwijsinstellingen]",
+                  "[leraar werkt in een of meer orthopedagogisch-didactische centra]"
+                ]
+			},
+            {
+                "expression": "NOT",
+                "operand": "[leraar is aangesteld als ambulant begeleider]"
+            }
+        ]
     }
 }
 ```
 
-#### LIST
-
-#### CREATE
-
-The `CREATE` expression does not accept any operands and can only be used on facts. It ensures that a given facts is the result of an action and not defined elsewhere.
+Combining mathematical operations makes it possible to calculate a sum out of other calculations.
 
 ```json
 {
-    "acts": [
-        {
-            "act": "<<kinderbijslag aanvragen>>",
-            "actor": "[ouder]",
-            "recipent": "[minister]",
-            "create": [
-                "[aanvraag]"
-            ]
-        }
-    ],
-    "facts": [
-        {
-            "fact": "[aanvraag]",
-            "function": "CREATE"
-        }
-    ]
+    "fact": "[salaris]",
+    "function": {
+        "expression": "SUM",
+        "operands": [
+            "[bruto jaarsalaris]"
+            {
+                "expression": "PRODUCT",
+                "operands": [
+                    "[bruto jaarsalaris]",
+                    "[wettelijk percentage vakantiebijslag]"
+                ]
+            }
+        ]
+    }
 }
 ```
-
-## Examples
-
-### Nested expression
-
-### Working with lists
-
-### Fact references
 
