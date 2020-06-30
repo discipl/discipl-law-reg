@@ -288,7 +288,22 @@ class LawReg {
         return literalValue
       case 'CREATE':
         logger.debug('Switch case: CREATE')
-        const finalCreateResult = await this.checkCreatedFact(context.previousFact, ssid, context)
+        let finalCreateResult = await this.checkCreatedFact(context.previousFact, ssid, context)
+
+        if (!finalCreateResult) {
+          this._extendContextExplanationWithResult(context, finalCreateResult)
+          return finalCreateResult
+        }
+
+        for (const op of fact.operands) {
+          const factExists = await this.checkFact(op, ssid, context)
+
+          if (!factExists) {
+            finalCreateResult = false
+            break
+          }
+        }
+
         logger.debug('Resolving fact', fact, 'as', finalCreateResult, 'by determining earlier creation')
         this._extendContextExplanationWithResult(context, finalCreateResult)
 

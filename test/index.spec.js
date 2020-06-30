@@ -898,65 +898,6 @@ describe('discipl-law-reg', () => {
       expect(errorMessage).to.equal('Unknown expression type BANANAS')
     })
 
-    it('should reject an action when a fact defined with a "CREATE" epxression is supplied', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-      const util = new Util(lawReg)
-      const { ssids, modelLink } = await util.setupModel({
-        'model': 'Fictieve kinderbijslag',
-        'acts': [
-          {
-            'act': '<<kinderbijslag aanvragen>>',
-            'actor': '[ouder]',
-            'object': '[verzoek]',
-            'recipient': '[Minister]',
-            'create': []
-          },
-          {
-            'act': '<<aanvraag kinderbijslag toekennen>>',
-            'actor': '[Minister]',
-            'object': '[aanvraag]',
-            'recipient': '[ouder]',
-            'preconditions': {
-              'expression': 'LITERAL',
-              'operand': true
-            }
-          }
-        ],
-        'facts': [
-          {
-            'fact': '[aanvraag]',
-            'function': { 'expression': 'CREATE' }
-          }
-        ],
-        'duties': []
-      }, ['ouder', 'minister'], { '[aanvraag]': 'supplied' })
-
-      const needLink = await core.claim(ssids['ouder'], {
-        'need': {
-          'act': '<<kinderbijslag aanvragen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-      const actionLink = await lawReg.take(ssids['ouder'], needLink, '<<kinderbijslag aanvragen>>', () => true)
-      const action = await core.get(actionLink, ssids['ouder'])
-      const needLink2 = await core.claim(ssids['minister'], {
-        'need': {
-          'act': '<<aanvraag kinderbijslag toekennen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        },
-        ...action.data
-      })
-
-      let errorMessage = ''
-      try {
-        await lawReg.take(ssids['minister'], needLink2, '<<aanvraag kinderbijslag toekennen>>', () => true)
-      } catch (e) {
-        errorMessage = e.message
-      }
-
-      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
-    })
-
     it('should be able to determine active duties being terminated', async () => {
       const core = lawReg.getAbundanceService().getCoreAPI()
 
@@ -1071,7 +1012,7 @@ describe('discipl-law-reg', () => {
         'facts': [
           { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' },
           { 'fact': '[overheid]', 'function': '[]', 'reference': '' },
-          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE' }, 'reference': '' }
+          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE', 'operands': [] }, 'reference': '' }
         ],
         'duties': [
         ]
@@ -1233,7 +1174,10 @@ describe('discipl-law-reg', () => {
         'facts': [
           {
             'fact': '[aanvraag]',
-            'function': { 'expression': 'CREATE' }
+            'function': {
+              'expression': 'CREATE',
+              'operands': []
+            }
           }
         ],
         'duties': []
@@ -1281,7 +1225,7 @@ describe('discipl-law-reg', () => {
         'facts': [
           { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' },
           { 'fact': '[overheid]', 'function': '[]', 'reference': '' },
-          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE' }, 'reference': '' }
+          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE', 'operands': [] }, 'reference': '' }
         ],
         'duties': [
         ]
@@ -1604,7 +1548,10 @@ describe('discipl-law-reg', () => {
         'facts': [
           {
             'fact': '[cookie]',
-            'function': { 'expression': 'CREATE' }
+            'function': {
+              'expression': 'CREATE',
+              'operands': []
+            }
           }
         ],
         'duties': []
@@ -1939,6 +1886,195 @@ describe('discipl-law-reg', () => {
         'value': '5'
       }
       )
+    })
+  })
+
+  describe('CREATE expression', async function () {
+    it('should take an action if the fact and operands are created', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<aanvraag kinderbijslag>>',
+            'actor': '[ouder]',
+            'recipient': '[minister]',
+            'object': '[verzoek]',
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<bedrag vaststellen>>',
+            'actor': '[ouder]',
+            'recipient': '[ouder]',
+            'object': '[bedrag]',
+            'create': [
+              '[bedrag]'
+            ]
+          },
+          {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[minister]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[ouder]': true, '[minister]': true, '[verzoek]': true, '[bedrag]': 100 }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['ouder', 'minister'], { 'ouder': '[ouder]', 'minister': '[minister]' })
+      const acts = [
+        {
+          'act': '<<bedrag vaststellen>>',
+          'actor': 'ouder'
+        },
+        {
+          'act': '<<aanvraag kinderbijslag>>',
+          'actor': 'ouder'
+        },
+        {
+          'act': '<<aanvraag kinderbijslag toekennen>>',
+          'actor': 'minister'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(acts).to.deep.include({ 'act': '<<bedrag vaststellen>>', 'actor': 'ouder' })
+      expect(model.acts[0]).to.deep.include({ 'create': ['[aanvraag]'] })
+      expect(model.acts[1]).to.deep.include({ 'create': ['[bedrag]'] })
+      expect(errorMessage).to.equal('')
+    })
+
+    it('should not take an action if the fact is supplied', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[minister]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': []
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[ouder]': true, '[minister]': true }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['minister'], { 'minister': '[minister]' })
+      const acts = [
+        {
+          'act': '<<aanvraag kinderbijslag toekennen>>',
+          'actor': 'minister'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(model.acts[0]).to.not.deep.include({ 'create': ['[aanvraag]'] })
+      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
+    })
+
+    it('should not take an action if a fact given as operand is not given', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<bedrag vaststellen>>',
+            'actor': '[ouder]',
+            'recipient': '[ouder]',
+            'object': '[bedrag]',
+            'create': [
+              '[bedrag]'
+            ]
+          },
+          {
+            'act': '<<aanvraag kinderbijslag>>',
+            'actor': '[ouder]',
+            'recipient': '[minister]',
+            'object': '[verzoek]',
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[minister]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[ouder]': true, '[minister]': true, '[verzoek]': true }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['ouder', 'minister'], { 'ouder': '[ouder]', 'minister': '[minister]' })
+      const acts = [
+        {
+          'act': '<<aanvraag kinderbijslag>>',
+          'actor': 'ouder'
+        },
+        {
+          'act': '<<aanvraag kinderbijslag toekennen>>',
+          'actor': 'minister'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(Object.keys(completeFacts)).to.not.include('[bedrag]')
+      expect(acts).to.not.deep.include({ 'act': '<<bedrag vaststellen>>', 'actor': 'ouder' })
+      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
     })
   })
 })
