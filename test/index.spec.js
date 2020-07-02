@@ -2077,4 +2077,149 @@ describe('discipl-law-reg', () => {
       expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
     })
   })
+
+  describe('PROJECTION expression', async function () {
+    it('should get the projected property', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<subsidie aanvragen>>',
+            'actor': '[burger]',
+            'recipient': '[ambtenaar]',
+            'object': '[verzoek]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[bedrag]'
+              ]
+            },
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<subsidie aanvraag toekennen>>',
+            'actor': '[ambtenaar]',
+            'object': '[aanvraag]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'PROJECTION',
+                  'operands': [
+                    '[aanvraag]',
+                    '[bedrag]'
+                  ]
+                },
+                {
+                  'expression': 'LITERAL',
+                  'operand': 500
+                }
+              ]
+            },
+            'recipient': '[burger]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[bedrag]': 500 }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['burger', 'ambtenaar'], { 'burger': '[burger]', 'ambtenaar': '[ambtenaar]' })
+      const acts = [
+        {
+          'act': '<<subsidie aanvragen>>',
+          'actor': 'burger'
+        },
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': 'ambtenaar'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(completeFacts).to.deep.include({ '[bedrag]': 500 })
+      expect(errorMessage).to.equal('')
+    })
+
+    it('should not allow an act if the projection faild', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<subsidie aanvraag toekennen>>',
+            'actor': '[ambtenaar]',
+            'object': '[aanvraag]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'PROJECTION',
+                  'operands': [
+                    '[aanvraag]',
+                    '[niet bestaand bedrag]'
+                  ]
+                },
+                {
+                  'expression': 'LITERAL',
+                  'operand': 500
+                }
+              ]
+            },
+            'recipient': '[burger]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[bedrag]': 500 }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['burger', 'ambtenaar'], { 'burger': '[burger]', 'ambtenaar': '[ambtenaar]' })
+      const acts = [
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': 'ambtenaar'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(completeFacts).to.deep.include({ '[bedrag]': 500 })
+      expect(errorMessage).to.equal('Action <<subsidie aanvraag toekennen>> is not allowed')
+    })
+  })
 })
