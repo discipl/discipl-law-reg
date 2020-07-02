@@ -308,6 +308,23 @@ class LawReg {
         this._extendContextExplanationWithResult(context, finalCreateResult)
 
         return finalCreateResult
+      case 'PROJECTION':
+        logger.debug('Switch case: PROJECTION')
+        const core = this.abundance.getCoreAPI()
+
+        const factWithCreateExpression = fact.operands[0]
+        const projectedFact = fact.operands[1]
+        const caseLink = await this.checkFact(factWithCreateExpression, ssid, context)
+        const caseObject = await core.get(caseLink, ssid)
+
+        if (Object.keys(caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED).includes(projectedFact)) {
+          const projectionResult = caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED[projectedFact]
+
+          logger.debug('Resolving fact', fact, 'as', projectionResult, 'by determining earlier creation')
+          return projectionResult
+        }
+
+        return undefined
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {
