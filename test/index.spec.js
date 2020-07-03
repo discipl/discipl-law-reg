@@ -2078,7 +2078,7 @@ describe('discipl-law-reg', () => {
     })
   })
 
-  describe('PROJECTION expression', async function () {
+  describe.only('PROJECTION expression', async function () {
     it('should get the projected property', async () => {
       const model = {
         'acts': [
@@ -2106,10 +2106,10 @@ describe('discipl-law-reg', () => {
               'operands': [
                 {
                   'expression': 'PROJECTION',
-                  'operands': [
-                    '[aanvraag]',
-                    '[bedrag]'
-                  ]
+                  'context': [
+                    '[aanvraag]'
+                  ],
+                  'fact': '[bedrag]'
                 },
                 {
                   'expression': 'LITERAL',
@@ -2160,6 +2160,118 @@ describe('discipl-law-reg', () => {
       expect(errorMessage).to.equal('')
     })
 
+    it('should project a series of CREATE facts', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<persoonlijk gegevens invullen>>',
+            'actor': '[burger]',
+            'recipient': '[ambtenaar]',
+            'object': '[verzoek]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[naam]'
+              ]
+            },
+            'create': [
+              '[persoonlijke gegevens]'
+            ]
+          },
+          {
+            'act': '<<subsidie aanvragen>>',
+            'actor': '[burger]',
+            'recipient': '[ambtenaar]',
+            'object': '[verzoek]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[persoonlijke gegevens]',
+                '[bedrag]'
+              ]
+            },
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<subsidie aanvraag toekennen>>',
+            'actor': '[ambtenaar]',
+            'object': '[aanvraag]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'PROJECTION',
+                  'context': [
+                    '[aanvraag]',
+                    '[persoonlijke gegevens]'
+                  ],
+                  'fact': '[naam]'
+                },
+                {
+                  'expression': 'LITERAL',
+                  'operand': 'Discipl'
+                }
+              ]
+            },
+            'recipient': '[burger]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[persoonlijke gegevens]',
+                '[bedrag]'
+              ]
+            }
+          },
+          {
+            'fact': '[persoonlijke gegevens]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[naam]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[naam]': 'Discipl', '[bedrag]': 500 }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['burger', 'ambtenaar'], { 'burger': '[burger]', 'ambtenaar': '[ambtenaar]' })
+      const acts = [
+        {
+          'act': '<<persoonlijk gegevens invullen>>',
+          'actor': 'burger'
+        },
+        {
+          'act': '<<subsidie aanvragen>>',
+          'actor': 'burger'
+        },
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': 'ambtenaar'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(completeFacts).to.deep.include({ '[bedrag]': 500, '[naam]': 'Discipl' })
+      expect(errorMessage).to.equal('')
+    })
+
     it('should not allow an act if the projection faild', async () => {
       const model = {
         'acts': [
@@ -2172,10 +2284,10 @@ describe('discipl-law-reg', () => {
               'operands': [
                 {
                   'expression': 'PROJECTION',
-                  'operands': [
-                    '[aanvraag]',
-                    '[niet bestaand bedrag]'
-                  ]
+                  'context': [
+                    '[aanvraag]'
+                  ],
+                  'fact': '[niet bestaand bedrag]'
                 },
                 {
                   'expression': 'LITERAL',

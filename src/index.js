@@ -311,17 +311,27 @@ class LawReg {
       case 'PROJECTION':
         logger.debug('Switch case: PROJECTION')
         const core = this.abundance.getCoreAPI()
+        const lawregContext = context
 
-        const factWithCreateExpression = fact.operands[0]
-        const projectedFact = fact.operands[1]
-        const caseLink = await this.checkFact(factWithCreateExpression, ssid, context)
+        if (!fact.context || fact.context.length === 0) {
+          throw new Error("A 'context' array must be given for the PROJECTION expression")
+        }
+
+        // Walk down the context array and resolve each fact
+        const caseLink = await fact.context.reduce(async (caseLink, curr) => {
+          const factContext = await core.get(caseLink, ssid)
+
+          if (Object.keys(factContext.data.DISCIPL_FLINT_FACTS_SUPPLIED).includes(curr)) {
+            return factContext.data.DISCIPL_FLINT_FACTS_SUPPLIED[curr]
+          }
+
+          return undefined
+        }, await this.checkFact(fact.context.shift(), ssid, lawregContext))
+
         const caseObject = await core.get(caseLink, ssid)
 
-        if (Object.keys(caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED).includes(projectedFact)) {
-          const projectionResult = caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED[projectedFact]
-
-          logger.debug('Resolving fact', fact, 'as', projectionResult, 'by determining earlier creation')
-          return projectionResult
+        if (Object.keys(caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED).includes(fact.fact)) {
+          return caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED[fact.fact]
         }
 
         return undefined
