@@ -2075,6 +2075,71 @@ describe('discipl-law-reg', () => {
       expect(acts).to.not.deep.include({ 'act': '<<bedrag vaststellen>>', 'actor': 'ouder' })
       expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
     })
+
+    it.only('should allow OR expressions', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<aanvragen kinderbijslag>>',
+            'actor': '[ouder]',
+            'recipient': '[ambtenaar]',
+            'object': '[verzoek]',
+            'preconditions': '[maximaal]',
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[ambtenaar]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                {
+                  'expression': 'OR',
+                  'operands': [
+                    '[bedrag]',
+                    '[maximaal]'
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[ouder]': true, '[ambtenaar]': true, '[verzoek]': true, '[maximaal]': true }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['ambtenaar', 'ouder'], completeFacts)
+      const acts = [
+        {
+          'act': '<<aanvragen kinderbijslag>>',
+          'actor': 'ouder'
+        },
+        {
+          'act': '<<aanvraag kinderbijslag toekennen>>',
+          'actor': 'ambtenaar'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(errorMessage).to.equal('')
+    })
   })
 
   describe('PROJECTION expression', async function () {
