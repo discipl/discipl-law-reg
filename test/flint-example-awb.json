@@ -362,8 +362,7 @@
       "explanation": "",
       "fact": "[aanvraag]",
       "function": {
-        "expression": "CREATE",
-        "operands": []
+        "expression": "CREATE"
       },
       "reference": "art. 1:3 lid 1 en 3 Awb",
       "version": "2-[19980101]-[jjjjmmdd]",

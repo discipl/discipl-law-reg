@@ -1978,8 +1978,7 @@ describe('discipl-law-reg', () => {
           {
             'fact': '[aanvraag]',
             'function': {
-              'expression': 'CREATE',
-              'operands': []
+              'expression': 'CREATE'
             }
           }
         ],
@@ -2078,7 +2077,7 @@ describe('discipl-law-reg', () => {
     })
   })
 
-  describe.only('PROJECTION expression', async function () {
+  describe('PROJECTION expression', async function () {
     it('should get the projected property', async () => {
       const model = {
         'acts': [
@@ -2087,12 +2086,7 @@ describe('discipl-law-reg', () => {
             'actor': '[burger]',
             'recipient': '[ambtenaar]',
             'object': '[verzoek]',
-            'preconditions': {
-              'expression': 'AND',
-              'operands': [
-                '[bedrag]'
-              ]
-            },
+            'preconditions': '[bedrag]',
             'create': [
               '[aanvraag]'
             ]
@@ -2168,12 +2162,7 @@ describe('discipl-law-reg', () => {
             'actor': '[burger]',
             'recipient': '[ambtenaar]',
             'object': '[verzoek]',
-            'preconditions': {
-              'expression': 'AND',
-              'operands': [
-                '[naam]'
-              ]
-            },
+            'preconditions': '[naam]',
             'create': [
               '[persoonlijke gegevens]'
             ]
