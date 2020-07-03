@@ -290,7 +290,7 @@ class LawReg {
         logger.debug('Switch case: CREATE')
         let finalCreateResult = await this.checkCreatedFact(context.previousFact, ssid, context)
 
-        if (!finalCreateResult | !fact.operands) {
+        if (!finalCreateResult || !fact.operands) {
           logger.debug('Resolving fact', fact, 'as', finalCreateResult, 'by determining earlier creation')
 
           this._extendContextExplanationWithResult(context, finalCreateResult)
