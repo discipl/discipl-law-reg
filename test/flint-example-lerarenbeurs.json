@@ -960,8 +960,7 @@
     {
       "fact": "[besluit]",
       "function": {
-        "expression": "CREATE",
-        "operands": []
+        "expression": "CREATE"
       },
       "version": "2-[19980101]-[jjjjmmdd]",
       "art": "art. 1:3 lid 1 Awb",
@@ -1080,8 +1079,7 @@
     {
       "fact": "[aanvraag]",
       "function": {
-        "expression": "CREATE",
-        "operands": []
+        "expression": "CREATE"
       },
       "version": "2-[19980101]-[jjjjmmdd]",
       "art": "art. 1:3 lid 1 en 3 Awb",
@@ -1100,9 +1098,8 @@
     },
     {
       "fact": "[aanvraag subsidieverlening]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "art. 4:35 Awb",
@@ -1112,9 +1109,8 @@
     },
     {
       "fact": "[aanvraag subsidie voor studiekosten]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "art. 7 lid 1 Slb",
@@ -1124,9 +1120,8 @@
     },
     {
       "fact": "[aanvraag subsidie voor studieverlof]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "art. 8 lid 1 Slb",
@@ -1136,9 +1131,8 @@
     },
     {
       "fact": "[aanvraagformulieren studiekosten op de website van de Dienst Uitvoering Onderwijs]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "art. 7 lid 2 Slb",
@@ -1166,9 +1160,8 @@
     },
     {
       "fact": "[aanvraagformulieren studieverlof op de website van de Dienst Uitvoering Onderwijs]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "art. 8 lid 2 Slb",
@@ -1196,9 +1189,8 @@
     },
     {
       "fact": "[subsidieontvanger studiekosten]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "art. 3 lid 1 onder a Sbl",
@@ -1217,9 +1209,8 @@
     },
     {
       "fact": "[formulier voor het indienen van aanvragen en het verstrekken van gegevens is vastgesteld door bestuursorgaan]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "2-[19940101]-[jjjjmmdd]",
       "art": "art. 4:4 Awb",
@@ -2821,9 +2812,8 @@
     },
     {
       "fact": "[besluit tot verlenen subsidie voor kosten in verband met het verlenen van studieverlof aan de leraar]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "art.3 lid 1, onder b Slb",
@@ -2833,9 +2823,8 @@
     },
     {
       "fact": "[besluit tot verlenen subsidie voor studiekosten van een leraar in verband met het volgen van een opleiding]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "art. 4:23, lid 1 Awb",
@@ -2845,9 +2834,8 @@
     },
     {
       "fact": "[verzoek tot bewijs van het behalen van ten minste vijftien studiepunten]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "Art. 19, onder b Slb",
@@ -2866,9 +2854,8 @@
     },
     {
       "fact": "[verzoek tot bewijs van betaling van collegegeld]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "Art. 19, onder a Slb",
@@ -2912,9 +2899,8 @@
     },
     {
       "fact": "[leraar heeft minder dan 15 studiepunten gehaald]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "Art. 13, lid 1  Slb",
@@ -2924,9 +2910,8 @@
     },
     {
       "fact": "[leraar heeft binnen 2 maanden na verstrekking van de subsidie de aanvraag voor subsidie ingetrokken]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "Art. 13, lid 2, aanhef en omnder a  Slb",
@@ -3005,9 +2990,8 @@
     },
     {
       "fact": "[subsidieontvanger]",
-            "function": {
-        "expression": "CREATE",
-        "operands": []
+      "function": {
+        "expression": "CREATE"
       },
       "version": "",
       "art": "art. 5.7 lid 1, aanhef en onder b. Kaderregeling subsidies OCW, SZW en VWS",
