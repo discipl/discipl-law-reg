@@ -70,7 +70,7 @@ The `LIST` expression has a somewhat different syntax when compared to other exp
 
 #### CREATE
 
-The `CREATE` expression does not accept any operands and can only be used on facts. It ensures that a given facts is the result of an action and not defined elsewhere.
+The `CREATE` expression can be used to make sure that a fact is created as a result of an action. This prevents the usage of facts that are defined elsewhere outside the model and gives better control over the execution flow. At the same time, it is possible to enforce that other fact must exist in the context at the time of creation. Later in the program, all these facts can be referenced with the `PROJECTION` expression.
 
 ```json
 {
@@ -78,6 +78,7 @@ The `CREATE` expression does not accept any operands and can only be used on fac
         {
             "act": "<<kinderbijslag aanvragen>>",
             "actor": "[ouder]",
+            "preconditions": "[bedrag]",
             "recipent": "[minister]",
             "create": [
                 "[aanvraag]"
@@ -87,7 +88,55 @@ The `CREATE` expression does not accept any operands and can only be used on fac
     "facts": [
         {
             "fact": "[aanvraag]",
-            "function": "CREATE"
+            "function": {
+                "expression": "CREATE",
+                "operands": [
+                    "[bedrag]"
+                ]	
+            }
+        }
+    ]
+}
+```
+
+#### PROJECTION
+
+The `PROJECTION` expression can be used the retrieve the contents of facts defined with the `CREATE` expression. It accepts a `context` and `fact` property to define the fact that must be retrieved and the context in which it should be defined. If the fact could not be found, taking the action will fail.
+
+```json
+{
+    "acts": [
+        {
+            // Act that creates the '[aanvraag]' fact
+        },
+        {
+            "act": "<<kinderbijslag toekennen>>",
+            "action": "[toekennen kinderbijslag]",
+            "actor": "[minister]",
+            "preconditions": {
+                "expression": "LESS_THEN",
+                "operands": [
+                    {
+                        "expression": "PROJECTION",
+                        "context": [
+                            "[aanvraag]"
+                        ],
+                        "fact": "[bedrag]"
+                    },
+                    "[maximaal bedrag]" // Fact reference to a LITERAL with a number as value
+                ]
+            }
+        }
+    ],
+    "facts": [
+        {
+            "fact": "[aanvraag]",
+            "function": {
+                "expression": "CREATE",
+                "operands": [
+                    "[bedrag]"
+                ]	
+            }
         }
     ]
 }
