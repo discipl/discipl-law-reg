@@ -287,7 +287,7 @@ class LawReg {
         this._extendContextExplanationWithResult(context, literalValue)
         return literalValue
       case 'CREATE':
-        logger.debug('Swithc case: CREATE')
+        logger.debug('Switch case: CREATE')
         const finalCreateResult = await this.checkCreatedFact(context.previousFact, ssid, context)
         logger.debug('Resolving fact', fact, 'as', finalCreateResult, 'by determining earlier creation')
         this._extendContextExplanationWithResult(context, finalCreateResult)
