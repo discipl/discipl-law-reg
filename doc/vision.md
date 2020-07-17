@@ -2,15 +2,15 @@
 
 Library capable of interpreting published FLINT linked data models of official law and regulation and support self sovereign actors to effectively perform the tasks identified in them through discipl software stack.
 
-This library creates self sovereign id's in relation to needs automaticly and stores key information at a discipl-core supported platform (probably some local or private distributed wallet as you want to keep this private)
+This library creates self sovereign id's in relation to needs automatically and stores key information at a discipl-core supported platform (probably some local or private distributed wallet as you want to keep this private)
 
-Enables possibillity to escalate towards an escalation process (convergent facilitation) if any actor does not agree with the automated process and logic or decisions of other actors.
+Enables possibility to escalate towards an escalation process (convergent facilitation) if any actor does not agree with the automated process and logic or decisions of other actors.
 
 NOTICE: highly experimental - expect the content below to change considerably
 
 ------------------------
 
-discipl-law-reg includes a specification for a FLINT model expressed as linked data. For now it is published as verfiable claim with the whole model as JSON-LD as object. The subject of this claim can be used to verify whether the model is official. The model is closely tied to official law and regulations using official jurisdictional references. A FLINT model is created by hand though with a formal method called Calculemus and specific tooling this can be made straightforward and possibly automated to a certain extend (ongoing research).
+discipl-law-reg includes a specification for a FLINT model expressed as linked data. For now it is published as verifiable claim with the whole model as JSON-LD as object. The subject of this claim can be used to verify whether the model is official. The model is closely tied to official law and regulations using official jurisdictional references. A FLINT model is created by hand though with a formal method called Calculemus and specific tooling this can be made straightforward and possibly automated to a certain extend (ongoing research).
 
 A flint model describes, closely related to official law texts in natural language, the actions actors can or must take in the future (actions and duties) under what conditions given a current situation which depends on the actions that have been taken before and evaluated facts.
 
@@ -63,13 +63,13 @@ Because it is set up this way, actors can follow the same process with other act
 the discipl-law-reg API will resemble:
 
 - publish(ssid, model) : publishes the FLINT JSON model in verifiable claims returning the list of possible start acts (discipl links to the claims defining the actions which are not being referenced by other actions in the model).
-- get(case, actorDid) : returns a list of acts the given actor can take next given the current state of a case. The precondition of acts are evaluated and it's result is included in the result. Acts are included in the result even if the precondition does not evaluate to true. Note that the case is the did created through expressing a need for a specific start act in a flint model as returned by the publish() method. The result returned also includes whether actions (partfully) fullfil which enforceable duty (a link to a published model)
+- get(case, actorDid) : returns a list of acts the given actor can take next given the current state of a case. The precondition of acts are evaluated and it's result is included in the result. Acts are included in the result even if the precondition does not evaluate to true. Note that the case is the did created through expressing a need for a specific start act in a flint model as returned by the publish() method. The result returned also includes whether actions (partfully) fulfil which enforceable duty (a link to a published model)
 - observe(case, actorDid, (history=false)) : returns observable that can be used to handle changes in current acts to be taken (including enforceable duties relating to them) in relation to the given case. Optionally the history (forming a process trail) can be observed through this observable too.
 - take(ssid, case, action (, obj) : log a current action (action reference) as been taken (only possible when precondition is met) optionally providing the object the action is taken upon. This will create new needs for subsequent actions to be taken or revoke such needs for actions created previously.
 
 notice that with this and underlying API's you get insight , at any time, into what cases you as an actor are participating in and in what state the underlying process is: what your possible actions (and duties to such actions) are and in relation to duties under what kind of enforcement. It also let's you determin how to meet preconditions to trigger those actions. Taking actions is solely possible by expressing needs (through discipl-abundance-service) and meeting requirements (which has been expressed through the require() method in the discipl-abundance-service API (formerly discipl-4sacan)) by having certain claims made by yourself or by others (including attestations). A helper function observe() helps an actor respond to events in which an action or duty becomes possible / in effect for him/her/it. This could be used to automate actors taking actions to a certain extend in the form of oracles or even smart contracts.
 
-To escape computer says no situations, even when compying to law, running on a proper established FLINT model, it is expected you are able to use the discipl-pattern API on top of this to request a need for help with a case or conflict resolution.
+To escape computer says no situations, even when complying to law, running on a proper established FLINT model, it is expected you are able to use the discipl-pattern API on top of this to request a need for help with a case or conflict resolution.
 Any actor can retrieve all active cases if having access to the platforms used, even when not having a role in it. You will only be able to monitor it then though. However, in this outsider role you should be able to also start conflict resolution through discipl-pattern when you think you are having a stake in this.
 
 ------------------------------------
