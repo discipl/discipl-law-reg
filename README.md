@@ -34,4 +34,4 @@ Also in the projects root folder:
 npm test
 ```
 
-After completing these steps, you have to see the result of the tests declarerd inside the test folder.
+After completing these steps, you have to see the result of the tests declared inside the test folder.
