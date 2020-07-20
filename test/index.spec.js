@@ -895,7 +895,7 @@ describe('discipl-law-reg', () => {
         errorMessage = e.message
       }
 
-      expect(errorMessage).to.equal('Unknown expression type')
+      expect(errorMessage).to.equal('Unknown expression type BANANAS')
     })
 
     it('should reject an action when a fact defined with a "CREATE" epxression is supplied', async () => {
