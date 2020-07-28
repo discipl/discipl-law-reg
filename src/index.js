@@ -303,7 +303,7 @@ class LawReg {
           return result
         }
 
-        throw new Error('Unknown expression type')
+        throw new Error('Unknown expression type ' + expr)
     }
   }
 
