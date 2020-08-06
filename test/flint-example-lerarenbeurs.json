@@ -152,13 +152,7 @@
       "preconditions": {
         "expression": "AND",
         "operands": [
-          {
-            "expression": "PROJECTION",
-            "context": [
-              "[leraar met aanvraag]"
-            ],
-            "fact": "[aanvraag]"
-          },
+          "[aanvraag]",
           {
             "expression": "AND",
             "operands": [
