@@ -609,288 +609,287 @@ describe('discipl-law-reg', () => {
 
     it('should be able to compare numbers', async () => {
       await testMathExpression({
-        'expression': 'LESS_THAN',
-        'operands': [
-          '[three]',
-          '[five]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5
-      })
-    })
-
-    it('should be able to compare literals', async () => {
-      await testMathExpression({
-        'expression': 'LESS_THAN',
-        'operands': [
-          {
-            'expression': 'LITERAL',
-            'operand': 3
-          },
-          {
-            'expression': 'LITERAL',
-            'operand': 5
-          }
-        ]
-      },
-      {})
-    })
-
-    it('should be able to compare numbers with a false result', async () => {
-      await testFalseMathExpression({
-        'expression': 'LESS_THAN',
-        'operands': [
-          '[five]',
-          '[three]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5
-      })
-    })
-
-    it('should be able to compare numbers equality with a false result', async () => {
-      await testFalseMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          '[dozen]',
-          '[thirteen]'
-        ]
-      },
-      {
-        '[dozen]': 12,
-        '[thirteen]': 13
-      })
-    })
-
-    it('should be able to add numbers', async () => {
-      await testMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'SUM',
-            'operands': [
-              '[three]', '[five]'
-            ]
-          },
-          '[eight]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5,
-        '[eight]': 8
-      })
-    })
-
-    it('should be able to add in a list', async () => {
-      await testMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'SUM',
-            'operands': [
-              {
-                'expression': 'LIST',
-                'items': '[number]'
-              }
-            ]
-          },
-          '[eight]'
-        ]
-      },
-      {
-        '[number]': [3, 5, false],
-        '[eight]': 8
-      })
-    })
-
-    it('should be able to add numbers with a false result', async () => {
-      await testFalseMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'SUM',
-            'operands': [
-              '[three]', '[five]'
-            ]
-          },
-          '[nine]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5,
-        '[nine]': 9
-      })
-    })
-
-    it('should be able to determine the minimum of numbers', async () => {
-      await testMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'MIN',
-            'operands': [
-              '[three]', '[five]'
-            ]
-          },
-          '[three]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5
-      })
-    })
-
-    it('should be able to evaluate a literal boolean', async () => {
-      await testMathExpression({
-        'expression': 'LITERAL',
-        'operand': true
-      },
-      {
-      })
-    })
-
-    it('should be able to determine the minimum of numbers', async () => {
-      await testMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'MIN',
-            'operands': [
-              '[three]', '[five]'
-            ]
-          },
-          '[three]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5
-      })
-    })
-
-    it('should be able to multiply in a list', async () => {
-      await testMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'PRODUCT',
-            'operands': [
-              {
-                'expression': 'LIST',
-                'items': '[number]'
-              }
-            ]
-          },
-          '[fifteen]'
-        ]
-      },
-      {
-        '[number]': [3, 5, false],
-        '[fifteen]': 15
-      })
-    })
-
-    it('should be able to multiply numbers with arbitrary precision', async () => {
-      await testMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'PRODUCT',
-            'operands': [
-              {
-                'expression': 'LITERAL',
-                'operand': 1.15
-              }, '[400]', '[100]'
-            ]
-          },
-          '[46000]'
-        ]
-      },
-      {
-        '[400]': 400,
-        '[100]': 100,
-        '[46000]': 46000
-      })
-    })
-
-    it('should be able to multiply numbers with a false result', async () => {
-      await testFalseMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'PRODUCT',
-            'operands': [
-              '[three]', '[five]'
-            ]
-          },
-          '[fourteen]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5,
-        '[fourteen]': 14
-      })
-    })
-
-    it('should be able to determine the maximum of numbers', async () => {
-      await testMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'MAX',
-            'operands': [
-              '[three]', '[five]'
-            ]
-          },
-          '[five]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5
-      })
-    })
-
-    it('should be able to determine the minimum of numbers', async () => {
-      await testMathExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'MIN',
-            'operands': [
-              '[three]', '[five]'
-            ]
-          },
-          '[three]'
-        ]
-      },
-      {
-        '[three]': 3,
-        '[five]': 5
-      })
-    })
-
-    it('should throw an error with unknown expressions', async () => {
-      let errorMessage
-      try {
-        await testMathExpression({
-          'expression': 'BANANAS',
+          'expression': 'LESS_THAN',
           'operands': [
-            '[three]', '[five]'
+            '[three]',
+            '[five]'
           ]
         },
         {
           '[three]': 3,
           '[five]': 5
         })
+    })
+
+    it('should be able to compare literals', async () => {
+      await testMathExpression({
+          'expression': 'LESS_THAN',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 3
+            },
+            {
+              'expression': 'LITERAL',
+              'operand': 5
+            }
+          ]
+        },
+        {})
+    })
+
+    it('should be able to compare numbers with a false result', async () => {
+      await testFalseMathExpression({
+          'expression': 'LESS_THAN',
+          'operands': [
+            '[five]',
+            '[three]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5
+        })
+    })
+
+    it('should be able to compare numbers equality with a false result', async () => {
+      await testFalseMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            '[dozen]',
+            '[thirteen]'
+          ]
+        },
+        {
+          '[dozen]': 12,
+          '[thirteen]': 13
+        })
+    })
+
+    it('should be able to add numbers', async () => {
+      await testMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'SUM',
+              'operands': [
+                '[three]', '[five]'
+              ]
+            },
+            '[eight]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5,
+          '[eight]': 8
+        })
+    })
+
+    it('should be able to add in a list', async () => {
+      await testMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'SUM',
+              'operands': [
+                {
+                  'expression': 'LIST',
+                  'items': '[number]'
+                }
+              ]
+            },
+            '[eight]'
+          ]
+        },
+        {
+          '[number]': [3, 5, false],
+          '[eight]': 8
+        })
+    })
+
+    it('should be able to add numbers with a false result', async () => {
+      await testFalseMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'SUM',
+              'operands': [
+                '[three]', '[five]'
+              ]
+            },
+            '[nine]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5,
+          '[nine]': 9
+        })
+    })
+
+    it('should be able to determine the minimum of numbers', async () => {
+      await testMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'MIN',
+              'operands': [
+                '[three]', '[five]'
+              ]
+            },
+            '[three]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5
+        })
+    })
+
+    it('should be able to evaluate a literal boolean', async () => {
+      await testMathExpression({
+          'expression': 'LITERAL',
+          'operand': true
+        },
+        {})
+    })
+
+    it('should be able to determine the minimum of numbers', async () => {
+      await testMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'MIN',
+              'operands': [
+                '[three]', '[five]'
+              ]
+            },
+            '[three]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5
+        })
+    })
+
+    it('should be able to multiply in a list', async () => {
+      await testMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'PRODUCT',
+              'operands': [
+                {
+                  'expression': 'LIST',
+                  'items': '[number]'
+                }
+              ]
+            },
+            '[fifteen]'
+          ]
+        },
+        {
+          '[number]': [3, 5, false],
+          '[fifteen]': 15
+        })
+    })
+
+    it('should be able to multiply numbers with arbitrary precision', async () => {
+      await testMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'PRODUCT',
+              'operands': [
+                {
+                  'expression': 'LITERAL',
+                  'operand': 1.15
+                }, '[400]', '[100]'
+              ]
+            },
+            '[46000]'
+          ]
+        },
+        {
+          '[400]': 400,
+          '[100]': 100,
+          '[46000]': 46000
+        })
+    })
+
+    it('should be able to multiply numbers with a false result', async () => {
+      await testFalseMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'PRODUCT',
+              'operands': [
+                '[three]', '[five]'
+              ]
+            },
+            '[fourteen]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5,
+          '[fourteen]': 14
+        })
+    })
+
+    it('should be able to determine the maximum of numbers', async () => {
+      await testMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'MAX',
+              'operands': [
+                '[three]', '[five]'
+              ]
+            },
+            '[five]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5
+        })
+    })
+
+    it('should be able to determine the minimum of numbers', async () => {
+      await testMathExpression({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'MIN',
+              'operands': [
+                '[three]', '[five]'
+              ]
+            },
+            '[three]'
+          ]
+        },
+        {
+          '[three]': 3,
+          '[five]': 5
+        })
+    })
+
+    it('should throw an error with unknown expressions', async () => {
+      let errorMessage
+      try {
+        await testMathExpression({
+            'expression': 'BANANAS',
+            'operands': [
+              '[three]', '[five]'
+            ]
+          },
+          {
+            '[three]': 3,
+            '[five]': 5
+          })
       } catch (e) {
         errorMessage = e.message
       }
@@ -1014,8 +1013,7 @@ describe('discipl-law-reg', () => {
           { 'fact': '[overheid]', 'function': '[]', 'reference': '' },
           { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE', 'operands': [] }, 'reference': '' }
         ],
-        'duties': [
-        ]
+        'duties': []
       }
 
       const lawmakerSsid = await core.newSsid('ephemeral')
@@ -1122,8 +1120,7 @@ describe('discipl-law-reg', () => {
             'version': '2-[19980101]-[jjjjmmdd]',
             'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
           }],
-        'facts': [
-        ],
+        'facts': [],
         'duties': []
       }, ['actor'], {})
 
@@ -1227,8 +1224,7 @@ describe('discipl-law-reg', () => {
           { 'fact': '[overheid]', 'function': '[]', 'reference': '' },
           { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE', 'operands': [] }, 'reference': '' }
         ],
-        'duties': [
-        ]
+        'duties': []
       }
 
       const lawmakerSsid = await core.newSsid('ephemeral')
@@ -1369,7 +1365,7 @@ describe('discipl-law-reg', () => {
       const action = await core.get(secondActionLink, bestuursorgaanSsid)
 
       const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
-        .filter(item => Object.keys(item).includes('<<besluiten de aanvraag niet te behandelen>>'))
+      .filter(item => Object.keys(item).includes('<<besluiten de aanvraag niet te behandelen>>'))
 
       expect(action.data).to.deep.equal({
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
@@ -1621,8 +1617,7 @@ describe('discipl-law-reg', () => {
       const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
       expect(result).to.deep.equal({
-        'invalidReasons': [
-        ],
+        'invalidReasons': [],
         'valid': true
       })
     })
@@ -1648,8 +1643,7 @@ describe('discipl-law-reg', () => {
       const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
       expect(result).to.deep.equal({
-        'invalidReasons': [
-        ],
+        'invalidReasons': [],
         'valid': true
       })
     })
@@ -1770,121 +1764,119 @@ describe('discipl-law-reg', () => {
 
     it('should be able to explain an expression', async () => {
       await explainExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'LITERAL',
-            'operand': 'banana'
-          },
-          '[favourite meal]'
-        ]
-      },
-      {
-        '[favourite meal]': 'banana'
-      },
-      {
-        'fact': '[expression]',
-        'operandExplanations': [
-          {
-            'expression': 'EQUAL',
-            'operandExplanations': [
-              {
-                'expression': 'LITERAL',
-                'value': 'banana'
-              },
-              {
-                'fact': '[favourite meal]',
-                'operandExplanations': [
-                  {
-                    'value': 'banana'
-                  }
-                ],
-                'value': 'banana'
-              }
-            ],
-            'value': true
-          }
-        ],
-        'value': true
-      }
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 'banana'
+            },
+            '[favourite meal]'
+          ]
+        },
+        {
+          '[favourite meal]': 'banana'
+        },
+        {
+          'fact': '[expression]',
+          'operandExplanations': [
+            {
+              'expression': 'EQUAL',
+              'operandExplanations': [
+                {
+                  'expression': 'LITERAL',
+                  'value': 'banana'
+                },
+                {
+                  'fact': '[favourite meal]',
+                  'operandExplanations': [
+                    {
+                      'value': 'banana'
+                    }
+                  ],
+                  'value': 'banana'
+                }
+              ],
+              'value': true
+            }
+          ],
+          'value': true
+        }
       )
     })
 
     it('should be able to explain a less-than expression', async () => {
       await explainExpression({
-        'expression': 'LESS_THAN',
-        'operands': [
-          {
-            'expression': 'LITERAL',
-            'operand': 5
-          },
-          {
-            'expression': 'LITERAL',
-            'operand': 6
-          }
-        ]
-      },
-      {
-      },
-      {
-        'fact': '[expression]',
-        'operandExplanations': [
-          {
-            'expression': 'LESS_THAN',
-            'operandExplanations': [
-              {
-                'expression': 'LITERAL',
-                'value': '5'
-              },
-              {
-                'expression': 'LITERAL',
-                'value': '6'
-              }
-            ],
-            'value': true
-          }
-        ],
-        'value': true
-      }
+          'expression': 'LESS_THAN',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 5
+            },
+            {
+              'expression': 'LITERAL',
+              'operand': 6
+            }
+          ]
+        },
+        {},
+        {
+          'fact': '[expression]',
+          'operandExplanations': [
+            {
+              'expression': 'LESS_THAN',
+              'operandExplanations': [
+                {
+                  'expression': 'LITERAL',
+                  'value': '5'
+                },
+                {
+                  'expression': 'LITERAL',
+                  'value': '6'
+                }
+              ],
+              'value': true
+            }
+          ],
+          'value': true
+        }
       )
     })
 
     it('should be able to explain a min expression', async () => {
       await explainExpression({
-        'expression': 'MIN',
-        'operands': [
-          {
-            'expression': 'LITERAL',
-            'operand': 5
-          },
-          {
-            'expression': 'LITERAL',
-            'operand': 6
-          }
-        ]
-      },
-      {
-      },
-      {
-        'fact': '[expression]',
-        'operandExplanations': [
-          {
-            'expression': 'MIN',
-            'operandExplanations': [
-              {
-                'expression': 'LITERAL',
-                'value': '5'
-              },
-              {
-                'expression': 'LITERAL',
-                'value': '6'
-              }
-            ],
-            'value': '5'
-          }
-        ],
-        'value': '5'
-      }
+          'expression': 'MIN',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 5
+            },
+            {
+              'expression': 'LITERAL',
+              'operand': 6
+            }
+          ]
+        },
+        {},
+        {
+          'fact': '[expression]',
+          'operandExplanations': [
+            {
+              'expression': 'MIN',
+              'operandExplanations': [
+                {
+                  'expression': 'LITERAL',
+                  'value': '5'
+                },
+                {
+                  'expression': 'LITERAL',
+                  'value': '6'
+                }
+              ],
+              'value': '5'
+            }
+          ],
+          'value': '5'
+        }
       )
     })
   })
@@ -2076,7 +2068,7 @@ describe('discipl-law-reg', () => {
       expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
     })
 
-    it.only('should allow OR expressions', async () => {
+    it('should allow OR expressions', async () => {
       const model = {
         'acts': [
           {
@@ -2143,6 +2135,127 @@ describe('discipl-law-reg', () => {
   })
 
   describe('PROJECTION expression', async function () {
+    it('should call getPotentialActs multiple times without breaking PROJECTION expressions', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<subsidie aanvragen>>',
+            'actor': '[burger]',
+            'action': '[aanvragen]',
+            'object': '[verzoek]',
+            'recipient': '[ambtenaar]',
+            'preconditions': '[bedrag]',
+            'create': [
+              '[aanvraag]'
+            ],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          },
+          {
+            'act': '<<subsidie aanvraag toekennen>>',
+            'actor': '[ambtenaar]',
+            'action': '[toekennen]',
+            'object': '[aanvraag]',
+            'recipient': '[burger]',
+            'preconditions': {
+              'expression': 'LESS_THAN',
+              'operands': [
+                '[bedrag projection]',
+                {
+                  'expression': 'LITERAL',
+                  'operand': 500
+                }
+              ]
+            },
+            'create': [],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[bedrag]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[aanvraag]',
+            'explanation': '',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]'
+              ]
+            },
+            'sources': []
+          },
+          {
+            'fact': '[bedrag projection]',
+            'explanation': '',
+            'function': {
+              'expression': 'PROJECTION',
+              'context': [
+                '[aanvraag]'
+              ],
+              'fact': '[bedrag]'
+            },
+            'sources': []
+          },
+          {
+            'fact': '[burger]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[verzoek]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[ambtenaar]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[aanvragen]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[toekennen]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          }
+        ],
+        'duties': []
+      }
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(model, ['burger', 'ambtenaar'], { '[ambtenaar]': 'ambtenaar', '[burger]': 'burger' })
+
+      const needLink = await core.claim(ssids['burger'], {
+        'need': {
+          'act': '<<subsidie aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const potentialActs = (await lawReg.getPotentialActs(needLink, ssids['burger'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(potentialActs).to.deep.equal(['<<subsidie aanvragen>>'])
+
+      const potentialActs2 = (await lawReg.getPotentialActs(needLink, ssids['ambtenaar'], [], [])).map((actInfo) => actInfo.act)
+      expect(potentialActs2).to.deep.equal([])
+    })
+
     it('should get the projected property', async () => {
       const model = {
         'acts': [
