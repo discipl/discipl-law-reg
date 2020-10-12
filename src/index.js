@@ -298,8 +298,10 @@ class LawReg {
         }
 
         for (const op of fact.operands) {
-          const factExists = await this.checkFact(op, ssid, context)
-
+          let factExists = await this.checkFactProvidedInAct(op, ssid, context)
+          if (!factExists) {
+            factExists = await this.checkFact(op, ssid, context)
+          }
           if (!factExists) {
             finalCreateResult = false
             break
@@ -316,9 +318,10 @@ class LawReg {
         const lawregContext = context
 
         if (!fact.context || fact.context.length === 0) {
-          throw new Error("A 'context' array must be given for the PROJECTION expression")
+          throw new Error('A \'context\' array must be given for the PROJECTION expression')
         }
 
+        const initialLink = await this.checkFact(fact.context[0], ssid, lawregContext)
         const caseLink = await fact.context.slice(1).reduce(async (previousCaseLink, currentContextFact) => {
           if (previousCaseLink) {
             const factContext = await core.get(previousCaseLink, ssid)
@@ -328,7 +331,7 @@ class LawReg {
             }
           }
           return undefined
-        }, await this.checkFact(fact.context[0], ssid, lawregContext))
+        }, initialLink)
 
         if (caseLink) {
           const caseObject = await core.get(caseLink, ssid)
@@ -568,6 +571,56 @@ class LawReg {
     return resolvedResult
   }
 
+  async checkFactProvidedInAct (fact, ssid, context) {
+    logger.debug('Checking if', fact, 'was provided in an action')
+    const core = this.abundance.getCoreAPI()
+    let caseLink = context.caseLink
+    const possibleCreatingActions = []
+    const terminatedCreatingActions = []
+    const possibleCreatingActionFact = {}
+
+    while (caseLink != null) {
+      const caseData = await core.get(caseLink, ssid)
+      const lastTakenAction = caseData.data[DISCIPL_FLINT_ACT_TAKEN]
+
+      if (lastTakenAction != null) {
+        const act = await core.get(lastTakenAction, ssid)
+        logger.debug('Found earlier act', act)
+
+        if (act.data[DISCIPL_FLINT_ACT].create != null && act.data[DISCIPL_FLINT_ACT].create.includes(context.previousFact)) {
+          possibleCreatingActions.push(caseLink)
+          possibleCreatingActionFact[caseLink] = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
+        }
+
+        if (act.data[DISCIPL_FLINT_ACT].terminate != null && act.data[DISCIPL_FLINT_ACT].terminate.includes(context.previousFact)) {
+          const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
+          terminatedCreatingActions.push(terminatedLink)
+        }
+      }
+      caseLink = caseData.data[DISCIPL_FLINT_PREVIOUS_CASE]
+    }
+
+    const creatingActions = possibleCreatingActions.filter((maybeTerminatedLink) => !terminatedCreatingActions.includes(maybeTerminatedLink))
+
+    if (creatingActions.length === 0) {
+      return false
+    }
+
+    logger.debug(possibleCreatingActionFact)
+    for (const action of creatingActions) {
+      for (const createdFact in possibleCreatingActionFact[action]) {
+        if (createdFact === fact) {
+          const object = {}
+          object[createdFact] = possibleCreatingActionFact[action][createdFact]
+          logger.debug('fact', fact, 'was provided as', object)
+          return object
+        }
+      }
+    }
+    logger.debug('fact', fact, 'was not provided')
+    return false
+  }
+
   /**
    * Converts an array into an object
    *
@@ -678,7 +731,8 @@ class LawReg {
     logger.debug('Original preconditions', preconditions)
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
     const preconditionContext = this._extendContextWithExplanation(context)
-    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference }) : true
+    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference })
+      : true
 
     if (!checkedPreConditions) {
       invalidReasons.push('preconditions')
@@ -760,7 +814,6 @@ class LawReg {
       const link = Object.values(actWithLink)[0]
 
       const checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink })
-
       if (checkActionInfo.valid) {
         const actionInformation = {
           'act': Object.keys(actWithLink)[0],
@@ -817,12 +870,12 @@ class LawReg {
     const acts = await model.data[DISCIPL_FLINT_MODEL].acts
 
     const allowedActs = []
-    logger.debug('Checking', acts, 'for available acts')
+    logger.debug('Checking', acts, 'for potentially available acts')
     for (const actWithLink of acts) {
       const unknownItems = []
 
       const defaultFactResolver = this._wrapWithDefault(factResolver, {})
-      logger.debug('Checking whether', actWithLink, 'is an available option')
+      logger.debug('Checking whether', actWithLink, 'is a potentially available option')
 
       const link = Object.values(actWithLink)[0]
       const checkActionInfo = await this.checkAction(modelLink, link, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink })
@@ -1013,10 +1066,12 @@ class LawReg {
     const checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink }, true)
     if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
-      return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink,
+      return core.claim(ssid, {
+        [DISCIPL_FLINT_ACT_TAKEN]: actLink,
         [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink,
         [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink,
-        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied })
+        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied
+      })
     }
 
     throw new Error('Action ' + act + ' is not allowed')

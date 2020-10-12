@@ -2136,111 +2136,113 @@ describe('discipl-law-reg', () => {
   })
 
   describe('PROJECTION expression', async function () {
-    it('should call getPotentialActs multiple times without breaking PROJECTION expressions', async () => {
-      const model = {
-        'acts': [
-          {
-            'act': '<<subsidie aanvragen>>',
-            'actor': '[burger]',
-            'action': '[aanvragen]',
-            'object': '[verzoek]',
-            'recipient': '[ambtenaar]',
-            'preconditions': '[bedrag]',
-            'create': [
+    const subsidieModel = {
+      'acts': [
+        {
+          'act': '<<subsidie aanvragen>>',
+          'actor': '[burger]',
+          'action': '[aanvragen]',
+          'object': '[verzoek]',
+          'recipient': '[ambtenaar]',
+          'preconditions': '[bedrag]',
+          'create': [
+            '[aanvraag]'
+          ],
+          'terminate': [],
+          'sources': [],
+          'explanation': ''
+        },
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': '[ambtenaar]',
+          'action': '[toekennen]',
+          'object': '[aanvraag]',
+          'recipient': '[burger]',
+          'preconditions': {
+            'expression': 'LESS_THAN',
+            'operands': [
+              '[bedrag projection]',
+              {
+                'expression': 'LITERAL',
+                'operand': 500
+              }
+            ]
+          },
+          'create': [],
+          'terminate': [
+            '[aanvraag]'
+          ],
+          'sources': [],
+          'explanation': ''
+        }
+      ],
+      'facts': [
+        {
+          'fact': '[bedrag]',
+          'explanation': "GENERATED: This fact was generated during the 'Import From Json Action'",
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[aanvraag]',
+          'explanation': '',
+          'function': {
+            'expression': 'CREATE',
+            'operands': [
+              '[bedrag]'
+            ]
+          },
+          'sources': []
+        },
+        {
+          'fact': '[bedrag projection]',
+          'explanation': '',
+          'function': {
+            'expression': 'PROJECTION',
+            'context': [
               '[aanvraag]'
             ],
-            'terminate': [],
-            'sources': [],
-            'explanation': ''
+            'fact': '[bedrag]'
           },
-          {
-            'act': '<<subsidie aanvraag toekennen>>',
-            'actor': '[ambtenaar]',
-            'action': '[toekennen]',
-            'object': '[aanvraag]',
-            'recipient': '[burger]',
-            'preconditions': {
-              'expression': 'LESS_THAN',
-              'operands': [
-                '[bedrag projection]',
-                {
-                  'expression': 'LITERAL',
-                  'operand': 500
-                }
-              ]
-            },
-            'create': [],
-            'terminate': [],
-            'sources': [],
-            'explanation': ''
-          }
-        ],
-        'facts': [
-          {
-            'fact': '[bedrag]',
-            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
-            'function': '[]',
-            'sources': []
-          },
-          {
-            'fact': '[aanvraag]',
-            'explanation': '',
-            'function': {
-              'expression': 'CREATE',
-              'operands': [
-                '[bedrag]'
-              ]
-            },
-            'sources': []
-          },
-          {
-            'fact': '[bedrag projection]',
-            'explanation': '',
-            'function': {
-              'expression': 'PROJECTION',
-              'context': [
-                '[aanvraag]'
-              ],
-              'fact': '[bedrag]'
-            },
-            'sources': []
-          },
-          {
-            'fact': '[burger]',
-            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
-            'function': '[]',
-            'sources': []
-          },
-          {
-            'fact': '[verzoek]',
-            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
-            'function': '[]',
-            'sources': []
-          },
-          {
-            'fact': '[ambtenaar]',
-            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
-            'function': '[]',
-            'sources': []
-          },
-          {
-            'fact': '[aanvragen]',
-            'explanation': '',
-            'function': '[]',
-            'sources': []
-          },
-          {
-            'fact': '[toekennen]',
-            'explanation': '',
-            'function': '[]',
-            'sources': []
-          }
-        ],
-        'duties': []
-      }
+          'sources': []
+        },
+        {
+          'fact': '[burger]',
+          'explanation': "GENERATED: This fact was generated during the 'Import From Json Action'",
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[verzoek]',
+          'explanation': "GENERATED: This fact was generated during the 'Import From Json Action'",
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[ambtenaar]',
+          'explanation': "GENERATED: This fact was generated during the 'Import From Json Action'",
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[aanvragen]',
+          'explanation': '',
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[toekennen]',
+          'explanation': '',
+          'function': '[]',
+          'sources': []
+        }
+      ],
+      'duties': []
+    }
+    it('should call getPotentialActs multiple times without breaking PROJECTION expressions', async () => {
       const core = lawReg.getAbundanceService().getCoreAPI()
       const util = new Util(lawReg)
-      const { ssids, modelLink } = await util.setupModel(model, ['burger', 'ambtenaar'], { '[ambtenaar]': 'ambtenaar', '[burger]': 'burger' })
+      const { ssids, modelLink } = await util.setupModel(subsidieModel, ['burger', 'ambtenaar'], { '[ambtenaar]': 'ambtenaar', '[burger]': 'burger' })
 
       const needLink = await core.claim(ssids['burger'], {
         'need': {
@@ -2440,7 +2442,7 @@ describe('discipl-law-reg', () => {
       expect(errorMessage).to.equal('')
     })
 
-    it('should not allow an act if the projection faild', async () => {
+    it('should not allow an act if the projection failed', async () => {
       const model = {
         'acts': [
           {
@@ -2500,6 +2502,49 @@ describe('discipl-law-reg', () => {
 
       expect(completeFacts).to.deep.include({ '[bedrag]': 500 })
       expect(errorMessage).to.equal('Action <<subsidie aanvraag toekennen>> is not allowed')
+    })
+
+    it('should be able to take an action after object is created from other action', async () => {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(subsidieModel, ['burger', 'ambtenaar'], { '[ambtenaar]': 'ambtenaar', '[burger]': 'burger' })
+
+      const needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+
+      const needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<subsidie aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => {
+        if (fact === '[bedrag]') return 50
+        return fact === '[verzoek]'
+      }
+
+      const actionLink = await lawReg.take(ssids['burger'], needLink, '<<subsidie aanvragen>>', factResolver)
+
+      const ambtenaarAvailableActs = (await lawReg.getAvailableActs(actionLink, ssids['ambtenaar'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(ambtenaarAvailableActs).to.deep.equal(['<<subsidie aanvraag toekennen>>'])
+
+      const burgerPotentialActs = (await lawReg.getPotentialActs(actionLink, ssids['burger'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(burgerPotentialActs).to.deep.equal(['<<subsidie aanvragen>>'])
+
+      const burgerAvailableActs = (await lawReg.getAvailableActs(actionLink, ssids['burger'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(burgerAvailableActs).to.deep.equal([])
+
+      const actionLink2 = await lawReg.take(ssids['ambtenaar'], actionLink, '<<subsidie aanvraag toekennen>>', factResolver)
+
+      const ambtenaarAvailableActsAfterAanvraagToegekend = (await lawReg.getAvailableActs(actionLink2, ssids['ambtenaar'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(ambtenaarAvailableActsAfterAanvraagToegekend).to.deep.equal([])
     })
   })
 })
