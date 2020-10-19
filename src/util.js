@@ -239,14 +239,14 @@ class Util {
       }
       const values = actors.map((actor) => {
         if (allActors.includes(actor)) {
-          return 'IS:' + ssids[factFunctionSpec[fact]].did
+          return 'IS:' + ssids[actor].did
         } else {
           return factFunctionSpec[fact]
         }
       })
 
       if (values.length === 1) {
-        factFunctions[fact] = values[1]
+        factFunctions[fact] = values[0]
       } else {
         factFunctions[fact] = {
           'expression': 'OR',
