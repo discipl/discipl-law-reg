@@ -206,6 +206,53 @@ describe('discipl-law-reg', () => {
       })
     })
 
+    it('should be able to set one fact to multiple actors', async () => {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      const model = {
+        'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
+        'acts': [
+          {
+            'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+            'action': '[aanvragen]',
+            'actor': '[ingezetene]',
+            'object': '[verwelkomst]',
+            'recipient': '[overheid]',
+            'preconditions': '[]',
+            'create': '<verwelkomen>',
+            'terminate': '',
+            'reference': 'art 2.1',
+            'sourcetext': '',
+            'explanation': '',
+            'version': '2-[19980101]-[jjjjmmdd]',
+            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+          }],
+        'facts': [
+          { 'fact': '[ingezetene]', 'function': '[]', 'reference': '' }
+        ],
+        'duties': []
+      }
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(model, ['ingezetene1', 'ingezetene2'], { '[ingezetene]': ['ingezetene1', 'ingezetene2'] }, false)
+
+      const needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+
+      const needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const ingezetene1Acts = (await lawReg.getPotentialActs(needLink, ssids['ingezetene1'])).map((it) => it.act)
+      const ingezetene2Acts = (await lawReg.getPotentialActs(needLink, ssids['ingezetene2'])).map((it) => it.act)
+
+      expect(ingezetene1Acts).to.deep.equal(['<<ingezetene kan verwelkomst van overheid aanvragen>>'])
+      expect(ingezetene2Acts).to.deep.equal(['<<ingezetene kan verwelkomst van overheid aanvragen>>'])
+    })
+
     it('should be able to take an action with an async factresolver', async () => {
       const core = lawReg.getAbundanceService().getCoreAPI()
 
