@@ -752,8 +752,7 @@ describe('discipl-law-reg', () => {
         'expression': 'LITERAL',
         'operand': true
       },
-      {
-      })
+      {})
     })
 
     it('should be able to determine the minimum of numbers', async () => {
@@ -2136,6 +2135,142 @@ describe('discipl-law-reg', () => {
   })
 
   describe('PROJECTION expression', async function () {
+    it('should be able to have multiple of the same type of actor', async () => {
+      const subsidieModel = {
+        'acts': [
+          {
+            'act': '<<subsidie aanvragen>>',
+            'actor': '[burger]',
+            'action': '[aanvragen]',
+            'object': '[verzoek]',
+            'recipient': '[ambtenaar]',
+            'preconditions': '[bedrag]',
+            'create': [
+              '[aanvraag]'
+            ],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          },
+          {
+            'act': '<<subsidie aanvraag toekennen>>',
+            'actor': '[ambtenaar]',
+            'action': '[toekennen]',
+            'object': '[aanvraag]',
+            'recipient': '[burger]',
+            'preconditions': {
+              'expression': 'LESS_THAN',
+              'operands': [
+                '[bedrag projection]',
+                {
+                  'expression': 'LITERAL',
+                  'operand': 500
+                }
+              ]
+            },
+            'create': [],
+            'terminate': [
+              '[aanvraag]'
+            ],
+            'sources': [],
+            'explanation': ''
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[bedrag]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[aanvraag]',
+            'explanation': '',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]',
+                '[bsn]'
+              ]
+            },
+            'sources': []
+          },
+          {
+            'fact': '[bedrag projection]',
+            'explanation': '',
+            'function': {
+              'expression': 'PROJECTION',
+              'context': [
+                '[aanvraag]'
+              ],
+              'fact': '[bedrag]'
+            },
+            'sources': []
+          },
+          {
+            'fact': '[burger]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[verzoek]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[ambtenaar]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[aanvragen]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[toekennen]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[bsn]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          }
+        ],
+        'duties': []
+      }
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(
+        subsidieModel,
+        ['burger', 'ambtenaar'],
+        { '[ambtenaar]': 'ambtenaar', '[burger]': 'burger' }
+      )
+
+      const needLink = await core.claim(ssids['burger'], {
+        'need': {
+          'act': '<<subsidie aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => {
+        if (fact === '[bedrag]') {
+          return 50
+        }
+        return fact === '[verzoek]'
+      }
+
+      const actionLink = await lawReg.take(ssids['burger'], needLink, '<<subsidie aanvragen>>', factResolver)
+    })
+
     const subsidieModel = {
       'acts': [
         {
@@ -2179,7 +2314,7 @@ describe('discipl-law-reg', () => {
       'facts': [
         {
           'fact': '[bedrag]',
-          'explanation': "GENERATED: This fact was generated during the 'Import From Json Action'",
+          'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
           'function': '[]',
           'sources': []
         },
@@ -2208,19 +2343,19 @@ describe('discipl-law-reg', () => {
         },
         {
           'fact': '[burger]',
-          'explanation': "GENERATED: This fact was generated during the 'Import From Json Action'",
+          'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
           'function': '[]',
           'sources': []
         },
         {
           'fact': '[verzoek]',
-          'explanation': "GENERATED: This fact was generated during the 'Import From Json Action'",
+          'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
           'function': '[]',
           'sources': []
         },
         {
           'fact': '[ambtenaar]',
-          'explanation': "GENERATED: This fact was generated during the 'Import From Json Action'",
+          'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
           'function': '[]',
           'sources': []
         },
@@ -2239,6 +2374,7 @@ describe('discipl-law-reg', () => {
       ],
       'duties': []
     }
+
     it('should call getPotentialActs multiple times without breaking PROJECTION expressions', async () => {
       const core = lawReg.getAbundanceService().getCoreAPI()
       const util = new Util(lawReg)
@@ -2522,7 +2658,9 @@ describe('discipl-law-reg', () => {
       })
 
       const factResolver = (fact) => {
-        if (fact === '[bedrag]') return 50
+        if (fact === '[bedrag]') {
+          return 50
+        }
         return fact === '[verzoek]'
       }
 
