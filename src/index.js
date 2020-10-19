@@ -340,6 +340,25 @@ class LawReg {
   }
 
   /**
+   * Extract the DIDs being referred, if the input is an or expression with IS-constructions
+   *
+   * @param {ParsedExpression | string} functionRef - Possible OR Function with IS-constructions
+   * @returns {[string]} - The DIDs being referred if it is an IS-construction
+   */
+  static extractDids (functionRef) {
+    const did = LawReg.extractDidFromIsConstruction(functionRef)
+    if (did) {
+      return [did]
+    }
+    if (functionRef.expression === 'OR') {
+      return functionRef.operands
+        .map((operand) => LawReg.extractDidFromIsConstruction(operand))
+        .filter((did) => did !== undefined)
+    }
+    return []
+  }
+
+  /**
    * Checks a fact link by checking created objects, `IS`-constructions and else passing the function to {@link checkFact}
    *
    * @param {string} factLink - Link to the fact
@@ -359,9 +378,9 @@ class LawReg {
       return true
     }
 
-    const did = LawReg.extractDidFromIsConstruction(functionRef)
-    if (did != null) {
-      const didIsIdentified = ssid.did === did || !context.myself
+    const dids = LawReg.extractDids(functionRef)
+    if (dids.length > 0) {
+      const didIsIdentified = dids.some((did) => ssid.did === did) || !context.myself
       logger.debug('Resolving fact', fact, 'as', didIsIdentified, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
       this._extendContextExplanationWithResult(context, didIsIdentified)
       return didIsIdentified
