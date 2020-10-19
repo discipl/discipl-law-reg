@@ -233,10 +233,25 @@ class Util {
     }
 
     const factFunctions = Object.keys(factFunctionSpec).reduce((factFunctions, fact) => {
-      if (allActors.includes(factFunctionSpec[fact])) {
-        factFunctions[fact] = 'IS:' + ssids[factFunctionSpec[fact]].did
+      let actors = factFunctionSpec[fact]
+      if (!Array.isArray(actors)) {
+        actors = [actors]
+      }
+      const values = actors.map((actor) => {
+        if (allActors.includes(actor)) {
+          return 'IS:' + ssids[factFunctionSpec[fact]].did
+        } else {
+          return factFunctionSpec[fact]
+        }
+      })
+
+      if (values.length === 1) {
+        factFunctions[fact] = values[1]
       } else {
-        factFunctions[fact] = factFunctionSpec[fact]
+        factFunctions[fact] = {
+          'expression': 'OR',
+          'operands': values
+        }
       }
       return factFunctions
     }, {})
