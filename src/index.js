@@ -340,17 +340,17 @@ class LawReg {
   }
 
   /**
-   * Extract the DIDs being referred, if the input is an or expression with IS-constructions
+   * Extract the DIDs being referred, if the input is an OR Function or a string with IS-constructions
    *
-   * @param {ParsedExpression | string} functionRef - Possible OR Function with IS-constructions
-   * @returns {[string]} - The DIDs being referred if it is an IS-construction
+   * @param {ParsedExpression | string} functionRef - Possible OR Function or string with IS-constructions
+   * @returns {string[]} - The DIDs being referred if it is an IS-construction
    */
   static extractDids (functionRef) {
     const did = LawReg.extractDidFromIsConstruction(functionRef)
     if (did) {
       return [did]
     }
-    if (functionRef.expression === 'OR') {
+    if (functionRef.expression === 'OR' && functionRef.operands) {
       return functionRef.operands
         .map((operand) => LawReg.extractDidFromIsConstruction(operand))
         .filter((did) => did !== undefined)
@@ -651,7 +651,8 @@ class LawReg {
     logger.debug('Original preconditions', preconditions)
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
     const preconditionContext = this._extendContextWithExplanation(context)
-    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference }) : true
+    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference })
+      : true
 
     if (!checkedPreConditions) {
       invalidReasons.push('preconditions')
@@ -986,10 +987,12 @@ class LawReg {
     const checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink }, true)
     if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
-      return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink,
+      return core.claim(ssid, {
+        [DISCIPL_FLINT_ACT_TAKEN]: actLink,
         [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink,
         [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink,
-        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied })
+        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied
+      })
     }
 
     throw new Error('Action ' + act + ' is not allowed')
