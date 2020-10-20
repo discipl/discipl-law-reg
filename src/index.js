@@ -340,26 +340,7 @@ class LawReg {
   }
 
   /**
-   * Extract the DIDs being referred, if the input is an OR Function or a string with IS-constructions
-   *
-   * @param {ParsedExpression | string} functionRef - Possible OR Function or string with IS-constructions
-   * @returns {string[]} - The DIDs being referred if it is an IS-construction
-   */
-  static extractDids (functionRef) {
-    const did = LawReg.extractDidFromIsConstruction(functionRef)
-    if (did) {
-      return [did]
-    }
-    if (functionRef.expression === 'OR' && functionRef.operands) {
-      return functionRef.operands
-        .map((operand) => LawReg.extractDidFromIsConstruction(operand))
-        .filter((did) => did !== undefined)
-    }
-    return []
-  }
-
-  /**
-   * Checks a fact link by checking created objects, `IS`-constructions and else passing the function to {@link checkFact}
+   * Checks a fact link by checking created objects and passing the function to {@link checkFact}
    *
    * @param {string} factLink - Link to the fact
    * @param {string} fact - Name of the fact
@@ -372,23 +353,44 @@ class LawReg {
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
-    if (functionRef === DISCIPL_ANYONE_MARKER) {
+    const result = await this.checkFact(functionRef, ssid, { ...context, previousFact: fact })
+    this._extendContextExplanationWithResult(context, result)
+    return result
+  }
+
+  /**
+   * Checks if fact is anyone marker
+   *
+   * @param {string} fact - Name of the fact
+   * @param {Context} context - Represents the context of the check
+   * @returns {boolean} true if fact is anyone marker else undefined
+   */
+  _checkForIsAnyone (fact, context) {
+    if (fact === DISCIPL_ANYONE_MARKER) {
       logger.debug('Resolving fact', fact, 'as true, because anyone can be this')
       this._extendContextExplanationWithResult(context, true)
       return true
     }
+    return undefined
+  }
 
-    const dids = LawReg.extractDids(functionRef)
-    if (dids.length > 0) {
-      const didIsIdentified = dids.some((did) => ssid.did === did) || !context.myself
+  /**
+   * Checks if fact is `IS`-construction and if so returns if it's allowed
+   *
+   * @param {string} fact - Name of the fact
+   * @param {Context} context - Represents the context of the check
+   * @param {object} ssid - Identity of the entity performing the check
+   * @returns {boolean} true or false if fact is `IS`-construction else undefined
+   */
+  _checkForDidIdentification (fact, context, ssid) {
+    const did = LawReg.extractDidFromIsConstruction(fact)
+    if (did != null) {
+      const didIsIdentified = ssid.did === did || !context.myself
       logger.debug('Resolving fact', fact, 'as', didIsIdentified, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
       this._extendContextExplanationWithResult(context, didIsIdentified)
       return didIsIdentified
     }
-
-    const result = await this.checkFact(functionRef, ssid, { ...context, previousFact: fact })
-    this._extendContextExplanationWithResult(context, result)
-    return result
+    return undefined
   }
 
   /**
@@ -439,6 +441,12 @@ class LawReg {
     }
 
     if (typeof fact === 'string') {
+      const isAnyone = this._checkForIsAnyone(fact, context)
+      if (isAnyone !== undefined) return isAnyone
+
+      const isDidIdentification = this._checkForDidIdentification(fact, context, ssid)
+      if (isDidIdentification !== undefined) return isDidIdentification
+
       if (context.explanation) {
         context.explanation.fact = fact
       }
