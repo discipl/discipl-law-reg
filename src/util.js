@@ -245,13 +245,9 @@ class Util {
         }
       })
 
-      if (values.length === 1) {
-        factFunctions[fact] = values[0]
-      } else {
-        factFunctions[fact] = {
-          'expression': 'OR',
-          'operands': values
-        }
+      factFunctions[fact] = {
+        'expression': 'OR',
+        'operands': values
       }
       return factFunctions
     }, {})
