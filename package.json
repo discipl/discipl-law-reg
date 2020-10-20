@@ -1,6 +1,6 @@
 {
   "name": "@discipl/law-reg",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Discipl Law and Regulation Compliance Library",
   "main": "dist/index.js",
   "module": "src/index.js",
@@ -47,12 +47,12 @@
     "@babel/core": "7.10.1",
     "@babel/preset-env": "7.10.1",
     "@babel/register": "7.10.1",
-    "@discipl/core-ephemeral": "0.10.1",
+    "@discipl/core-ephemeral": "0.11.3",
     "babel-eslint": "10.0.1",
     "babel-plugin-dynamic-import-node": "2.2.0",
     "chai": "4.2.0",
     "codecov": "^3.6.5",
-    "mocha": "8.0.1",
+    "mocha": "^8.2.0",
     "nyc": "14.1.1",
     "sinon": "7.2.4",
     "standard": "12.0.1"

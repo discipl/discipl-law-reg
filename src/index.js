@@ -340,7 +340,7 @@ class LawReg {
   }
 
   /**
-   * Checks a fact link by checking created objects, `IS`-constructions and else passing the function to {@link checkFact}
+   * Checks a fact link by checking created objects and passing the function to {@link checkFact}
    *
    * @param {string} factLink - Link to the fact
    * @param {string} fact - Name of the fact
@@ -353,23 +353,44 @@ class LawReg {
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
-    if (functionRef === DISCIPL_ANYONE_MARKER) {
+    const result = await this.checkFact(functionRef, ssid, { ...context, previousFact: fact })
+    this._extendContextExplanationWithResult(context, result)
+    return result
+  }
+
+  /**
+   * Checks if fact is anyone marker
+   *
+   * @param {string} fact - Name of the fact
+   * @param {Context} context - Represents the context of the check
+   * @returns {boolean} true if fact is anyone marker else undefined
+   */
+  _checkForIsAnyone (fact, context) {
+    if (fact === DISCIPL_ANYONE_MARKER) {
       logger.debug('Resolving fact', fact, 'as true, because anyone can be this')
       this._extendContextExplanationWithResult(context, true)
       return true
     }
+    return undefined
+  }
 
-    const did = LawReg.extractDidFromIsConstruction(functionRef)
+  /**
+   * Checks if fact is `IS`-construction and if so returns if it's allowed
+   *
+   * @param {string} fact - Name of the fact
+   * @param {Context} context - Represents the context of the check
+   * @param {object} ssid - Identity of the entity performing the check
+   * @returns {boolean} true or false if fact is `IS`-construction else undefined
+   */
+  _checkForDidIdentification (fact, context, ssid) {
+    const did = LawReg.extractDidFromIsConstruction(fact)
     if (did != null) {
       const didIsIdentified = ssid.did === did || !context.myself
       logger.debug('Resolving fact', fact, 'as', didIsIdentified, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
       this._extendContextExplanationWithResult(context, didIsIdentified)
       return didIsIdentified
     }
-
-    const result = await this.checkFact(functionRef, ssid, { ...context, previousFact: fact })
-    this._extendContextExplanationWithResult(context, result)
-    return result
+    return undefined
   }
 
   /**
@@ -420,6 +441,12 @@ class LawReg {
     }
 
     if (typeof fact === 'string') {
+      const isAnyone = this._checkForIsAnyone(fact, context)
+      if (isAnyone !== undefined) return isAnyone
+
+      const isDidIdentification = this._checkForDidIdentification(fact, context, ssid)
+      if (isDidIdentification !== undefined) return isDidIdentification
+
       if (context.explanation) {
         context.explanation.fact = fact
       }
@@ -632,7 +659,8 @@ class LawReg {
     logger.debug('Original preconditions', preconditions)
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
     const preconditionContext = this._extendContextWithExplanation(context)
-    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference }) : true
+    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this.checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference })
+      : true
 
     if (!checkedPreConditions) {
       invalidReasons.push('preconditions')
@@ -967,10 +995,12 @@ class LawReg {
     const checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink }, true)
     if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
-      return core.claim(ssid, { [DISCIPL_FLINT_ACT_TAKEN]: actLink,
+      return core.claim(ssid, {
+        [DISCIPL_FLINT_ACT_TAKEN]: actLink,
         [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink,
         [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink,
-        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied })
+        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied
+      })
     }
 
     throw new Error('Action ' + act + ' is not allowed')
