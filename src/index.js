@@ -11,6 +11,7 @@ const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
 const DISCIPL_FLINT_ACT = 'DISCIPL_FLINT_ACT'
 const DISCIPL_FLINT_DUTY = 'DISCIPL_FLINT_DUTY'
 const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
+const DISCIPL_FLINT_ACT_TAKEN_BY = 'DISCIPL_FLINT_ACT_TAKEN_BY'
 const DISCIPL_FLINT_FACTS_SUPPLIED = 'DISCIPL_FLINT_FACTS_SUPPLIED'
 const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
 const DISCIPL_FLINT_PREVIOUS_CASE = 'DISCIPL_FLINT_PREVIOUS_CASE'
@@ -491,10 +492,14 @@ class LawReg {
 
     if (typeof fact === 'string') {
       const isAnyone = this._checkForIsAnyone(fact, context)
-      if (isAnyone !== undefined) return isAnyone
+      if (isAnyone !== undefined) {
+        return isAnyone
+      }
 
       const isDidIdentification = this._checkForDidIdentification(fact, context, ssid)
-      if (isDidIdentification !== undefined) return isDidIdentification
+      if (isDidIdentification !== undefined) {
+        return isDidIdentification
+      }
 
       if (context.explanation) {
         context.explanation.fact = fact
@@ -547,43 +552,17 @@ class LawReg {
   }
 
   /**
-   * Checks a fact by checking if it has been created in a prior act, and has not been terminated since
+   * Checks if a fact was created in a act that wasn't terminated yet that the given entity has access to.
    *
    * @param {string} fact - Description of the fact, surrounded with []
    * @param {object} ssid - Identity of entity doing the checking
    * @param {Context} context - context of the checking
-   * @returns {Promise<boolean>}
+   * @returns {Promise<boolean>} - true if the fact has been created
    */
   async checkCreatedFact (fact, ssid, context) {
     logger.debug('Checking if', fact, 'was created')
-    const core = this.abundance.getCoreAPI()
-    let caseLink = context.caseLink
 
-    const possibleCreatingActions = []
-    const terminatedCreatingActions = []
-
-    while (caseLink != null) {
-      const caseData = await core.get(caseLink, ssid)
-      const lastTakenAction = caseData.data[DISCIPL_FLINT_ACT_TAKEN]
-
-      if (lastTakenAction != null) {
-        const act = await core.get(lastTakenAction, ssid)
-        logger.debug('Found earlier act', act)
-
-        if (act.data[DISCIPL_FLINT_ACT].create != null && act.data[DISCIPL_FLINT_ACT].create.includes(fact)) {
-          possibleCreatingActions.push(caseLink)
-        }
-
-        if (act.data[DISCIPL_FLINT_ACT].terminate != null && act.data[DISCIPL_FLINT_ACT].terminate.includes(fact)) {
-          const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
-          terminatedCreatingActions.push(terminatedLink)
-        }
-      }
-      caseLink = caseData.data[DISCIPL_FLINT_PREVIOUS_CASE]
-    }
-
-    const creatingActions = possibleCreatingActions.filter((maybeTerminatedLink) => !terminatedCreatingActions.includes(maybeTerminatedLink))
-
+    const creatingActions = Object.keys(await this._getCreatingActs(fact, ssid, context))
     if (creatingActions.length === 0) {
       return false
     }
@@ -598,54 +577,87 @@ class LawReg {
     return resolvedResult
   }
 
+  /**
+   * Checks if a given fact was provided in an act that wasn't terminated yet that the given entity has access to.
+   *
+   * @param {string} fact - Description of the fact, surrounded with []
+   * @param {object} ssid - Identity of entity doing the checking
+   * @param {Context} context - context of the checking
+   * @returns {Promise<object>} - the facts value or false if it hasn't been provided
+   */
   async checkFactProvidedInAct (fact, ssid, context) {
     logger.debug('Checking if', fact, 'was provided in an action')
+    const creatingActions = await this._getCreatingActs(context.previousFact, ssid, context)
+    if (Object.keys(creatingActions).length !== 0) {
+      const actionWithTheFact = Object.values(creatingActions).find((value) => value[fact] !== undefined)
+      if (actionWithTheFact !== undefined) {
+        const theFact = actionWithTheFact[fact]
+        logger.debug('fact', fact, 'was provided as', theFact)
+        return theFact
+      }
+    }
+    logger.debug('fact', fact, 'was not provided')
+    return false
+  }
+
+  /**
+   * Get all creating acts where the fact was created and not terminated yet
+   *
+   * @param {string} fact - Description of the fact, surrounded with []
+   * @param {object} ssid - Identity of entity getting the acts
+   * @param {Context} context - context of the getting
+   * @returns {Promise<object>} - Object where the keys are the found act case links and the values are the provided facts.
+   */
+  async _getCreatingActs (fact, ssid, context) {
+    logger.debug('Getting creating actions for', fact)
     const core = this.abundance.getCoreAPI()
     let caseLink = context.caseLink
-    const possibleCreatingActions = []
+    const possibleCreatingActions = {}
     const terminatedCreatingActions = []
-    const possibleCreatingActionFact = {}
 
     while (caseLink != null) {
       const caseData = await core.get(caseLink, ssid)
       const lastTakenAction = caseData.data[DISCIPL_FLINT_ACT_TAKEN]
+      const takenBy = caseData.data[DISCIPL_FLINT_ACT_TAKEN_BY]
 
       if (lastTakenAction != null) {
-        const act = await core.get(lastTakenAction, ssid)
-        logger.debug('Found earlier act', act)
-
-        if (act.data[DISCIPL_FLINT_ACT].create != null && act.data[DISCIPL_FLINT_ACT].create.includes(context.previousFact)) {
-          possibleCreatingActions.push(caseLink)
-          possibleCreatingActionFact[caseLink] = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
+        const actData = await core.get(lastTakenAction, ssid)
+        const act = actData.data[DISCIPL_FLINT_ACT]
+        const amIRecipient = async () => {
+          const isRecipientOfType = await this.checkFact(act.recipient, ssid, { ...context, 'myself': true })
+          logger.debug('Checking if', ssid.did, 'is a recipient of type', act.recipient, 'resolved to', isRecipientOfType)
+          return isRecipientOfType
         }
 
-        if (act.data[DISCIPL_FLINT_ACT].terminate != null && act.data[DISCIPL_FLINT_ACT].terminate.includes(context.previousFact)) {
-          const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
-          terminatedCreatingActions.push(terminatedLink)
+        if (takenBy === ssid.did || await amIRecipient()) {
+          logger.debug('Found earlier act', act.act)
+
+          if (act.create != null && act.create.includes(fact)) {
+            possibleCreatingActions[caseLink] = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
+          }
+
+          if (act.terminate != null && act.terminate.includes(fact)) {
+            const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
+            terminatedCreatingActions.push(terminatedLink)
+          }
         }
       }
       caseLink = caseData.data[DISCIPL_FLINT_PREVIOUS_CASE]
     }
 
-    const creatingActions = possibleCreatingActions.filter((maybeTerminatedLink) => !terminatedCreatingActions.includes(maybeTerminatedLink))
+    const filtered = Object
+      .keys(possibleCreatingActions)
+      .filter(key => !terminatedCreatingActions.includes(key))
+      .reduce(
+        (obj, key) => {
+          obj[key] = possibleCreatingActions[key]
+          return obj
+        },
+        {}
+      )
 
-    if (creatingActions.length === 0) {
-      return false
-    }
-
-    logger.debug(possibleCreatingActionFact)
-    for (const action of creatingActions) {
-      for (const createdFact in possibleCreatingActionFact[action]) {
-        if (createdFact === fact) {
-          const object = {}
-          object[createdFact] = possibleCreatingActionFact[action][createdFact]
-          logger.debug('fact', fact, 'was provided as', object)
-          return object
-        }
-      }
-    }
-    logger.debug('fact', fact, 'was not provided')
-    return false
+    logger.debug('Creating acts', filtered)
+    return filtered
   }
 
   /**
@@ -1089,12 +1101,13 @@ class LawReg {
 
     const defaultFactResolver = this._wrapWithDefault(factResolver, factsSupplied)
 
-    logger.debug('Checking if action is possible from perspective of', ssid.did)
+    logger.debug('Checking if action', act, 'is possible from perspective of', ssid.did)
     const checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink }, true)
     if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
       return core.claim(ssid, {
         [DISCIPL_FLINT_ACT_TAKEN]: actLink,
+        [DISCIPL_FLINT_ACT_TAKEN_BY]: ssid.did,
         [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink,
         [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink,
         [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied

@@ -197,6 +197,7 @@ describe('discipl-law-reg', () => {
 
       expect(action.data).to.deep.equal({
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+        'DISCIPL_FLINT_ACT_TAKEN_BY': ssids['ingezetene'].did,
         'DISCIPL_FLINT_FACTS_SUPPLIED': {
           '[overheid]': true,
           '[verwelkomst]': true
@@ -297,7 +298,9 @@ describe('discipl-law-reg', () => {
       })
 
       const factResolver = (fact) => {
-        if (fact === '[verwelkomst]') return true
+        if (fact === '[verwelkomst]') {
+          return true
+        }
         return false
       }
       const actionLink = await lawReg.take(ssids['ingezetene1'], needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
@@ -306,6 +309,7 @@ describe('discipl-law-reg', () => {
 
       expect(action.data).to.deep.equal({
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+        'DISCIPL_FLINT_ACT_TAKEN_BY': ssids['ingezetene1'].did,
         'DISCIPL_FLINT_FACTS_SUPPLIED': {
           '[verwelkomst]': true
         },
@@ -372,6 +376,7 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+          'DISCIPL_FLINT_ACT_TAKEN_BY': actorSsid.did,
           'DISCIPL_FLINT_FACTS_SUPPLIED': {
             '[overheid]': true,
             '[verwelkomst]': true
@@ -454,6 +459,7 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+          'DISCIPL_FLINT_ACT_TAKEN_BY': actorSsid.did,
           'DISCIPL_FLINT_FACTS_SUPPLIED': {
             '[ouder]': true,
             '[overheid]': true,
@@ -552,6 +558,7 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+          'DISCIPL_FLINT_ACT_TAKEN_BY': actorSsid.did,
           'DISCIPL_FLINT_FACTS_SUPPLIED': {
             '[ouder]': true,
             '[overheid]': true,
@@ -1405,6 +1412,7 @@ describe('discipl-law-reg', () => {
       expect(action).to.deep.equal({
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+          'DISCIPL_FLINT_ACT_TAKEN_BY': actorSsid.did,
           'DISCIPL_FLINT_FACTS_SUPPLIED': {
             '[bij wettelijk voorschrift is anders bepaald]': false,
             '[verzoek een besluit te nemen]': true,
@@ -1477,6 +1485,7 @@ describe('discipl-law-reg', () => {
 
       expect(action.data).to.deep.equal({
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
+        'DISCIPL_FLINT_ACT_TAKEN_BY': bestuursorgaanSsid.did,
         'DISCIPL_FLINT_FACTS_SUPPLIED': {
           '[aanvraag]': actionLink,
           '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]': true
@@ -2252,11 +2261,31 @@ describe('discipl-law-reg', () => {
             'action': '[aanvragen]',
             'object': '[verzoek]',
             'recipient': '[ambtenaar]',
-            'preconditions': '[bedrag]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[bsn]',
+                '[bedrag]'
+              ]
+            },
             'create': [
               '[aanvraag]'
             ],
             'terminate': [],
+            'sources': [],
+            'explanation': ''
+          },
+          {
+            'act': '<<subsidie aanvraag intrekken>>',
+            'actor': '[burger]',
+            'action': '[intrekken]',
+            'object': '[aanvraag]',
+            'recipient': '[ambtenaar]',
+            'preconditions': '[]',
+            'create': [],
+            'terminate': [
+              '[aanvraag]'
+            ],
             'sources': [],
             'explanation': ''
           },
@@ -2358,11 +2387,11 @@ describe('discipl-law-reg', () => {
       const util = new Util(lawReg)
       const { ssids, modelLink } = await util.setupModel(
         subsidieModel,
-        ['burger', 'ambtenaar'],
-        { '[ambtenaar]': 'ambtenaar', '[burger]': 'burger' }
+        ['burger1', 'burger2', 'ambtenaar'],
+        { '[ambtenaar]': 'ambtenaar', '[burger]': ['burger1', 'burger2'] }
       )
 
-      const needLink = await core.claim(ssids['burger'], {
+      const needLink = await core.claim(ssids['burger1'], {
         'need': {
           'act': '<<subsidie aanvragen>>',
           'DISCIPL_FLINT_MODEL_LINK': modelLink
@@ -2370,13 +2399,23 @@ describe('discipl-law-reg', () => {
       })
 
       const factResolver = (fact) => {
-        if (fact === '[bedrag]') {
-          return 50
-        }
+        if (fact === '[bedrag]') { return 50 }
+        if (fact === '[bsn]') { return '605211619' }
         return fact === '[verzoek]'
       }
 
-      const actionLink = await lawReg.take(ssids['burger'], needLink, '<<subsidie aanvragen>>', factResolver)
+      const availableActs1 = (await lawReg.getAvailableActsWithResolver(needLink, ssids['burger1'], factResolver)).map((actInfo) => actInfo.act)
+      expect(availableActs1).to.deep.equal([ '<<subsidie aanvragen>>' ])
+
+      const actionLink = await lawReg.take(ssids['burger1'], needLink, '<<subsidie aanvragen>>', factResolver)
+      const availableActs2 = (await lawReg.getAvailableActs(actionLink, ssids['burger1'])).map((actInfo) => actInfo.act)
+      expect(availableActs2).to.deep.equal([ '<<subsidie aanvraag intrekken>>' ])
+
+      const burger2Acts = (await lawReg.getAvailableActs(actionLink, ssids['burger2'])).map((actInfo) => actInfo.act)
+      expect(burger2Acts).to.deep.equal([])
+
+      const ambtenaarActs = (await lawReg.getAvailableActs(actionLink, ssids['ambtenaar'])).map((actInfo) => actInfo.act)
+      expect(ambtenaarActs).to.deep.equal(['<<subsidie aanvraag toekennen>>'])
     })
 
     const subsidieModel = {
