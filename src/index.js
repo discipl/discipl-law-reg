@@ -11,7 +11,6 @@ const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
 const DISCIPL_FLINT_ACT = 'DISCIPL_FLINT_ACT'
 const DISCIPL_FLINT_DUTY = 'DISCIPL_FLINT_DUTY'
 const DISCIPL_FLINT_ACT_TAKEN = 'DISCIPL_FLINT_ACT_TAKEN'
-const DISCIPL_FLINT_ACT_TAKEN_BY = 'DISCIPL_FLINT_ACT_TAKEN_BY'
 const DISCIPL_FLINT_FACTS_SUPPLIED = 'DISCIPL_FLINT_FACTS_SUPPLIED'
 const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
 const DISCIPL_FLINT_PREVIOUS_CASE = 'DISCIPL_FLINT_PREVIOUS_CASE'
@@ -456,6 +455,7 @@ class LawReg {
    * @property {function} factResolver - Function to resolve facts if it cannot be done another way
    * @property {string} caseLink - Link to the current case
    * @property {object} [facts] - Parsed facts from flint model
+   * @property {object} [factsSupplied] - Parsed facts from flint model
    * @property {string} [previousFact] - last fact that was considered in the context
    * @property {boolean} [myself] - `IS:` constructions will be resolved if it concerns the person themselves
    * @property {object} [factReference] - Map from fact names to fact links in a published FLINT model
@@ -479,6 +479,7 @@ class LawReg {
     logger.debug('Checking fact', fact)
     const factLink = context.facts ? context.facts[fact] : null
 
+    const printResult = (aResult) => logger.debug('Resolved', fact, 'as', aResult)
     if (factLink) {
       if (context.explanation) {
         context.explanation.fact = fact
@@ -487,17 +488,27 @@ class LawReg {
       const result = await this.checkFactLink(factLink, fact, ssid, newContext)
 
       this._extendContextExplanationWithResult(context, result)
+      printResult(result)
+
+      // TODO find better way
+      const isDidIdentification = this._checkForDidIdentification(result, context, ssid)
+      if (isDidIdentification !== undefined) {
+        printResult(isDidIdentification)
+        return isDidIdentification
+      }
       return result
     }
 
     if (typeof fact === 'string') {
       const isAnyone = this._checkForIsAnyone(fact, context)
       if (isAnyone !== undefined) {
+        printResult(isAnyone)
         return isAnyone
       }
 
       const isDidIdentification = this._checkForDidIdentification(fact, context, ssid)
       if (isDidIdentification !== undefined) {
+        printResult(isDidIdentification)
         return isDidIdentification
       }
 
@@ -507,11 +518,12 @@ class LawReg {
       const newContext = this._extendContextWithExplanation(context)
       const result = await this.checkFactWithResolver(fact, ssid, newContext)
       this._extendContextExplanationWithResult(context, result)
+      printResult(result)
       return result
     } else {
       const result = await this.checkExpression(fact, ssid, context)
       this._extendContextExplanationWithResult(context, result)
-
+      printResult(result)
       return result
     }
   }
@@ -618,28 +630,19 @@ class LawReg {
     while (caseLink != null) {
       const caseData = await core.get(caseLink, ssid)
       const lastTakenAction = caseData.data[DISCIPL_FLINT_ACT_TAKEN]
-      const takenBy = caseData.data[DISCIPL_FLINT_ACT_TAKEN_BY]
 
       if (lastTakenAction != null) {
         const actData = await core.get(lastTakenAction, ssid)
         const act = actData.data[DISCIPL_FLINT_ACT]
-        const amIRecipient = async () => {
-          const isRecipientOfType = await this.checkFact(act.recipient, ssid, { ...context, 'myself': true })
-          logger.debug('Checking if', ssid.did, 'is a recipient of type', act.recipient, 'resolved to', isRecipientOfType)
-          return isRecipientOfType
+        logger.debug('Found earlier act', act.act)
+
+        if (act.create != null && act.create.includes(fact)) {
+          possibleCreatingActions[caseLink] = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
         }
 
-        if (takenBy === ssid.did || await amIRecipient()) {
-          logger.debug('Found earlier act', act.act)
-
-          if (act.create != null && act.create.includes(fact)) {
-            possibleCreatingActions[caseLink] = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
-          }
-
-          if (act.terminate != null && act.terminate.includes(fact)) {
-            const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
-            terminatedCreatingActions.push(terminatedLink)
-          }
+        if (act.terminate != null && act.terminate.includes(fact)) {
+          const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
+          terminatedCreatingActions.push(terminatedLink)
         }
       }
       caseLink = caseData.data[DISCIPL_FLINT_PREVIOUS_CASE]
@@ -721,6 +724,7 @@ class LawReg {
 
     const actorContext = this._extendContextWithExplanation(context)
 
+    logger.info('Checking if', actor, 'is', ssid.did)
     const checkedActor = await this.checkFact(actor, ssid, { ...actorContext, 'facts': factReference, 'myself': true })
 
     if (!checkedActor) {
@@ -730,6 +734,11 @@ class LawReg {
           'valid': false,
           'invalidReasons': invalidReasons
         }
+      }
+    } else {
+      // TODO find better way
+      if (context.factsSupplied) {
+        context.factsSupplied[actor] = DISCIPL_IS_MARKER + ssid.did
       }
     }
 
@@ -750,7 +759,7 @@ class LawReg {
       }
     }
 
-    const recipient = actReference.data[DISCIPL_FLINT_ACT]['recipient']
+    const recipient = actReference.data[DISCIPL_FLINT_ACT].recipient
     logger.debug('Original recipient', recipient)
     const interestedPartyContext = this._extendContextWithExplanation(context)
     const checkedInterestedParty = await this.checkFact(recipient, ssid, { ...interestedPartyContext, 'facts': factReference })
@@ -1102,12 +1111,11 @@ class LawReg {
     const defaultFactResolver = this._wrapWithDefault(factResolver, factsSupplied)
 
     logger.debug('Checking if action', act, 'is possible from perspective of', ssid.did)
-    const checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink }, true)
+    const checkActionInfo = await this.checkAction(modelLink, actLink, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink, 'factsSupplied': factsSupplied }, true)
     if (checkActionInfo.valid) {
       logger.info('Registering act', actLink)
       return core.claim(ssid, {
         [DISCIPL_FLINT_ACT_TAKEN]: actLink,
-        [DISCIPL_FLINT_ACT_TAKEN_BY]: ssid.did,
         [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink,
         [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink,
         [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied
