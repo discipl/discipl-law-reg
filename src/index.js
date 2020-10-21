@@ -5,6 +5,7 @@ import { BigUtil } from './big_util'
 import * as log from 'loglevel'
 import { BaseConnector } from '@discipl/core-baseconnector'
 import Big from 'big.js'
+import IdentityUtil from './identity_util'
 
 const DISCIPL_FLINT_MODEL = 'DISCIPL_FLINT_MODEL'
 const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -337,11 +338,26 @@ class LawReg {
           const caseObject = await core.get(caseLink, ssid)
 
           if (Object.keys(caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED).includes(fact.fact)) {
-            return caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED[fact.fact]
+            const projectionResult = caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED[fact.fact]
+            if (typeof projectionResult === 'object') {
+              return this.checkFact(projectionResult, ssid, context)
+            }
+            return projectionResult
           }
         }
 
         return undefined
+      case 'IS':
+        logger.debug('Switch case: IS')
+        if (!fact.operand) {
+          throw new Error('A operand must be given for the IS expression')
+        }
+        const isAnyone = this._checkForIsAnyone(fact.operand, context)
+        if (isAnyone) {
+          return true
+        }
+
+        return this._checkForDidIdentification(fact.operand, context, ssid)
       default:
         logger.debug('Switch case: default')
         if (typeof fact === 'string') {
@@ -410,32 +426,31 @@ class LawReg {
   /**
    * Checks if fact is anyone marker
    *
-   * @param {string} fact - Name of the fact
+   * @param {string} did - The did to check
    * @param {Context} context - Represents the context of the check
-   * @returns {boolean} true if fact is anyone marker else undefined
+   * @returns {boolean} true if did is anyone marker
    */
-  _checkForIsAnyone (fact, context) {
-    if (fact === DISCIPL_ANYONE_MARKER) {
-      logger.debug('Resolving fact', fact, 'as true, because anyone can be this')
+  _checkForIsAnyone (did, context) {
+    if (did === DISCIPL_ANYONE_MARKER) {
+      logger.debug('Resolved IS as true, because anyone can be this')
       this._extendContextExplanationWithResult(context, true)
       return true
     }
-    return undefined
+    return false
   }
 
   /**
    * Checks if fact is `IS`-construction and if so returns if it's allowed
    *
-   * @param {string} fact - Name of the fact
+   * @param {string} did - The did to check
    * @param {Context} context - Represents the context of the check
    * @param {object} ssid - Identity of the entity performing the check
    * @returns {boolean} true or false if fact is `IS`-construction else undefined
    */
-  _checkForDidIdentification (fact, context, ssid) {
-    const did = LawReg.extractDidFromIsConstruction(fact)
+  _checkForDidIdentification (did, context, ssid) {
     if (did != null) {
       const didIsIdentified = ssid.did === did || !context.myself
-      logger.debug('Resolving fact', fact, 'as', didIsIdentified, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
+      logger.debug('Resolving fact IS as', didIsIdentified, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
       this._extendContextExplanationWithResult(context, didIsIdentified)
       return didIsIdentified
     }
@@ -489,29 +504,10 @@ class LawReg {
 
       this._extendContextExplanationWithResult(context, result)
       printResult(result)
-
-      // TODO find better way
-      const isDidIdentification = this._checkForDidIdentification(result, context, ssid)
-      if (isDidIdentification !== undefined) {
-        printResult(isDidIdentification)
-        return isDidIdentification
-      }
       return result
     }
 
     if (typeof fact === 'string') {
-      const isAnyone = this._checkForIsAnyone(fact, context)
-      if (isAnyone !== undefined) {
-        printResult(isAnyone)
-        return isAnyone
-      }
-
-      const isDidIdentification = this._checkForDidIdentification(fact, context, ssid)
-      if (isDidIdentification !== undefined) {
-        printResult(isDidIdentification)
-        return isDidIdentification
-      }
-
       if (context.explanation) {
         context.explanation.fact = fact
       }
@@ -734,11 +730,6 @@ class LawReg {
           'valid': false,
           'invalidReasons': invalidReasons
         }
-      }
-    } else {
-      // TODO find better way
-      if (context.factsSupplied) {
-        context.factsSupplied[actor] = DISCIPL_IS_MARKER + ssid.did
       }
     }
 
@@ -1118,11 +1109,27 @@ class LawReg {
         [DISCIPL_FLINT_ACT_TAKEN]: actLink,
         [DISCIPL_FLINT_GLOBAL_CASE]: firstCaseLink,
         [DISCIPL_FLINT_PREVIOUS_CASE]: caseLink,
-        [DISCIPL_FLINT_FACTS_SUPPLIED]: factsSupplied
+        [DISCIPL_FLINT_FACTS_SUPPLIED]: await this._addActorIsExpression(actLink, factsSupplied, ssid)
       })
     }
 
     throw new Error('Action ' + act + ' is not allowed')
+  }
+
+  /**
+   * Add actor IS expression to supplied facts
+   *
+   * @param {string} actLink - Link to the particular act
+   * @param {object} ssid - Identity of the actor
+   * @param {object} factsSupplied - The supplied facts
+   * @returns {Promise<object>} The supplied facts
+   */
+  async _addActorIsExpression (actLink, factsSupplied, ssid) {
+    const core = this.abundance.getCoreAPI()
+    const actReference = await core.get(actLink, ssid)
+    const actor = actReference.data[DISCIPL_FLINT_ACT].actor
+    factsSupplied[actor] = IdentityUtil.identityExpression(ssid.did)
+    return factsSupplied
   }
 
   /**
