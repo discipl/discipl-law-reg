@@ -1,3 +1,5 @@
+import IdentityUtil from './identity_util'
+
 const CERTS = [
   {
     'cert': `-----BEGIN CERTIFICATE-----
@@ -239,9 +241,9 @@ class Util {
       }
       const values = actors.map((actor) => {
         if (allActors.includes(actor)) {
-          return 'IS:' + ssids[actor].did
+          return IdentityUtil.identityExpression(ssids[actor].did)
         } else {
-          return factFunctionSpec[fact]
+          return IdentityUtil.identityExpression(factFunctionSpec[fact])
         }
       })
 
@@ -264,13 +266,11 @@ class Util {
     const needSsid = await ephemeralConnector.newIdentity(cert)
     await this.core.allow(needSsid)
 
-    const needLink = await this.core.claim(needSsid, {
+    let caseLink = await this.core.claim(needSsid, {
       'need': {
         'DISCIPL_FLINT_MODEL_LINK': modelLink
       }
     })
-
-    let caseLink = needLink
 
     const factResolver = (fact) => {
       if (facts[fact]) {

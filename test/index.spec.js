@@ -7,6 +7,7 @@ import * as log from 'loglevel'
 import Util from '../src/util'
 
 import awb from './flint-example-awb'
+import IdentityUtil from '../src/identity_util'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
 log.getLogger('disciplLawReg').setLevel('debug')
@@ -199,10 +200,86 @@ describe('discipl-law-reg', () => {
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
         'DISCIPL_FLINT_FACTS_SUPPLIED': {
           '[overheid]': true,
-          '[verwelkomst]': true
+          '[verwelkomst]': true,
+          '[ingezetene]': IdentityUtil.identityExpression(ssids['ingezetene'].did)
         },
         'DISCIPL_FLINT_GLOBAL_CASE': needLink,
         'DISCIPL_FLINT_PREVIOUS_CASE': needLink
+      })
+    })
+
+    it('should allow any actor to take an action where the fact is true for ANYONE', async () => {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      const model = {
+        'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
+        'acts': [
+          {
+            'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+            'action': '[aanvragen]',
+            'actor': '[ingezetene]',
+            'object': '[verwelkomst]',
+            'recipient': '[overheid]',
+            'preconditions': '[]',
+            'create': '<verwelkomen>',
+            'terminate': '',
+            'reference': 'art 2.1',
+            'sourcetext': '',
+            'explanation': '',
+            'version': '2-[19980101]-[jjjjmmdd]',
+            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+          }],
+        'facts': [
+          { 'fact': '[ingezetene]', 'function': '[]', 'reference': '' }
+        ],
+        'duties': []
+      }
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(model, ['someone', 'someone else'], { '[ingezetene]': 'ANYONE' }, false)
+
+      const needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+
+      const retrievedModel = await core.get(modelLink)
+
+      const needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => fact === '[verwelkomst]' || fact === '[overheid]'
+
+      const actionLink = await lawReg.take(ssids['someone'], needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
+
+      const action = await core.get(actionLink, ssids['someone'])
+
+      expect(action.data).to.deep.equal({
+        'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+        'DISCIPL_FLINT_FACTS_SUPPLIED': {
+          '[overheid]': true,
+          '[verwelkomst]': true,
+          '[ingezetene]': IdentityUtil.identityExpression(ssids['someone'].did)
+        },
+        'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+        'DISCIPL_FLINT_PREVIOUS_CASE': needLink
+      })
+
+      const actionLink1 = await lawReg.take(ssids['someone else'], actionLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
+
+      const action1 = await core.get(actionLink1, ssids['someone else'])
+
+      expect(action1.data).to.deep.equal({
+        'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
+        'DISCIPL_FLINT_FACTS_SUPPLIED': {
+          '[overheid]': true,
+          '[verwelkomst]': true,
+          '[ingezetene]': IdentityUtil.identityExpression(ssids['someone else'].did)
+        },
+        'DISCIPL_FLINT_GLOBAL_CASE': needLink,
+        'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
       })
     })
 
@@ -296,10 +373,7 @@ describe('discipl-law-reg', () => {
         }
       })
 
-      const factResolver = (fact) => {
-        if (fact === '[verwelkomst]') return true
-        return false
-      }
+      const factResolver = (fact) => fact === '[verwelkomst]'
       const actionLink = await lawReg.take(ssids['ingezetene1'], needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
 
       const action = await core.get(actionLink, ssids['ingezetene1'])
@@ -307,6 +381,7 @@ describe('discipl-law-reg', () => {
       expect(action.data).to.deep.equal({
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
         'DISCIPL_FLINT_FACTS_SUPPLIED': {
+          '[ingezetene]': IdentityUtil.identityExpression(ssids['ingezetene1'].did),
           '[verwelkomst]': true
         },
         'DISCIPL_FLINT_GLOBAL_CASE': needLink,
@@ -350,8 +425,7 @@ describe('discipl-law-reg', () => {
       const actorSsid = await core.newSsid('ephemeral')
 
       const modelLink = await lawReg.publish(lawmakerSsid, model, {
-        '[ingezetene]':
-          'IS:' + actorSsid.did
+        '[ingezetene]': IdentityUtil.identityExpression(actorSsid.did)
       })
 
       const retrievedModel = await core.get(modelLink)
@@ -374,7 +448,8 @@ describe('discipl-law-reg', () => {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
           'DISCIPL_FLINT_FACTS_SUPPLIED': {
             '[overheid]': true,
-            '[verwelkomst]': true
+            '[verwelkomst]': true,
+            '[ingezetene]': IdentityUtil.identityExpression(actorSsid.did)
           },
           'DISCIPL_FLINT_GLOBAL_CASE': needLink,
           'DISCIPL_FLINT_PREVIOUS_CASE': needLink
@@ -455,7 +530,7 @@ describe('discipl-law-reg', () => {
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
           'DISCIPL_FLINT_FACTS_SUPPLIED': {
-            '[ouder]': true,
+            '[ouder]': IdentityUtil.identityExpression(actorSsid.did),
             '[overheid]': true,
             '[verzoek]': true,
             'leeftijden': [
@@ -553,7 +628,7 @@ describe('discipl-law-reg', () => {
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
           'DISCIPL_FLINT_FACTS_SUPPLIED': {
-            '[ouder]': true,
+            '[ouder]': IdentityUtil.identityExpression(actorSsid.did),
             '[overheid]': true,
             '[verzoek]': true,
             'kinderen': [
@@ -661,9 +736,8 @@ describe('discipl-law-reg', () => {
       const overheidSsid = await core.newSsid('ephemeral')
 
       const modelLink = await lawReg.publish(lawmakerSsid, model, {
-        '[ingezetene]':
-          'IS:' + actorSsid.did,
-        '[overheid]': 'IS:' + overheidSsid.did
+        '[ingezetene]': IdentityUtil.identityExpression(actorSsid.did),
+        '[overheid]': IdentityUtil.identityExpression(overheidSsid.did)
       })
 
       const needLink = await core.claim(needSsid, {
@@ -705,14 +779,14 @@ describe('discipl-law-reg', () => {
       await util.scenarioTest(ssids, modelLink, [{ 'act': '<<compute mathematical expression>>', 'actor': 'mathematician' }], completeFacts)
     }
 
-    const testFalseMathExpression = async (precondition, facts) => {
+    const testFalseMathExpression = async (precondition, facts, reason) => {
       let errorMessage = ''
       try {
         await testMathExpression(precondition, facts)
       } catch (e) {
         errorMessage = e.message
       }
-      expect(errorMessage).to.equal('Action <<compute mathematical expression>> is not allowed')
+      expect(errorMessage).to.equal('Action <<compute mathematical expression>> is not allowed ' + reason)
     }
 
     it('should be able to compare numbers', async () => {
@@ -757,7 +831,9 @@ describe('discipl-law-reg', () => {
       {
         '[three]': 3,
         '[five]': 5
-      })
+      },
+      'due to preconditions'
+      )
     })
 
     it('should be able to compare numbers equality with a false result', async () => {
@@ -771,7 +847,9 @@ describe('discipl-law-reg', () => {
       {
         '[dozen]': 12,
         '[thirteen]': 13
-      })
+      },
+      'due to preconditions'
+      )
     })
 
     it('should be able to add numbers', async () => {
@@ -833,7 +911,9 @@ describe('discipl-law-reg', () => {
         '[three]': 3,
         '[five]': 5,
         '[nine]': 9
-      })
+      },
+      'due to preconditions'
+      )
     })
 
     it('should be able to determine the minimum of numbers', async () => {
@@ -860,8 +940,7 @@ describe('discipl-law-reg', () => {
         'expression': 'LITERAL',
         'operand': true
       },
-      {
-      })
+      {})
     })
 
     it('should be able to determine the minimum of numbers', async () => {
@@ -945,7 +1024,9 @@ describe('discipl-law-reg', () => {
         '[three]': 3,
         '[five]': 5,
         '[fourteen]': 14
-      })
+      },
+      'due to preconditions'
+      )
     })
 
     it('should be able to determine the maximum of numbers', async () => {
@@ -1004,65 +1085,6 @@ describe('discipl-law-reg', () => {
       }
 
       expect(errorMessage).to.equal('Unknown expression type BANANAS')
-    })
-
-    it('should reject an action when a fact defined with a "CREATE" epxression is supplied', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-      const util = new Util(lawReg)
-      const { ssids, modelLink } = await util.setupModel({
-        'model': 'Fictieve kinderbijslag',
-        'acts': [
-          {
-            'act': '<<kinderbijslag aanvragen>>',
-            'actor': '[ouder]',
-            'object': '[verzoek]',
-            'recipient': '[Minister]',
-            'create': []
-          },
-          {
-            'act': '<<aanvraag kinderbijslag toekennen>>',
-            'actor': '[Minister]',
-            'object': '[aanvraag]',
-            'recipient': '[ouder]',
-            'preconditions': {
-              'expression': 'LITERAL',
-              'operand': true
-            }
-          }
-        ],
-        'facts': [
-          {
-            'fact': '[aanvraag]',
-            'function': { 'expression': 'CREATE' }
-          }
-        ],
-        'duties': []
-      }, ['ouder', 'minister'], { '[aanvraag]': 'supplied' })
-
-      const needLink = await core.claim(ssids['ouder'], {
-        'need': {
-          'act': '<<kinderbijslag aanvragen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-      const actionLink = await lawReg.take(ssids['ouder'], needLink, '<<kinderbijslag aanvragen>>', () => true)
-      const action = await core.get(actionLink, ssids['ouder'])
-      const needLink2 = await core.claim(ssids['minister'], {
-        'need': {
-          'act': '<<aanvraag kinderbijslag toekennen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        },
-        ...action.data
-      })
-
-      let errorMessage = ''
-      try {
-        await lawReg.take(ssids['minister'], needLink2, '<<aanvraag kinderbijslag toekennen>>', () => true)
-      } catch (e) {
-        errorMessage = e.message
-      }
-
-      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
     })
 
     it('should be able to determine active duties being terminated', async () => {
@@ -1179,10 +1201,9 @@ describe('discipl-law-reg', () => {
         'facts': [
           { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' },
           { 'fact': '[overheid]', 'function': '[]', 'reference': '' },
-          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE' }, 'reference': '' }
+          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE', 'operands': [] }, 'reference': '' }
         ],
-        'duties': [
-        ]
+        'duties': []
       }
 
       const lawmakerSsid = await core.newSsid('ephemeral')
@@ -1196,9 +1217,8 @@ describe('discipl-law-reg', () => {
       const overheidSsid = await core.newSsid('ephemeral')
 
       const modelLink = await lawReg.publish(lawmakerSsid, model, {
-        '[ingezetene]':
-          'IS:' + ingezeteneSsid.did,
-        '[overheid]': 'IS:' + overheidSsid.did
+        '[ingezetene]': IdentityUtil.identityExpression(ingezeteneSsid.did),
+        '[overheid]': IdentityUtil.identityExpression(overheidSsid.did)
       })
 
       const needLink = await core.claim(needSsid, {
@@ -1289,8 +1309,7 @@ describe('discipl-law-reg', () => {
             'version': '2-[19980101]-[jjjjmmdd]',
             'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
           }],
-        'facts': [
-        ],
+        'facts': [],
         'duties': []
       }, ['actor'], {})
 
@@ -1341,7 +1360,10 @@ describe('discipl-law-reg', () => {
         'facts': [
           {
             'fact': '[aanvraag]',
-            'function': { 'expression': 'CREATE' }
+            'function': {
+              'expression': 'CREATE',
+              'operands': []
+            }
           }
         ],
         'duties': []
@@ -1389,10 +1411,9 @@ describe('discipl-law-reg', () => {
         'facts': [
           { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' },
           { 'fact': '[overheid]', 'function': '[]', 'reference': '' },
-          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE' }, 'reference': '' }
+          { 'fact': '[verwelkomst]', 'function': { 'expression': 'CREATE', 'operands': [] }, 'reference': '' }
         ],
-        'duties': [
-        ]
+        'duties': []
       }
 
       const lawmakerSsid = await core.newSsid('ephemeral')
@@ -1434,8 +1455,7 @@ describe('discipl-law-reg', () => {
       const actorSsid = await core.newSsid('ephemeral')
 
       const modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
-        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
-          'IS:' + actorSsid.did
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': IdentityUtil.identityExpression(actorSsid.did)
       })
 
       const retrievedModel = await core.get(modelLink)
@@ -1466,6 +1486,7 @@ describe('discipl-law-reg', () => {
         'data': {
           'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
           'DISCIPL_FLINT_FACTS_SUPPLIED': {
+            '[belanghebbende]': IdentityUtil.identityExpression(actorSsid.did),
             '[bij wettelijk voorschrift is anders bepaald]': false,
             '[verzoek een besluit te nemen]': true,
             '[wetgevende macht]': true
@@ -1489,10 +1510,8 @@ describe('discipl-law-reg', () => {
       await core.allow(bestuursorgaanSsid)
 
       const modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
-        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]':
-          'IS:' + belanghebbendeSsid.did,
-        '[wetgevende macht]':
-          'IS:' + bestuursorgaanSsid.did
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': IdentityUtil.identityExpression(belanghebbendeSsid.did),
+        '[wetgevende macht]': IdentityUtil.identityExpression(bestuursorgaanSsid.did)
       })
 
       const retrievedModel = await core.get(modelLink)
@@ -1538,6 +1557,7 @@ describe('discipl-law-reg', () => {
       expect(action.data).to.deep.equal({
         'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
         'DISCIPL_FLINT_FACTS_SUPPLIED': {
+          '[bestuursorgaan]': IdentityUtil.identityExpression(bestuursorgaanSsid.did),
           '[aanvraag]': actionLink,
           '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]': true
         },
@@ -1712,7 +1732,10 @@ describe('discipl-law-reg', () => {
         'facts': [
           {
             'fact': '[cookie]',
-            'function': { 'expression': 'CREATE' }
+            'function': {
+              'expression': 'CREATE',
+              'operands': []
+            }
           }
         ],
         'duties': []
@@ -1745,7 +1768,7 @@ describe('discipl-law-reg', () => {
       const eatDetails = await core.get(eatAction, ssids['baker'])
 
       expect(eatDetails.data['DISCIPL_FLINT_FACTS_SUPPLIED']).to.deep.equal({
-        '[baker]': true,
+        '[baker]': IdentityUtil.identityExpression(ssids['baker'].did),
         '[bakery]': true,
         '[cookie]': firstBakeAction
       })
@@ -1755,7 +1778,7 @@ describe('discipl-law-reg', () => {
       const eatDetails2 = await core.get(eatAction2, ssids['baker'])
 
       expect(eatDetails2.data['DISCIPL_FLINT_FACTS_SUPPLIED']).to.deep.equal({
-        '[baker]': true,
+        '[baker]': IdentityUtil.identityExpression(ssids['baker'].did),
         '[bakery]': true,
         '[cookie]': secondBakeAction
       })
@@ -1782,8 +1805,7 @@ describe('discipl-law-reg', () => {
       const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
       expect(result).to.deep.equal({
-        'invalidReasons': [
-        ],
+        'invalidReasons': [],
         'valid': true
       })
     })
@@ -1809,8 +1831,7 @@ describe('discipl-law-reg', () => {
       const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
 
       expect(result).to.deep.equal({
-        'invalidReasons': [
-        ],
+        'invalidReasons': [],
         'valid': true
       })
     })
@@ -1822,8 +1843,7 @@ describe('discipl-law-reg', () => {
 
       const ssid = await core.newSsid('ephemeral')
       const modelLink = await lawReg.publish(ssid, model, {
-        '[aanvrager]':
-          'IS:' + ssid.did
+        '[aanvrager]': IdentityUtil.identityExpression(ssid.did)
       })
       const modelRef = await core.get(modelLink, ssid)
 
@@ -1851,8 +1871,7 @@ describe('discipl-law-reg', () => {
 
       const ssid = await core.newSsid('ephemeral')
       const modelLink = await lawReg.publish(ssid, model, {
-        '[aanvrager]':
-          'IS:' + ssid.did
+        '[aanvrager]': IdentityUtil.identityExpression(ssid.did)
       })
       const modelRef = await core.get(modelLink, ssid)
 
@@ -1985,8 +2004,7 @@ describe('discipl-law-reg', () => {
           }
         ]
       },
-      {
-      },
+      {},
       {
         'fact': '[expression]',
         'operandExplanations': [
@@ -2024,8 +2042,7 @@ describe('discipl-law-reg', () => {
           }
         ]
       },
-      {
-      },
+      {},
       {
         'fact': '[expression]',
         'operandExplanations': [
@@ -2047,6 +2064,847 @@ describe('discipl-law-reg', () => {
         'value': '5'
       }
       )
+    })
+  })
+
+  describe('CREATE expression', async function () {
+    it('should take an action if the fact and operands are created', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<aanvraag kinderbijslag>>',
+            'actor': '[ouder]',
+            'recipient': '[minister]',
+            'object': '[verzoek]',
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<bedrag vaststellen>>',
+            'actor': '[ouder]',
+            'recipient': '[ouder]',
+            'object': '[bedrag]',
+            'create': [
+              '[bedrag]'
+            ]
+          },
+          {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[minister]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[ouder]': true, '[minister]': true, '[verzoek]': true, '[bedrag]': 100 }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['ouder', 'minister'], { 'ouder': '[ouder]', 'minister': '[minister]' })
+      const acts = [
+        {
+          'act': '<<bedrag vaststellen>>',
+          'actor': 'ouder'
+        },
+        {
+          'act': '<<aanvraag kinderbijslag>>',
+          'actor': 'ouder'
+        },
+        {
+          'act': '<<aanvraag kinderbijslag toekennen>>',
+          'actor': 'minister'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(acts).to.deep.include({ 'act': '<<bedrag vaststellen>>', 'actor': 'ouder' })
+      expect(model.acts[0]).to.deep.include({ 'create': ['[aanvraag]'] })
+      expect(model.acts[1]).to.deep.include({ 'create': ['[bedrag]'] })
+      expect(errorMessage).to.equal('')
+    })
+
+    it('should not take an action if the fact is supplied', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[minister]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE'
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[ouder]': true, '[minister]': true }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['minister'], { 'minister': '[minister]' })
+      const acts = [
+        {
+          'act': '<<aanvraag kinderbijslag toekennen>>',
+          'actor': 'minister'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(model.acts[0]).to.not.deep.include({ 'create': ['[aanvraag]'] })
+      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object')
+    })
+
+    it('should not take an action if a fact given as operand is not given', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<bedrag vaststellen>>',
+            'actor': '[ouder]',
+            'recipient': '[ouder]',
+            'object': '[bedrag]',
+            'create': [
+              '[bedrag]'
+            ]
+          },
+          {
+            'act': '<<aanvraag kinderbijslag>>',
+            'actor': '[ouder]',
+            'recipient': '[minister]',
+            'object': '[verzoek]',
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[minister]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[ouder]': true, '[minister]': true, '[verzoek]': true }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['ouder', 'minister'], { 'ouder': '[ouder]', 'minister': '[minister]' })
+      const acts = [
+        {
+          'act': '<<aanvraag kinderbijslag>>',
+          'actor': 'ouder'
+        },
+        {
+          'act': '<<aanvraag kinderbijslag toekennen>>',
+          'actor': 'minister'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(Object.keys(completeFacts)).to.not.include('[bedrag]')
+      expect(acts).to.not.deep.include({ 'act': '<<bedrag vaststellen>>', 'actor': 'ouder' })
+      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object')
+    })
+
+    it('should allow OR expressions', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<aanvragen kinderbijslag>>',
+            'actor': '[ouder]',
+            'recipient': '[ambtenaar]',
+            'object': '[verzoek]',
+            'preconditions': '[maximaal]',
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<aanvraag kinderbijslag toekennen>>',
+            'actor': '[ambtenaar]',
+            'object': '[aanvraag]',
+            'recipient': '[ouder]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                {
+                  'expression': 'OR',
+                  'operands': [
+                    '[bedrag]',
+                    '[maximaal]'
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[ouder]': true, '[ambtenaar]': true, '[verzoek]': true, '[maximaal]': true }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['ambtenaar', 'ouder'], completeFacts)
+      const acts = [
+        {
+          'act': '<<aanvragen kinderbijslag>>',
+          'actor': 'ouder'
+        },
+        {
+          'act': '<<aanvraag kinderbijslag toekennen>>',
+          'actor': 'ambtenaar'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(errorMessage).to.equal('')
+    })
+  })
+
+  describe('PROJECTION expression', async function () {
+    it('should be able to have multiple of the same type of actor', async () => {
+      const subsidieModel = {
+        'acts': [
+          {
+            'act': '<<subsidie aanvragen>>',
+            'actor': '[burger]',
+            'action': '[aanvragen]',
+            'object': '[verzoek]',
+            'recipient': '[ambtenaar]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[bsn]',
+                '[bedrag]'
+              ]
+            },
+            'create': [
+              '[aanvraag]'
+            ],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          },
+          {
+            'act': '<<subsidie aanvraag intrekken>>',
+            'actor': '[burger with aanvraag]',
+            'action': '[intrekken]',
+            'object': '[aanvraag]',
+            'recipient': '[ambtenaar]',
+            'preconditions': '[]',
+            'create': [],
+            'terminate': [
+              '[aanvraag]'
+            ],
+            'sources': [],
+            'explanation': ''
+          },
+          {
+            'act': '<<subsidie aanvraag toekennen>>',
+            'actor': '[ambtenaar]',
+            'action': '[toekennen]',
+            'object': '[aanvraag]',
+            'recipient': '[burger]',
+            'preconditions': {
+              'expression': 'LESS_THAN',
+              'operands': [
+                '[bedrag projection]',
+                {
+                  'expression': 'LITERAL',
+                  'operand': 500
+                }
+              ]
+            },
+            'create': [],
+            'terminate': [
+              '[aanvraag]'
+            ],
+            'sources': [],
+            'explanation': ''
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[bedrag]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[aanvraag]',
+            'explanation': '',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]',
+                '[burger]'
+              ]
+            },
+            'sources': []
+          },
+          {
+            'fact': '[bedrag projection]',
+            'explanation': '',
+            'function': {
+              'expression': 'PROJECTION',
+              'context': [
+                '[aanvraag]'
+              ],
+              'fact': '[bedrag]'
+            },
+            'sources': []
+          },
+          {
+            'fact': '[burger with aanvraag]',
+            'explanation': '',
+            'function': {
+              'expression': 'PROJECTION',
+              'context': [
+                '[aanvraag]'
+              ],
+              'fact': '[burger]'
+            },
+            'sources': []
+          },
+          {
+            'fact': '[burger]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[verzoek]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[ambtenaar]',
+            'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[aanvragen]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[toekennen]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          }
+        ],
+        'duties': []
+      }
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(
+        subsidieModel,
+        ['burger1', 'burger2', 'ambtenaar'],
+        { '[ambtenaar]': 'ambtenaar', '[burger]': ['burger1', 'burger2'] }
+      )
+
+      const needLink = await core.claim(ssids['burger1'], {
+        'need': {
+          'act': '<<subsidie aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => {
+        if (fact === '[bedrag]') { return 50 }
+        if (fact === '[bsn]') { return '605211619' }
+        return fact === '[verzoek]'
+      }
+
+      const availableActs1 = (await lawReg.getAvailableActsWithResolver(needLink, ssids['burger1'], factResolver)).map((actInfo) => actInfo.act)
+      expect(availableActs1).to.deep.equal(['<<subsidie aanvragen>>'])
+
+      const actionLink = await lawReg.take(ssids['burger1'], needLink, '<<subsidie aanvragen>>', factResolver)
+      const availableActs2 = (await lawReg.getAvailableActs(actionLink, ssids['burger1'])).map((actInfo) => actInfo.act)
+      expect(availableActs2).to.deep.equal(['<<subsidie aanvraag intrekken>>'])
+
+      const burger2Acts = (await lawReg.getAvailableActs(actionLink, ssids['burger2'])).map((actInfo) => actInfo.act)
+      expect(burger2Acts).to.deep.equal([])
+
+      const ambtenaarActs = (await lawReg.getAvailableActs(actionLink, ssids['ambtenaar'])).map((actInfo) => actInfo.act)
+      expect(ambtenaarActs).to.deep.equal(['<<subsidie aanvraag toekennen>>'])
+    })
+
+    const subsidieModel = {
+      'acts': [
+        {
+          'act': '<<subsidie aanvragen>>',
+          'actor': '[burger]',
+          'action': '[aanvragen]',
+          'object': '[verzoek]',
+          'recipient': '[ambtenaar]',
+          'preconditions': '[bedrag]',
+          'create': [
+            '[aanvraag]'
+          ],
+          'terminate': [],
+          'sources': [],
+          'explanation': ''
+        },
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': '[ambtenaar]',
+          'action': '[toekennen]',
+          'object': '[aanvraag]',
+          'recipient': '[burger]',
+          'preconditions': {
+            'expression': 'LESS_THAN',
+            'operands': [
+              '[bedrag projection]',
+              {
+                'expression': 'LITERAL',
+                'operand': 500
+              }
+            ]
+          },
+          'create': [],
+          'terminate': [
+            '[aanvraag]'
+          ],
+          'sources': [],
+          'explanation': ''
+        }
+      ],
+      'facts': [
+        {
+          'fact': '[bedrag]',
+          'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[aanvraag]',
+          'explanation': '',
+          'function': {
+            'expression': 'CREATE',
+            'operands': [
+              '[bedrag]'
+            ]
+          },
+          'sources': []
+        },
+        {
+          'fact': '[bedrag projection]',
+          'explanation': '',
+          'function': {
+            'expression': 'PROJECTION',
+            'context': [
+              '[aanvraag]'
+            ],
+            'fact': '[bedrag]'
+          },
+          'sources': []
+        },
+        {
+          'fact': '[burger]',
+          'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[verzoek]',
+          'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[ambtenaar]',
+          'explanation': 'GENERATED: This fact was generated during the \'Import From Json Action\'',
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[aanvragen]',
+          'explanation': '',
+          'function': '[]',
+          'sources': []
+        },
+        {
+          'fact': '[toekennen]',
+          'explanation': '',
+          'function': '[]',
+          'sources': []
+        }
+      ],
+      'duties': []
+    }
+
+    it('should call getPotentialActs multiple times without breaking PROJECTION expressions', async () => {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(subsidieModel, ['burger', 'ambtenaar'], { '[ambtenaar]': 'ambtenaar', '[burger]': 'burger' })
+
+      const needLink = await core.claim(ssids['burger'], {
+        'need': {
+          'act': '<<subsidie aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const potentialActs = (await lawReg.getPotentialActs(needLink, ssids['burger'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(potentialActs).to.deep.equal(['<<subsidie aanvragen>>'])
+
+      const potentialActs2 = (await lawReg.getPotentialActs(needLink, ssids['ambtenaar'], [], [])).map((actInfo) => actInfo.act)
+      expect(potentialActs2).to.deep.equal([])
+    })
+
+    it('should get the projected property', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<subsidie aanvragen>>',
+            'actor': '[burger]',
+            'recipient': '[ambtenaar]',
+            'object': '[verzoek]',
+            'preconditions': '[bedrag]',
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<subsidie aanvraag toekennen>>',
+            'actor': '[ambtenaar]',
+            'object': '[aanvraag]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'PROJECTION',
+                  'context': [
+                    '[aanvraag]'
+                  ],
+                  'fact': '[bedrag]'
+                },
+                {
+                  'expression': 'LITERAL',
+                  'operand': 500
+                }
+              ]
+            },
+            'recipient': '[burger]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[bedrag]': 500 }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['burger', 'ambtenaar'], { 'burger': '[burger]', 'ambtenaar': '[ambtenaar]' })
+      const acts = [
+        {
+          'act': '<<subsidie aanvragen>>',
+          'actor': 'burger'
+        },
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': 'ambtenaar'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(completeFacts).to.deep.include({ '[bedrag]': 500 })
+      expect(errorMessage).to.equal('')
+    })
+
+    it('should project a series of CREATE facts', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<persoonlijk gegevens invullen>>',
+            'actor': '[burger]',
+            'recipient': '[ambtenaar]',
+            'object': '[verzoek]',
+            'preconditions': '[naam]',
+            'create': [
+              '[persoonlijke gegevens]'
+            ]
+          },
+          {
+            'act': '<<subsidie aanvragen>>',
+            'actor': '[burger]',
+            'recipient': '[ambtenaar]',
+            'object': '[verzoek]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[persoonlijke gegevens]',
+                '[bedrag]'
+              ]
+            },
+            'create': [
+              '[aanvraag]'
+            ]
+          },
+          {
+            'act': '<<subsidie aanvraag toekennen>>',
+            'actor': '[ambtenaar]',
+            'object': '[aanvraag]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'PROJECTION',
+                  'context': [
+                    '[aanvraag]',
+                    '[persoonlijke gegevens]'
+                  ],
+                  'fact': '[naam]'
+                },
+                {
+                  'expression': 'LITERAL',
+                  'operand': 'Discipl'
+                }
+              ]
+            },
+            'recipient': '[burger]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[persoonlijke gegevens]',
+                '[bedrag]'
+              ]
+            }
+          },
+          {
+            'fact': '[persoonlijke gegevens]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[naam]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[naam]': 'Discipl', '[bedrag]': 500 }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['burger', 'ambtenaar'], { 'burger': '[burger]', 'ambtenaar': '[ambtenaar]' })
+      const acts = [
+        {
+          'act': '<<persoonlijk gegevens invullen>>',
+          'actor': 'burger'
+        },
+        {
+          'act': '<<subsidie aanvragen>>',
+          'actor': 'burger'
+        },
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': 'ambtenaar'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(completeFacts).to.deep.include({ '[bedrag]': 500, '[naam]': 'Discipl' })
+      expect(errorMessage).to.equal('')
+    })
+
+    it('should not allow an act if the projection failed', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<subsidie aanvraag toekennen>>',
+            'actor': '[ambtenaar]',
+            'object': '[aanvraag]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'PROJECTION',
+                  'context': [
+                    '[aanvraag]'
+                  ],
+                  'fact': '[niet bestaand bedrag]'
+                },
+                {
+                  'expression': 'LITERAL',
+                  'operand': 500
+                }
+              ]
+            },
+            'recipient': '[burger]'
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[aanvraag]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[bedrag]'
+              ]
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[bedrag]': 500 }
+      const util = new Util(lawReg)
+
+      const { ssids, modelLink } = await util.setupModel(model, ['burger', 'ambtenaar'], { 'burger': '[burger]', 'ambtenaar': '[ambtenaar]' })
+      const acts = [
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': 'ambtenaar'
+        }
+      ]
+
+      let errorMessage = ''
+      try {
+        await util.scenarioTest(ssids, modelLink, acts, completeFacts)
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      expect(completeFacts).to.deep.include({ '[bedrag]': 500 })
+      expect(errorMessage).to.equal('Action <<subsidie aanvraag toekennen>> is not allowed due to object')
+    })
+
+    it('should be able to take an action after object is created from other action', async () => {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(subsidieModel, ['burger', 'ambtenaar'], { '[ambtenaar]': 'ambtenaar', '[burger]': 'burger' })
+
+      const needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+
+      const needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<subsidie aanvragen>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => {
+        if (fact === '[bedrag]') {
+          return 50
+        }
+        return fact === '[verzoek]'
+      }
+
+      const actionLink = await lawReg.take(ssids['burger'], needLink, '<<subsidie aanvragen>>', factResolver)
+
+      const ambtenaarAvailableActs = (await lawReg.getAvailableActs(actionLink, ssids['ambtenaar'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(ambtenaarAvailableActs).to.deep.equal(['<<subsidie aanvraag toekennen>>'])
+
+      const burgerPotentialActs = (await lawReg.getPotentialActs(actionLink, ssids['burger'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(burgerPotentialActs).to.deep.equal(['<<subsidie aanvragen>>'])
+
+      const burgerAvailableActs = (await lawReg.getAvailableActs(actionLink, ssids['burger'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(burgerAvailableActs).to.deep.equal([])
+
+      const actionLink2 = await lawReg.take(ssids['ambtenaar'], actionLink, '<<subsidie aanvraag toekennen>>', factResolver)
+
+      const ambtenaarAvailableActsAfterAanvraagToegekend = (await lawReg.getAvailableActs(actionLink2, ssids['ambtenaar'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(ambtenaarAvailableActsAfterAanvraagToegekend).to.deep.equal([])
     })
   })
 })
