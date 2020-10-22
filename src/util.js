@@ -243,7 +243,7 @@ class Util {
         if (allActors.includes(actor)) {
           return IdentityUtil.identityExpression(ssids[actor].did)
         } else {
-          return factFunctionSpec[fact]
+          return IdentityUtil.identityExpression(factFunctionSpec[fact])
         }
       })
 

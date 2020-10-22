@@ -3,7 +3,6 @@ import { ModelValidator } from './modelValidator'
 import { BigUtil } from './big_util'
 
 import * as log from 'loglevel'
-import { BaseConnector } from '@discipl/core-baseconnector'
 import Big from 'big.js'
 import IdentityUtil from './identity_util'
 
@@ -17,7 +16,6 @@ const DISCIPL_FLINT_GLOBAL_CASE = 'DISCIPL_FLINT_GLOBAL_CASE'
 const DISCIPL_FLINT_PREVIOUS_CASE = 'DISCIPL_FLINT_PREVIOUS_CASE'
 const DISCIPL_FLINT_MODEL_LINK = 'DISCIPL_FLINT_MODEL_LINK'
 
-const DISCIPL_IS_MARKER = 'IS:'
 const DISCIPL_ANYONE_MARKER = 'ANYONE'
 
 const logger = log.getLogger('disciplLawReg')
@@ -386,21 +384,6 @@ class LawReg {
       return { ...context, explanation: newExplanation }
     } else {
       return context
-    }
-  }
-
-  /**
-   * Extract the DID being referred, if the input is an IS-construction
-   *
-   * @param {string} functionRef - String with a possible IS-construction
-   * @returns {string|undefined} - The DID being referred if it is an IS-construction, undefined otherwise
-   */
-  static extractDidFromIsConstruction (functionRef) {
-    if (typeof functionRef === 'string' && functionRef.startsWith(DISCIPL_IS_MARKER)) {
-      const possibleDid = functionRef.replace('IS:', '')
-      if (BaseConnector.isDid(possibleDid)) {
-        return possibleDid
-      }
     }
   }
 
@@ -1113,7 +1096,7 @@ class LawReg {
       })
     }
 
-    throw new Error('Action ' + act + ' is not allowed')
+    throw new Error('Action ' + act + ' is not allowed due to ' + checkActionInfo.invalidReasons)
   }
 
   /**
