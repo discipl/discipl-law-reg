@@ -779,14 +779,14 @@ describe('discipl-law-reg', () => {
       await util.scenarioTest(ssids, modelLink, [{ 'act': '<<compute mathematical expression>>', 'actor': 'mathematician' }], completeFacts)
     }
 
-    const testFalseMathExpression = async (precondition, facts) => {
+    const testFalseMathExpression = async (precondition, facts, reason) => {
       let errorMessage = ''
       try {
         await testMathExpression(precondition, facts)
       } catch (e) {
         errorMessage = e.message
       }
-      expect(errorMessage).to.equal('Action <<compute mathematical expression>> is not allowed')
+      expect(errorMessage).to.equal('Action <<compute mathematical expression>> is not allowed ' + reason)
     }
 
     it('should be able to compare numbers', async () => {
@@ -831,7 +831,9 @@ describe('discipl-law-reg', () => {
       {
         '[three]': 3,
         '[five]': 5
-      })
+      },
+      'due to preconditions'
+      )
     })
 
     it('should be able to compare numbers equality with a false result', async () => {
@@ -845,7 +847,9 @@ describe('discipl-law-reg', () => {
       {
         '[dozen]': 12,
         '[thirteen]': 13
-      })
+      },
+      'due to preconditions'
+      )
     })
 
     it('should be able to add numbers', async () => {
@@ -907,7 +911,9 @@ describe('discipl-law-reg', () => {
         '[three]': 3,
         '[five]': 5,
         '[nine]': 9
-      })
+      },
+      'due to preconditions'
+      )
     })
 
     it('should be able to determine the minimum of numbers', async () => {
@@ -1018,7 +1024,9 @@ describe('discipl-law-reg', () => {
         '[three]': 3,
         '[five]': 5,
         '[fourteen]': 14
-      })
+      },
+      'due to preconditions'
+      )
     })
 
     it('should be able to determine the maximum of numbers', async () => {
@@ -2174,7 +2182,7 @@ describe('discipl-law-reg', () => {
       }
 
       expect(model.acts[0]).to.not.deep.include({ 'create': ['[aanvraag]'] })
-      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
+      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object')
     })
 
     it('should not take an action if a fact given as operand is not given', async () => {
@@ -2243,7 +2251,7 @@ describe('discipl-law-reg', () => {
 
       expect(Object.keys(completeFacts)).to.not.include('[bedrag]')
       expect(acts).to.not.deep.include({ 'act': '<<bedrag vaststellen>>', 'actor': 'ouder' })
-      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed')
+      expect(errorMessage).to.equal('Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object')
     })
 
     it('should allow OR expressions', async () => {
@@ -2851,7 +2859,7 @@ describe('discipl-law-reg', () => {
       }
 
       expect(completeFacts).to.deep.include({ '[bedrag]': 500 })
-      expect(errorMessage).to.equal('Action <<subsidie aanvraag toekennen>> is not allowed')
+      expect(errorMessage).to.equal('Action <<subsidie aanvraag toekennen>> is not allowed due to object')
     })
 
     it('should be able to take an action after object is created from other action', async () => {
