@@ -2906,5 +2906,531 @@ describe('discipl-law-reg', () => {
 
       expect(ambtenaarAvailableActsAfterAanvraagToegekend).to.deep.equal([])
     })
+
+    it('EQUAL should return undefined when a PROJECTION expression returns undefined', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<bake pancake>>',
+            'actor': '[actor1]',
+            'action': '[bake]',
+            'object': '[batter]',
+            'recipient': '[actor2]',
+            'preconditions': '[ingredients]',
+            'create': [
+              '[baked pancake]'
+            ],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          },
+          {
+            'act': '<<eat pancake>>',
+            'actor': '[actor1]',
+            'action': '[eat]',
+            'object': '[baked pancake]',
+            'recipient': '[actor2]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'LITERAL',
+                  'operand': 'apple'
+                },
+                {
+                  'expression': 'PROJECTION',
+                  'context': [
+                    '[baked pancake]'
+                  ],
+                  'fact': '[ingredients]'
+                }
+              ]
+            },
+            'create': [],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[actor1]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[bake]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[batter]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[actor2]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[ingredients]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[baked pancake]',
+            'explanation': '',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[ingredients]'
+              ]
+            },
+            'sources': []
+          },
+          {
+            'fact': '[eat]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          }
+        ],
+        'duties': []
+      }
+
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(model, ['Actor1'], { '[actor1]': 'Actor1' })
+
+      const needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+
+      const needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<bake pancake>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const appleFactResolver = (fact) => {
+        if (fact === '[ingredients]') {
+          return 'apple'
+        }
+        return fact === '[batter]' || fact === '[actor2]'
+      }
+
+      const actionLink = await lawReg.take(ssids['Actor1'], needLink, '<<bake pancake>>', appleFactResolver)
+
+      const actor1Acts = (await lawReg.getPotentialActs(actionLink, ssids['Actor1'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(actor1Acts).to.include('<<eat pancake>>')
+
+      const blueberryFactResolver = (fact) => {
+        if (fact === '[ingredients]') {
+          return 'blueberry'
+        }
+        return fact === '[batter]' || fact === '[actor2]'
+      }
+
+      const actionLink1 = await lawReg.take(ssids['Actor1'], actionLink, '<<bake pancake>>', blueberryFactResolver)
+
+      const actor1Acts1 = (await lawReg.getPotentialActs(actionLink1, ssids['Actor1'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(actor1Acts1).to.include('<<eat pancake>>')
+    })
+
+    it('LESS THAN should return undefined when a PROJECTION expression returns undefined', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<give a number>>',
+            'actor': '[actor1]',
+            'action': 'action',
+            'object': '[calculator]',
+            'recipient': '[actor1]',
+            'preconditions': '[number]',
+            'create': [
+              '[paper]'
+            ],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          },
+          {
+            'act': '<<accept number>>',
+            'actor': '[actor1]',
+            'action': 'accept',
+            'object': '[calculator]',
+            'recipient': '[actor1]',
+            'preconditions': {
+              'expression': 'LESS_THAN',
+              'operands': [
+                {
+                  'expression': 'LITERAL',
+                  'operand': 1
+                },
+                {
+                  'expression': 'PROJECTION',
+                  'context': [
+                    '[paper]'
+                  ],
+                  'fact': '[number]'
+                }
+              ]
+            },
+            'create': [],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[actor1]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[calculator]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[paper]',
+            'explanation': '',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[number]'
+              ]
+            },
+            'sources': []
+          },
+          {
+            'fact': '[number]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          }
+        ],
+        'duties': []
+      }
+
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(model, ['Actor'], { '[actor1]': 'Actor' })
+
+      const needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+
+      const needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<give a number>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => {
+        if (fact === '[number]') {
+          return 10
+        }
+        return fact === '[calculator]'
+      }
+
+      const actionLink = await lawReg.take(ssids['Actor'], needLink, '<<give a number>>', factResolver)
+
+      const actor1Acts = (await lawReg.getPotentialActs(actionLink, ssids['Actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(actor1Acts).to.include('<<accept number>>')
+
+      const factResolver2 = (fact) => {
+        if (fact === '[number]') {
+          return 0
+        }
+        return fact === '[calculator]'
+      }
+
+      const actionLink1 = await lawReg.take(ssids['Actor'], needLink, '<<give a number>>', factResolver2)
+
+      const actor1Acts1 = (await lawReg.getPotentialActs(actionLink1, ssids['Actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(actor1Acts1).to.include('<<accept number>>')
+    })
+
+    it('SUM should return undefined when a PROJECTION expression returns undefined', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<give a number>>',
+            'actor': '[actor1]',
+            'action': 'action',
+            'object': '[calculator]',
+            'recipient': '[actor1]',
+            'preconditions': '[number]',
+            'create': [
+              '[paper]'
+            ],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          },
+          {
+            'act': '<<accept number>>',
+            'actor': '[actor1]',
+            'action': 'accept',
+            'object': '[calculator]',
+            'recipient': '[actor1]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'LITERAL',
+                  'operand': 11
+                },
+                {
+                  'expression': 'SUM',
+                  'operands': [
+                    {
+                      'expression': 'LITERAL',
+                      'operand': 1
+                    },
+                    {
+                      'expression': 'PROJECTION',
+                      'context': [
+                        '[paper]'
+                      ],
+                      'fact': '[number]'
+                    }
+                  ]
+                }
+
+              ]
+            },
+            'create': [],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[actor1]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[calculator]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[paper]',
+            'explanation': '',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[number]'
+              ]
+            },
+            'sources': []
+          },
+          {
+            'fact': '[number]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          }
+        ],
+        'duties': []
+      }
+
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(model, ['Actor'], { '[actor1]': 'Actor' })
+
+      const needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+
+      const needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<give a number>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => {
+        if (fact === '[number]') {
+          return 10
+        }
+        return fact === '[calculator]'
+      }
+
+      const actionLink = await lawReg.take(ssids['Actor'], needLink, '<<give a number>>', factResolver)
+
+      const actor1Acts = (await lawReg.getPotentialActs(actionLink, ssids['Actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(actor1Acts).to.include('<<accept number>>')
+
+      const factResolver2 = (fact) => {
+        if (fact === '[number]') {
+          return 0
+        }
+        return fact === '[calculator]'
+      }
+
+      const actionLink1 = await lawReg.take(ssids['Actor'], needLink, '<<give a number>>', factResolver2)
+
+      const actor1Acts1 = (await lawReg.getPotentialActs(actionLink1, ssids['Actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(actor1Acts1).to.include('<<accept number>>')
+    })
+
+    it('PRODUCT should return undefined when a PROJECTION expression returns undefined', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<give a number>>',
+            'actor': '[actor1]',
+            'action': 'action',
+            'object': '[calculator]',
+            'recipient': '[actor1]',
+            'preconditions': '[number]',
+            'create': [
+              '[paper]'
+            ],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          },
+          {
+            'act': '<<accept number>>',
+            'actor': '[actor1]',
+            'action': 'accept',
+            'object': '[calculator]',
+            'recipient': '[actor1]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'LITERAL',
+                  'operand': 20
+                },
+                {
+                  'expression': 'PRODUCT',
+                  'operands': [
+                    {
+                      'expression': 'LITERAL',
+                      'operand': 2
+                    },
+                    {
+                      'expression': 'PROJECTION',
+                      'context': [
+                        '[paper]'
+                      ],
+                      'fact': '[number]'
+                    }
+                  ]
+                }
+
+              ]
+            },
+            'create': [],
+            'terminate': [],
+            'sources': [],
+            'explanation': ''
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[actor1]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[calculator]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          },
+          {
+            'fact': '[paper]',
+            'explanation': '',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[number]'
+              ]
+            },
+            'sources': []
+          },
+          {
+            'fact': '[number]',
+            'explanation': '',
+            'function': '[]',
+            'sources': []
+          }
+        ],
+        'duties': []
+      }
+
+      const core = lawReg.getAbundanceService().getCoreAPI()
+
+      const util = new Util(lawReg)
+      const { ssids, modelLink } = await util.setupModel(model, ['Actor'], { '[actor1]': 'Actor' })
+
+      const needSsid = await core.newSsid('ephemeral')
+
+      await core.allow(needSsid)
+
+      const needLink = await core.claim(needSsid, {
+        'need': {
+          'act': '<<give a number>>',
+          'DISCIPL_FLINT_MODEL_LINK': modelLink
+        }
+      })
+
+      const factResolver = (fact) => {
+        if (fact === '[number]') {
+          return 10
+        }
+        return fact === '[calculator]'
+      }
+
+      const actionLink = await lawReg.take(ssids['Actor'], needLink, '<<give a number>>', factResolver)
+
+      const actor1Acts = (await lawReg.getPotentialActs(actionLink, ssids['Actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(actor1Acts).to.include('<<accept number>>')
+
+      const factResolver2 = (fact) => {
+        if (fact === '[number]') {
+          return 0
+        }
+        return fact === '[calculator]'
+      }
+
+      const actionLink1 = await lawReg.take(ssids['Actor'], needLink, '<<give a number>>', factResolver2)
+
+      const actor1Acts1 = (await lawReg.getPotentialActs(actionLink1, ssids['Actor'], [], [])).map((actInfo) => actInfo.act)
+
+      expect(actor1Acts1).to.include('<<accept number>>')
+    })
   })
 })
