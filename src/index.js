@@ -145,7 +145,7 @@ class LawReg {
           newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in LESS_THAN', operandResult, 'for operand', op)
-          if (typeof lastOperandResult !== 'undefined') {
+          if (typeof lastOperandResult !== 'undefined' && typeof operandResult !== 'undefined') {
             if (BigUtil.lessThan(operandResult, lastOperandResult)) {
               logger.debug('Resolved LESS_THAN as false, because', String(lastOperandResult), 'is not less than', String(operandResult))
               this._extendContextExplanationWithResult(context, false)
@@ -170,7 +170,7 @@ class LawReg {
           newContext = this._extendContextWithExplanation(context)
           const operandResult = await this.checkExpression(op, ssid, newContext)
           logger.debug('OperandResult in EQUAL', String(operandResult), 'for operand', op)
-          if (typeof lastEqualOperandResult !== 'undefined') {
+          if (typeof lastEqualOperandResult !== 'undefined' && typeof operandResult !== 'undefined') {
             if (!BigUtil.equal(operandResult, lastEqualOperandResult)) {
               logger.debug('Resolved EQUAL as false, because', String(lastEqualOperandResult), 'does not equal', String(operandResult))
               this._extendContextExplanationWithResult(context, false)
