@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 import { setupLogging } from './logging'
-import { FactResolverOf, runScenario, TakeAction, TakeFailingAction } from './testUtils'
+import { factResolverOf, runScenario, takeAction, takeFailingAction } from './testUtils'
 
 setupLogging()
 describe('CREATE expression', async function () {
@@ -52,9 +52,9 @@ describe('CREATE expression', async function () {
       model,
       { '[ouder]': 'ouder', '[minister]': 'minister' },
       [
-        TakeAction('ouder', '<<bedrag vaststellen>>', FactResolverOf(completeFacts)),
-        TakeAction('ouder', '<<aanvraag kinderbijslag>>', FactResolverOf(completeFacts)),
-        TakeAction('minister', '<<aanvraag kinderbijslag toekennen>>', FactResolverOf(completeFacts))
+        takeAction('ouder', '<<bedrag vaststellen>>', factResolverOf(completeFacts)),
+        takeAction('ouder', '<<aanvraag kinderbijslag>>', factResolverOf(completeFacts)),
+        takeAction('minister', '<<aanvraag kinderbijslag toekennen>>', factResolverOf(completeFacts))
       ]
     )
   })
@@ -86,7 +86,7 @@ describe('CREATE expression', async function () {
       model,
       { '[ouder]': 'ouder', '[minister]': 'minister' },
       [
-        TakeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', FactResolverOf(completeFacts))
+        takeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
       ]
     )
   })
@@ -139,8 +139,8 @@ describe('CREATE expression', async function () {
       model,
       { '[ouder]': 'ouder', '[minister]': 'minister' },
       [
-        TakeAction('ouder', '<<aanvraag kinderbijslag>>', FactResolverOf(completeFacts)),
-        TakeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', FactResolverOf(completeFacts))
+        takeAction('ouder', '<<aanvraag kinderbijslag>>', factResolverOf(completeFacts)),
+        takeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
       ]
     )
   })
@@ -191,8 +191,8 @@ describe('CREATE expression', async function () {
       model,
       { '[ouder]': 'ouder', '[ambtenaar]': 'ambtenaar' },
       [
-        TakeAction('ouder', '<<aanvragen kinderbijslag>>', FactResolverOf(completeFacts)),
-        TakeFailingAction('ambtenaar', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', FactResolverOf(completeFacts))
+        takeAction('ouder', '<<aanvragen kinderbijslag>>', factResolverOf(completeFacts)),
+        takeFailingAction('ambtenaar', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
       ]
     )
   })

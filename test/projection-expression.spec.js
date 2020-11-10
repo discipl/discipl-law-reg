@@ -1,11 +1,11 @@
 /* eslint-env mocha */
-import { ExpectAvailableActs, ExpectPotentialAct, ExpectPotentialActs, FactResolverOf, runScenario, TakeAction, TakeFailingAction } from './testUtils'
+import { expectAvailableActs, expectPotentialAct, expectPotentialActs, factResolverOf, runScenario, takeAction, takeFailingAction } from './testUtils'
 import { setupLogging } from './logging'
 
 setupLogging()
 describe('PROJECTION expression', async function () {
   describe('With subsidieModel', async function () {
-    const subsidieModel = {
+    const model = {
       'acts': [
         {
           'act': '<<subsidie aanvragen>>',
@@ -130,25 +130,25 @@ describe('PROJECTION expression', async function () {
     it('should be able to have multiple of the same type of actor', async () => {
       const facts = { '[bedrag]': 50, '[verzoek]': true }
       await runScenario(
-        subsidieModel,
+        model,
         { '[ambtenaar]': ['ambtenaar'], '[burger]': ['burger1', 'burger2'] },
         [
-          ExpectAvailableActs('burger1', ['<<subsidie aanvragen>>'], FactResolverOf(facts)),
-          TakeAction('burger1', '<<subsidie aanvragen>>', FactResolverOf(facts)),
-          ExpectAvailableActs('burger1', ['<<subsidie aanvraag intrekken>>']),
-          ExpectAvailableActs('burger2', []),
-          ExpectAvailableActs('ambtenaar', ['<<subsidie aanvraag toekennen>>'])
+          expectAvailableActs('burger1', ['<<subsidie aanvragen>>'], factResolverOf(facts)),
+          takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf(facts)),
+          expectAvailableActs('burger1', ['<<subsidie aanvraag intrekken>>']),
+          expectAvailableActs('burger2', []),
+          expectAvailableActs('ambtenaar', ['<<subsidie aanvraag toekennen>>'])
         ]
       )
     })
 
     it('should call getPotentialActs multiple times without breaking PROJECTION expressions', async () => {
       await runScenario(
-        subsidieModel,
+        model,
         { '[ambtenaar]': ['ambtenaar'], '[burger]': ['burger'] },
         [
-          ExpectPotentialActs('burger', ['<<subsidie aanvragen>>']),
-          ExpectPotentialActs('ambtenaar', [])
+          expectPotentialActs('burger', ['<<subsidie aanvragen>>']),
+          expectPotentialActs('ambtenaar', [])
         ]
       )
     })
@@ -156,167 +156,26 @@ describe('PROJECTION expression', async function () {
     it('should get the projected property', async () => {
       const completeFacts = { '[verzoek]': true, '[bedrag]': 500 }
       await runScenario(
-        subsidieModel,
+        model,
         { '[ambtenaar]': ['ambtenaar'], '[burger]': ['burger', 'burger1'] },
         [
-          TakeAction('burger', '<<subsidie aanvragen>>', FactResolverOf(completeFacts)),
-          TakeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', FactResolverOf(completeFacts))
-        ]
-      )
-    })
-
-    it('should project a series of CREATE facts', async () => {
-      const model = {
-        'acts': [
-          {
-            'act': '<<persoonlijk gegevens invullen>>',
-            'actor': '[burger]',
-            'recipient': '[ambtenaar]',
-            'object': '[verzoek]',
-            'preconditions': '[naam]',
-            'create': [
-              '[persoonlijke gegevens]'
-            ]
-          },
-          {
-            'act': '<<subsidie aanvragen>>',
-            'actor': '[burger]',
-            'recipient': '[ambtenaar]',
-            'object': '[verzoek]',
-            'preconditions': {
-              'expression': 'AND',
-              'operands': [
-                '[persoonlijke gegevens]',
-                '[bedrag]'
-              ]
-            },
-            'create': [
-              '[aanvraag]'
-            ]
-          },
-          {
-            'act': '<<subsidie aanvraag toekennen>>',
-            'actor': '[ambtenaar]',
-            'object': '[aanvraag]',
-            'preconditions': {
-              'expression': 'EQUAL',
-              'operands': [
-                {
-                  'expression': 'PROJECTION',
-                  'context': [
-                    '[aanvraag]',
-                    '[persoonlijke gegevens]'
-                  ],
-                  'fact': '[naam]'
-                },
-                {
-                  'expression': 'LITERAL',
-                  'operand': 'Discipl'
-                }
-              ]
-            },
-            'recipient': '[burger]'
-          }
-        ],
-        'facts': [
-          {
-            'fact': '[aanvraag]',
-            'function': {
-              'expression': 'CREATE',
-              'operands': [
-                '[persoonlijke gegevens]',
-                '[bedrag]'
-              ]
-            }
-          },
-          {
-            'fact': '[persoonlijke gegevens]',
-            'function': {
-              'expression': 'CREATE',
-              'operands': [
-                '[naam]'
-              ]
-            }
-          }
-        ],
-        'duties': []
-      }
-
-      const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[naam]': 'Discipl', '[bedrag]': 500 }
-
-      await runScenario(
-        model,
-        { '[burger]': ['burger'], '[ambtenaar]': ['ambtenaar'] },
-        [
-          TakeAction('burger', '<<persoonlijk gegevens invullen>>', FactResolverOf(completeFacts)),
-          TakeAction('burger', '<<subsidie aanvragen>>', FactResolverOf(completeFacts)),
-          TakeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', FactResolverOf(completeFacts))
-        ]
-      )
-    })
-
-    it('should not allow an act if the projection failed', async () => {
-      const model = {
-        'acts': [
-          {
-            'act': '<<subsidie aanvraag toekennen>>',
-            'actor': '[ambtenaar]',
-            'object': '[aanvraag]',
-            'preconditions': {
-              'expression': 'EQUAL',
-              'operands': [
-                {
-                  'expression': 'PROJECTION',
-                  'context': [
-                    '[aanvraag]'
-                  ],
-                  'fact': '[niet bestaand bedrag]'
-                },
-                {
-                  'expression': 'LITERAL',
-                  'operand': 500
-                }
-              ]
-            },
-            'recipient': '[burger]'
-          }
-        ],
-        'facts': [
-          {
-            'fact': '[aanvraag]',
-            'function': {
-              'expression': 'CREATE',
-              'operands': [
-                '[bedrag]'
-              ]
-            }
-          }
-        ],
-        'duties': []
-      }
-
-      const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[bedrag]': 500 }
-
-      await runScenario(
-        model,
-        { '[burger]': ['burger'], '[ambtenaar]': ['ambtenaar'] },
-        [
-          TakeFailingAction('burger', '<<subsidie aanvraag toekennen>>', 'Action <<subsidie aanvraag toekennen>> is not allowed due to object', FactResolverOf(completeFacts))
+          takeAction('burger', '<<subsidie aanvragen>>', factResolverOf(completeFacts)),
+          takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverOf(completeFacts))
         ]
       )
     })
 
     it('should be able to take an action after object is created from other action', async () => {
       await runScenario(
-        subsidieModel,
+        model,
         { '[ambtenaar]': 'ambtenaar', '[burger]': 'burger' },
         [
-          TakeAction('burger', '<<subsidie aanvragen>>', FactResolverOf({ '[verzoek]': true, '[bedrag]': 50 })),
-          ExpectAvailableActs('ambtenaar', ['<<subsidie aanvraag toekennen>>']),
-          ExpectPotentialActs('burger', ['<<subsidie aanvragen>>']),
-          ExpectAvailableActs('burger', ['<<subsidie aanvraag intrekken>>']),
-          TakeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', FactResolverOf({ '[verzoek]': true })),
-          ExpectAvailableActs('ambtenaar', [])
+          takeAction('burger', '<<subsidie aanvragen>>', factResolverOf({ '[verzoek]': true, '[bedrag]': 50 })),
+          expectAvailableActs('ambtenaar', ['<<subsidie aanvraag toekennen>>']),
+          expectPotentialActs('burger', ['<<subsidie aanvragen>>']),
+          expectAvailableActs('burger', ['<<subsidie aanvraag intrekken>>']),
+          takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverOf({ '[verzoek]': true })),
+          expectAvailableActs('ambtenaar', [])
         ]
       )
     })
@@ -411,10 +270,10 @@ describe('PROJECTION expression', async function () {
         model,
         { '[actor1]': 'Actor' },
         [
-          TakeAction('Actor', '<<give a number>>', FactResolverOf(facts)),
-          ExpectPotentialAct('Actor', '<<accept number>>'),
-          TakeAction('Actor', '<<give a number>>', FactResolverOf(facts)),
-          ExpectPotentialAct('Actor', '<<accept number>>')
+          takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+          expectPotentialAct('Actor', '<<accept number>>'),
+          takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+          expectPotentialAct('Actor', '<<accept number>>')
         ]
       )
     })
@@ -442,10 +301,10 @@ describe('PROJECTION expression', async function () {
         model,
         { '[actor1]': 'Actor' },
         [
-          TakeAction('Actor', '<<give a number>>', FactResolverOf(facts)),
-          ExpectPotentialAct('Actor', '<<accept number>>'),
-          TakeAction('Actor', '<<give a number>>', FactResolverOf(facts)),
-          ExpectPotentialAct('Actor', '<<accept number>>')
+          takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+          expectPotentialAct('Actor', '<<accept number>>'),
+          takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+          expectPotentialAct('Actor', '<<accept number>>')
         ]
       )
     })
@@ -482,10 +341,10 @@ describe('PROJECTION expression', async function () {
         model,
         { '[actor1]': 'Actor' },
         [
-          TakeAction('Actor', '<<give a number>>', FactResolverOf(facts)),
-          ExpectPotentialAct('Actor', '<<accept number>>'),
-          TakeAction('Actor', '<<give a number>>', FactResolverOf(facts)),
-          ExpectPotentialAct('Actor', '<<accept number>>')
+          takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+          expectPotentialAct('Actor', '<<accept number>>'),
+          takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+          expectPotentialAct('Actor', '<<accept number>>')
         ]
       )
     })
@@ -522,12 +381,153 @@ describe('PROJECTION expression', async function () {
         model,
         { '[actor1]': 'Actor' },
         [
-          TakeAction('Actor', '<<give a number>>', FactResolverOf(facts)),
-          ExpectPotentialAct('Actor', '<<accept number>>'),
-          TakeAction('Actor', '<<give a number>>', FactResolverOf(facts)),
-          ExpectPotentialAct('Actor', '<<accept number>>')
+          takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+          expectPotentialAct('Actor', '<<accept number>>'),
+          takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+          expectPotentialAct('Actor', '<<accept number>>')
         ]
       )
     })
+  })
+
+  it('should project a series of CREATE facts', async () => {
+    const model = {
+      'acts': [
+        {
+          'act': '<<persoonlijk gegevens invullen>>',
+          'actor': '[burger]',
+          'recipient': '[ambtenaar]',
+          'object': '[verzoek]',
+          'preconditions': '[naam]',
+          'create': [
+            '[persoonlijke gegevens]'
+          ]
+        },
+        {
+          'act': '<<subsidie aanvragen>>',
+          'actor': '[burger]',
+          'recipient': '[ambtenaar]',
+          'object': '[verzoek]',
+          'preconditions': {
+            'expression': 'AND',
+            'operands': [
+              '[persoonlijke gegevens]',
+              '[bedrag]'
+            ]
+          },
+          'create': [
+            '[aanvraag]'
+          ]
+        },
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': '[ambtenaar]',
+          'object': '[aanvraag]',
+          'preconditions': {
+            'expression': 'EQUAL',
+            'operands': [
+              {
+                'expression': 'PROJECTION',
+                'context': [
+                  '[aanvraag]',
+                  '[persoonlijke gegevens]'
+                ],
+                'fact': '[naam]'
+              },
+              {
+                'expression': 'LITERAL',
+                'operand': 'Discipl'
+              }
+            ]
+          },
+          'recipient': '[burger]'
+        }
+      ],
+      'facts': [
+        {
+          'fact': '[aanvraag]',
+          'function': {
+            'expression': 'CREATE',
+            'operands': [
+              '[persoonlijke gegevens]',
+              '[bedrag]'
+            ]
+          }
+        },
+        {
+          'fact': '[persoonlijke gegevens]',
+          'function': {
+            'expression': 'CREATE',
+            'operands': [
+              '[naam]'
+            ]
+          }
+        }
+      ],
+      'duties': []
+    }
+
+    const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[naam]': 'Discipl', '[bedrag]': 500 }
+
+    await runScenario(
+      model,
+      { '[burger]': ['burger'], '[ambtenaar]': ['ambtenaar'] },
+      [
+        takeAction('burger', '<<persoonlijk gegevens invullen>>', factResolverOf(completeFacts)),
+        takeAction('burger', '<<subsidie aanvragen>>', factResolverOf(completeFacts)),
+        takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverOf(completeFacts))
+      ]
+    )
+  })
+
+  it('should not allow an act if the projection failed', async () => {
+    const model = {
+      'acts': [
+        {
+          'act': '<<subsidie aanvraag toekennen>>',
+          'actor': '[ambtenaar]',
+          'object': '[aanvraag]',
+          'preconditions': {
+            'expression': 'EQUAL',
+            'operands': [
+              {
+                'expression': 'PROJECTION',
+                'context': [
+                  '[aanvraag]'
+                ],
+                'fact': '[niet bestaand bedrag]'
+              },
+              {
+                'expression': 'LITERAL',
+                'operand': 500
+              }
+            ]
+          },
+          'recipient': '[burger]'
+        }
+      ],
+      'facts': [
+        {
+          'fact': '[aanvraag]',
+          'function': {
+            'expression': 'CREATE',
+            'operands': [
+              '[bedrag]'
+            ]
+          }
+        }
+      ],
+      'duties': []
+    }
+
+    const completeFacts = { '[burger]': true, '[ambtenaar]': true, '[verzoek]': true, '[bedrag]': 500 }
+
+    await runScenario(
+      model,
+      { '[burger]': ['burger'], '[ambtenaar]': ['ambtenaar'] },
+      [
+        takeFailingAction('burger', '<<subsidie aanvraag toekennen>>', 'Action <<subsidie aanvraag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
+      ]
+    )
   })
 })

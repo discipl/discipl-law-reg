@@ -14,7 +14,7 @@ import { expect } from 'chai'
  * @returns {Step}
  * @constructor
  */
-function TakeAction (actor, act, factResolver = () => false) {
+function takeAction (actor, act, factResolver = () => false) {
   return {
     execute: async function (lawReg, ssids, link, index) {
       try {
@@ -35,7 +35,7 @@ function TakeAction (actor, act, factResolver = () => false) {
  * @returns {Step}
  * @constructor
  */
-function TakeFailingAction (actor, act, message, factResolver = () => false) {
+function takeFailingAction (actor, act, message, factResolver = () => false) {
   return {
     execute: async function (lawReg, ssids, link, index) {
       try {
@@ -55,7 +55,7 @@ function TakeFailingAction (actor, act, message, factResolver = () => false) {
  * @returns {Step}
  * @constructor
  */
-function ExpectPotentialActs (actor, acts, factResolver = FactResolverOf({})) {
+function expectPotentialActs (actor, acts, factResolver = factResolverOf({})) {
   return {
     execute: async function (lawReg, ssids, link, index) {
       const result = (await lawReg.getPotentialActsWithResolver(link, ssids[actor], factResolver)).map((actInfo) => actInfo.act)
@@ -72,7 +72,7 @@ function ExpectPotentialActs (actor, acts, factResolver = FactResolverOf({})) {
  * @returns {Step}
  * @constructor
  */
-function ExpectPotentialAct (actor, act, factResolver = FactResolverOf({})) {
+function expectPotentialAct (actor, act, factResolver = factResolverOf({})) {
   return {
     execute: async function (lawReg, ssids, link, index) {
       const result = (await lawReg.getPotentialActsWithResolver(link, ssids[actor], factResolver)).map((actInfo) => actInfo.act)
@@ -89,7 +89,7 @@ function ExpectPotentialAct (actor, act, factResolver = FactResolverOf({})) {
  * @returns {Step}
  * @constructor
  */
-function ExpectAvailableActs (actor, acts, factResolver = FactResolverOf({})) {
+function expectAvailableActs (actor, acts, factResolver = factResolverOf({})) {
   return {
     execute: async function (lawReg, ssids, link, index) {
       const result = (await lawReg.getAvailableActsWithResolver(link, ssids[actor], factResolver)).map((actInfo) => actInfo.act)
@@ -106,7 +106,7 @@ function ExpectAvailableActs (actor, acts, factResolver = FactResolverOf({})) {
  * @returns {Step}
  * @constructor
  */
-function ExpectAvailableAct (actor, act, factResolver = FactResolverOf({})) {
+function expectAvailableAct (actor, act, factResolver = factResolverOf({})) {
   return {
     execute: async function (lawReg, ssids, link, index) {
       const result = (await lawReg.getAvailableActsWithResolver(link, ssids[actor], factResolver)).map((actInfo) => actInfo.act)
@@ -120,7 +120,7 @@ function ExpectAvailableAct (actor, act, factResolver = FactResolverOf({})) {
  * @param {object} facts
  * @return {function(string): boolean}
  */
-function FactResolverOf (facts) {
+function factResolverOf (facts) {
   return (fact) => facts[fact]
 }
 
@@ -157,12 +157,12 @@ function _onlyUnique (value, index, self) {
 }
 
 export {
-  FactResolverOf,
+  factResolverOf,
   runScenario,
-  TakeAction,
-  TakeFailingAction,
-  ExpectPotentialAct,
-  ExpectPotentialActs,
-  ExpectAvailableAct,
-  ExpectAvailableActs
+  takeAction,
+  takeFailingAction,
+  expectPotentialAct,
+  expectPotentialActs,
+  expectAvailableAct,
+  expectAvailableActs
 }
