@@ -10,15 +10,17 @@ import { expect } from 'chai'
 /**
  * @param {string} actor - actor name
  * @param {string} act - description of the act to be taken
- * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
+ * @param {function(string) : *} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
  * @returns {Step}
  * @constructor
  */
 function takeAction (actor, act, factResolver = () => false) {
   return {
-    execute: async function (lawReg, ssids, link, index) {
+    execute: async function (lawReg, ssids, link, index, actionLinks) {
       try {
-        return await lawReg.take(ssids[actor], link, act, factResolver)
+        const actionLink = await lawReg.take(ssids[actor], link, act, factResolver)
+        actionLinks.push(actionLink)
+        return actionLink
       } catch (e) {
         console.error(`TakeAction${act} Step failed. Step Index ${index}`)
         throw e
@@ -117,6 +119,34 @@ function expectAvailableAct (actor, act, factResolver = factResolverOf({})) {
 }
 
 /**
+ * @typedef ActionData
+ * @property {string} DISCIPL_FLINT_ACT_TAKEN
+ * @property {object} DISCIPL_FLINT_FACTS_SUPPLIED
+ * @property {string} DISCIPL_FLINT_GLOBAL_CASE
+ * @property {string} DISCIPL_FLINT_PREVIOUS_CASE
+ */
+
+/**
+ * @param {string} actor
+ * @param {string} actName
+ * @param {(function(object[],string, string, string):ActionData)} data
+ * @return {Step}
+ */
+function expectData (actor, actName, data) {
+  return {
+    execute: async function (lawReg, ssids, link, index, actionLinks, modelLink) {
+      const core = lawReg.getAbundanceService().getCoreAPI()
+      const action = await core.get(link, ssids[actor])
+      const retrievedModel = await core.get(modelLink)
+      const acts = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
+      const actLink = Object.values(acts.find(act => Object.keys(act).includes(actName)))[0]
+      expect(action.data).to.deep.equal(data(ssids, actionLinks[actionLinks.length - 2], actionLinks[0], actLink), `ExpectData Step failed. Step Index ${index}`)
+      return link
+    }
+  }
+}
+
+/**
  * @param {object} facts
  * @return {function(string): boolean}
  */
@@ -127,7 +157,7 @@ function factResolverOf (facts) {
 /**
  * run scenario
  * @param {object} model FlintModel
- * @param {Object.<string, string[]>} actors Object with keys as facts and values as actors the fact applies to.
+ * @param {Object.<string, string[]>} actors Object with keys as actors and values as facts that apply to the actor.
  * @param {Step[]} steps Steps
  */
 async function runScenario (model, actors, steps) {
@@ -137,23 +167,30 @@ async function runScenario (model, actors, steps) {
   const needSsid = await core.newSsid('ephemeral')
   await core.allow(needSsid)
 
-  const actorNames = Object.values(actors).flatMap(value => value).filter(_onlyUnique)
-  const { ssids, modelLink } = await util.setupModel(model, actorNames, actors)
-  const link = await core.claim(needSsid, {
+  const actorNames = Object.keys(actors)
+  const actorVal = {}
+  Object.entries(actors).forEach(entry => entry[1].forEach(fact => {
+    let x = actorVal[fact]
+    if (!x) {
+      x = []
+    }
+    x.push(entry[0])
+    actorVal[fact] = x
+  }))
+  const { ssids, modelLink } = await util.setupModel(model, actorNames, actorVal)
+  const globalLink = await core.claim(needSsid, {
     'need': {
       'DISCIPL_FLINT_MODEL_LINK': modelLink
     }
   })
 
+  const actionLinks = [globalLink]
+
   return steps.reduce(async (previousValue, currentValue, index) => {
     const value = await previousValue
     console.log('------- Executing step:', index + 1)
-    return currentValue.execute(lawReg, ssids, value, index + 1)
-  }, link)
-}
-
-function _onlyUnique (value, index, self) {
-  return self.indexOf(value) === index
+    return currentValue.execute(lawReg, ssids, value, index + 1, actionLinks, modelLink)
+  }, globalLink)
 }
 
 export {
@@ -164,5 +201,6 @@ export {
   expectPotentialAct,
   expectPotentialActs,
   expectAvailableAct,
-  expectAvailableActs
+  expectAvailableActs,
+  expectData
 }

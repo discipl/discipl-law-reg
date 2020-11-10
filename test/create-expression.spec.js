@@ -50,7 +50,7 @@ describe('CREATE expression', async function () {
 
     await runScenario(
       model,
-      { '[ouder]': 'ouder', '[minister]': 'minister' },
+      { 'ouder': ['[ouder]'], 'minister': ['[minister]'] },
       [
         takeAction('ouder', '<<bedrag vaststellen>>', factResolverOf(completeFacts)),
         takeAction('ouder', '<<aanvraag kinderbijslag>>', factResolverOf(completeFacts)),
@@ -84,7 +84,7 @@ describe('CREATE expression', async function () {
 
     await runScenario(
       model,
-      { '[ouder]': 'ouder', '[minister]': 'minister' },
+      { 'ouder': ['[ouder]'], 'minister': ['[minister]'] },
       [
         takeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
       ]
@@ -137,7 +137,7 @@ describe('CREATE expression', async function () {
 
     await runScenario(
       model,
-      { '[ouder]': 'ouder', '[minister]': 'minister' },
+      { 'ouder': ['[ouder]'], 'minister': ['[minister]'] },
       [
         takeAction('ouder', '<<aanvraag kinderbijslag>>', factResolverOf(completeFacts)),
         takeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
@@ -189,7 +189,7 @@ describe('CREATE expression', async function () {
 
     await runScenario(
       model,
-      { '[ouder]': 'ouder', '[ambtenaar]': 'ambtenaar' },
+      { 'ouder': ['[ouder]'], 'ambtenaar': ['[ambtenaar]'] },
       [
         takeAction('ouder', '<<aanvragen kinderbijslag>>', factResolverOf(completeFacts)),
         takeFailingAction('ambtenaar', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverOf(completeFacts))

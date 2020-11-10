@@ -8,9 +8,9 @@ import Util from '../src/util'
 import awb from './flint-example-awb'
 import IdentityUtil from '../src/identity_util'
 import { setupLogging } from './logging'
+import { expectData, factResolverOf, runScenario, takeAction } from './testUtils'
 
 setupLogging()
-
 const lawReg = new LawReg()
 
 describe('discipl-law-reg', () => {
@@ -148,8 +148,6 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to take an action', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
         'acts': [
@@ -173,38 +171,26 @@ describe('discipl-law-reg', () => {
         ],
         'duties': []
       }
-      const util = new Util(lawReg)
-      const { ssids, modelLink } = await util.setupModel(model, ['ingezetene'], { '[ingezetene]': 'ingezetene' }, false)
 
-      const needSsid = await core.newSsid('ephemeral')
-
-      await core.allow(needSsid)
-
-      const retrievedModel = await core.get(modelLink)
-
-      const needLink = await core.claim(needSsid, {
-        'need': {
-          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const factResolver = (fact) => true
-
-      const actionLink = await lawReg.take(ssids['ingezetene'], needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
-
-      const action = await core.get(actionLink, ssids['ingezetene'])
-
-      expect(action.data).to.deep.equal({
-        'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
-        'DISCIPL_FLINT_FACTS_SUPPLIED': {
-          '[overheid]': true,
-          '[verwelkomst]': true,
-          '[ingezetene]': IdentityUtil.identityExpression(ssids['ingezetene'].did)
-        },
-        'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-        'DISCIPL_FLINT_PREVIOUS_CASE': needLink
-      })
+      await runScenario(
+        model,
+        { 'ingezetene': ['[ingezetene]'] },
+        [
+          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (fact) => true),
+          expectData('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (actors, previousLink, globalLink, actLink) => {
+            return {
+              'DISCIPL_FLINT_ACT_TAKEN': actLink,
+              'DISCIPL_FLINT_FACTS_SUPPLIED': {
+                '[overheid]': true,
+                '[verwelkomst]': true,
+                '[ingezetene]': IdentityUtil.identityExpression(actors['ingezetene'].did)
+              },
+              'DISCIPL_FLINT_GLOBAL_CASE': globalLink,
+              'DISCIPL_FLINT_PREVIOUS_CASE': previousLink
+            }
+          })
+        ]
+      )
     })
 
     it('should allow any actor to take an action where the fact is true for ANYONE', async () => {
@@ -1498,71 +1484,41 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to take an action where the object originates from another action - AWB', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
-      const lawmakerSsid = await core.newSsid('ephemeral')
-      await core.allow(lawmakerSsid)
-
-      const belanghebbendeSsid = await core.newSsid('ephemeral')
-      await core.allow(belanghebbendeSsid)
-      const bestuursorgaanSsid = await core.newSsid('ephemeral')
-      await core.allow(bestuursorgaanSsid)
-
-      const modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
-        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': IdentityUtil.identityExpression(belanghebbendeSsid.did),
-        '[wetgevende macht]': IdentityUtil.identityExpression(bestuursorgaanSsid.did)
-      })
-
-      const retrievedModel = await core.get(modelLink)
-
-      const needSsid = await core.newSsid('ephemeral')
-
-      await core.allow(needSsid)
-      const needLink = await core.claim(needSsid, {
-        'need': {
-          'act': '<<indienen verzoek een besluit te nemen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const belanghebbendeFactresolver = (fact) => {
-        if (typeof fact === 'string') {
-          return fact === '[verzoek een besluit te nemen]'
-        }
-        return false
+      const belanghebbendeFacts = {
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': true,
+        '[verzoek een besluit te nemen]': true,
+        '[wetgevende macht]': true,
+        '[bij wettelijk voorschrift is anders bepaald]': false
       }
 
-      const actionLink = await lawReg.take(belanghebbendeSsid, needLink, '<<indienen verzoek een besluit te nemen>>', belanghebbendeFactresolver)
-
-      const bestuursorgaanFactresolver = (fact) => {
-        if (typeof fact === 'string') {
-          // interested party
-          return fact === '[persoon wiens belang rechtstreeks bij een besluit is betrokken]' ||
-            // preconditions
-            fact === '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]'
-        }
-        return false
+      const bestuursorgaanFacts = {
+        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': true,
+        '[wetgevende macht]': true,
+        '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]': true
       }
 
-      const secondActionLink = await lawReg.take(bestuursorgaanSsid, actionLink, '<<besluiten de aanvraag niet te behandelen>>', bestuursorgaanFactresolver)
-
-      expect(secondActionLink).to.be.a('string')
-
-      const action = await core.get(secondActionLink, bestuursorgaanSsid)
-
-      const expectedActLink = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
-        .filter(item => Object.keys(item).includes('<<besluiten de aanvraag niet te behandelen>>'))
-
-      expect(action.data).to.deep.equal({
-        'DISCIPL_FLINT_ACT_TAKEN': Object.values(expectedActLink[0])[0],
-        'DISCIPL_FLINT_FACTS_SUPPLIED': {
-          '[bestuursorgaan]': IdentityUtil.identityExpression(bestuursorgaanSsid.did),
-          '[aanvraag]': actionLink,
-          '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]': true
-        },
-        'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-        'DISCIPL_FLINT_PREVIOUS_CASE': actionLink
-      })
+      await runScenario(
+        awb,
+        { 'belanghebbende': [], 'bestuursorgaan': [] },
+        [
+          takeAction('belanghebbende', '<<indienen verzoek een besluit te nemen>>', factResolverOf(belanghebbendeFacts)),
+          takeAction('bestuursorgaan', '<<besluiten de aanvraag niet te behandelen>>', factResolverOf(bestuursorgaanFacts)),
+          expectData('ingezetene', '<<besluiten de aanvraag niet te behandelen>>', (actors, previousLink, globalLink, actLink) => {
+            return {
+              'DISCIPL_FLINT_ACT_TAKEN': actLink,
+              'DISCIPL_FLINT_FACTS_SUPPLIED': {
+                '[bestuursorgaan]': IdentityUtil.identityExpression(actors['bestuursorgaan'].did),
+                '[aanvraag]': previousLink,
+                '[aanvraag is geheel of gedeeltelijk geweigerd op grond van artikel 2:15 Awb]': true,
+                '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': true,
+                '[wetgevende macht]': true
+              },
+              'DISCIPL_FLINT_GLOBAL_CASE': globalLink,
+              'DISCIPL_FLINT_PREVIOUS_CASE': previousLink
+            }
+          })
+        ]
+      )
     })
 
     it('should be able to fill functions of single and multiple facts', async () => {
