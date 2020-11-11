@@ -4,7 +4,7 @@ import { expect } from 'chai'
 
 /**
  * @typedef Step
- * @property {Function} execute
+ * @property {function(lawReg: LawReg, ssids: object, prevLink: string, stepIndex: Int, actionLinks: string[], modelLink: string): string} execute
  */
 
 /**
