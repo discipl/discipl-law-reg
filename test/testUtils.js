@@ -119,6 +119,22 @@ function expectAvailableAct (actor, act, factResolver = factResolverOf({})) {
 }
 
 /**
+ * @param {string} actor - actor name
+ * @param {string[]} duties - description of the act that is expected
+ * @returns {Step}
+ * @constructor
+ */
+function expectActiveDuties (actor, duties) {
+  return {
+    execute: async function (lawReg, ssids, link, index) {
+      const result = (await lawReg.getActiveDuties(link, ssids[actor])).map((dutoInfo) => dutoInfo.duty)
+      expect(result).to.deep.equal(duties, `ExpectActiveDuties Step failed. Step Index ${index}`)
+      return link
+    }
+  }
+}
+
+/**
  * @typedef ActionData
  * @property {string} DISCIPL_FLINT_ACT_TAKEN
  * @property {object} DISCIPL_FLINT_FACTS_SUPPLIED
@@ -127,20 +143,27 @@ function expectAvailableAct (actor, act, factResolver = factResolverOf({})) {
  */
 
 /**
- * @param {string} actor
- * @param {string} actName
- * @param {(function(object[],string, string, string):ActionData)} data
+ * @param {string} actor - actor name
+ * @param {string} act - the previous act
+ * @param {function(object[], string[]):object} factsSupplied - function that returns the expected supplied acts
  * @return {Step}
  */
-function expectData (actor, actName, data) {
+function expectData (actor, act, factsSupplied) {
   return {
     execute: async function (lawReg, ssids, link, index, actionLinks, modelLink) {
       const core = lawReg.getAbundanceService().getCoreAPI()
       const action = await core.get(link, ssids[actor])
       const retrievedModel = await core.get(modelLink)
       const acts = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
-      const actLink = Object.values(acts.find(act => Object.keys(act).includes(actName)))[0]
-      expect(action.data).to.deep.equal(data(ssids, actionLinks[actionLinks.length - 2], actionLinks[0], actLink), `ExpectData Step failed. Step Index ${index}`)
+
+      const actLink = Object.values(acts.find(anAct => Object.keys(anAct).includes(act)))[0]
+      const data = {
+        'DISCIPL_FLINT_ACT_TAKEN': actLink,
+        'DISCIPL_FLINT_FACTS_SUPPLIED': factsSupplied(ssids, actionLinks),
+        'DISCIPL_FLINT_GLOBAL_CASE': actionLinks[0],
+        'DISCIPL_FLINT_PREVIOUS_CASE': actionLinks[actionLinks.length - 2]
+      }
+      expect(action.data).to.deep.equal(data, `ExpectData Step failed. Step Index ${index}`)
       return link
     }
   }
@@ -151,7 +174,16 @@ function expectData (actor, actName, data) {
  * @return {function(string): boolean}
  */
 function factResolverOf (facts) {
-  return (fact) => facts[fact]
+  return (fact) => {
+    if (facts[fact] !== undefined) {
+      if (Array.isArray(facts[fact])) {
+        return facts[fact].shift()
+      } else {
+        return facts[fact]
+      }
+    }
+    return undefined
+  }
 }
 
 /**
@@ -167,16 +199,8 @@ async function runScenario (model, actors, steps) {
   const needSsid = await core.newSsid('ephemeral')
   await core.allow(needSsid)
 
-  const actorNames = Object.keys(actors)
-  const actorVal = {}
-  Object.entries(actors).forEach(entry => entry[1].forEach(fact => {
-    let x = actorVal[fact]
-    if (!x) {
-      x = []
-    }
-    x.push(entry[0])
-    actorVal[fact] = x
-  }))
+  const actorNames = Object.keys(actors).filter(name => name !== 'ANYONE')
+  const actorVal = _actorFactFunctionSpec(actors)
   const { ssids, modelLink } = await util.setupModel(model, actorNames, actorVal)
   const globalLink = await core.claim(needSsid, {
     'need': {
@@ -187,12 +211,30 @@ async function runScenario (model, actors, steps) {
   const actionLinks = [globalLink]
 
   return steps.reduce(async (previousValue, currentValue, index) => {
-    const value = await previousValue
+    const prevLink = await previousValue
     console.log('------- Executing step:', index + 1)
-    return currentValue.execute(lawReg, ssids, value, index + 1, actionLinks, modelLink)
+    const nextLink = await currentValue.execute(lawReg, ssids, prevLink, index + 1, actionLinks, modelLink)
+    console.log('------- Executed step:', index + 1)
+    return nextLink
   }, globalLink)
 }
 
+/**
+ * @param {Object<string, string[]>} actors Object with keys as actors and values as facts that apply to the actor.
+ * @return {Object<string, string[]>} Object with keys as facts and values as actors that the fact applies to.
+ */
+function _actorFactFunctionSpec (actors) {
+  const actorVal = {}
+  Object.entries(actors).forEach(entry => entry[1].forEach(fact => {
+    let x = actorVal[fact]
+    if (!x) {
+      x = []
+    }
+    x.push(entry[0])
+    actorVal[fact] = x
+  }))
+  return actorVal
+}
 export {
   factResolverOf,
   runScenario,
@@ -202,5 +244,6 @@ export {
   expectPotentialActs,
   expectAvailableAct,
   expectAvailableActs,
+  expectActiveDuties,
   expectData
 }
