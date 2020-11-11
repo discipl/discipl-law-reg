@@ -25,6 +25,10 @@ class LawReg {
     this.abundance = abundanceService
   }
 
+  /**
+   * Get abundance service
+   * @return {AbundanceService}
+   */
   getAbundanceService () {
     return this.abundance
   }
