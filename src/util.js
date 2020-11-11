@@ -242,8 +242,10 @@ class Util {
       const values = actors.map((actor) => {
         if (allActors.includes(actor)) {
           return IdentityUtil.identityExpression(ssids[actor].did)
-        } else {
+        } else if (Array.isArray(factFunctionSpec[fact])) {
           return IdentityUtil.identityExpression(actor)
+        } else {
+          return factFunctionSpec[fact]
         }
       })
 

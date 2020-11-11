@@ -1,22 +1,29 @@
 /* eslint-env mocha */
 import { expect } from 'chai'
 
-import sinon from 'sinon'
-import { LawReg } from '../src/index.js'
-import Util from '../src/util'
-
 import awb from './flint-example-awb'
 import IdentityUtil from '../src/identity_util'
 import { setupLogging } from './logging'
-import { expectActiveDuties, expectData, expectPotentialActs, factResolverOf, runScenario, takeAction, takeFailingAction } from './testUtils'
+import {
+  expectActiveDuties,
+  expectAvailableActs,
+  expectData,
+  expectModelActDetails,
+  expectModelDuty,
+  expectModelFact,
+  expectPotentialActs,
+  expectRetrievedFactFunction,
+  factResolverOf,
+  runOnModel,
+  runScenario,
+  takeAction
+} from './testUtils'
 
 setupLogging()
-const lawReg = new LawReg()
 
 describe('discipl-law-reg', () => {
   describe('The discipl-law-reg library', () => {
     it('should publish small example', async () => {
-      // TODO
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
         'acts': [
@@ -90,62 +97,44 @@ describe('discipl-law-reg', () => {
         ]
       }
 
-      const abundancesvc = lawReg.getAbundanceService()
-      const core = abundancesvc.getCoreAPI()
-
-      const ssid = await core.newSsid('ephemeral')
-
-      const modelLink = await lawReg.publish(ssid, model)
-
-      const modelReference = await core.get(modelLink, ssid)
-
-      const actsLink = modelReference.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
-      const factsLink = modelReference.data['DISCIPL_FLINT_MODEL'].facts[2]['[betrokkene]']
-      const dutiesLink = modelReference.data['DISCIPL_FLINT_MODEL'].duties[0]['<verwelkomen binnen 14 dagen na aanvragen>']
-
-      const actDetails = await lawReg.getActDetails(actsLink, ssid)
-      const factReference = await core.get(factsLink, ssid)
-      const dutyReference = await core.get(dutiesLink, ssid)
-
-      expect(Object.keys(modelReference.data['DISCIPL_FLINT_MODEL'])).to.have.members(['model', 'acts', 'facts', 'duties'])
-
-      expect(actDetails).to.deep.equal(
-        {
-          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
-          'action': '[aanvragen]',
-          'actor': '[ingezetene]',
-          'object': '[verwelkomst]',
-          'recipient': '[overheid]',
-          'preconditions': '',
-          'create': '<verwelkomen>',
-          'terminate': '',
-          'reference': 'art 2.1',
-          'sourcetext': '',
-          'explanation': '',
-          'version': '2-[19980101]-[jjjjmmdd]',
-          'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
-        }
+      await runScenario(
+        model,
+        { 'actor': [] },
+        [
+          runOnModel('actor', (modelReference) => {
+            expect(Object.keys(modelReference)).to.have.members(['model', 'acts', 'facts', 'duties'])
+          }),
+          expectModelFact('actor', '[betrokkene]', { 'fact': '[betrokkene]', 'function': '[ingezetene] OF [overheid]', 'reference': 'art 1.3' }),
+          expectModelDuty('actor', '<verwelkomen binnen 14 dagen na aanvragen>', {
+            'duty': '<verwelkomen binnen 14 dagen na aanvragen>',
+            'duty-holder': '[overheid]',
+            'claimant': '[ingezetene]',
+            'create': '<<verwelkomen>>',
+            'enforce': '<<klagen>>',
+            'terminate': '',
+            'reference': 'art 2.2, art 3.1',
+            'sourcetext': '',
+            'explanation': '',
+            'version': '2-[19980101]-[jjjjmmdd]',
+            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+          }),
+          expectModelActDetails('actor', '<<ingezetene kan verwelkomst van overheid aanvragen>>', {
+            'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+            'action': '[aanvragen]',
+            'actor': '[ingezetene]',
+            'object': '[verwelkomst]',
+            'recipient': '[overheid]',
+            'preconditions': '',
+            'create': '<verwelkomen>',
+            'terminate': '',
+            'reference': 'art 2.1',
+            'sourcetext': '',
+            'explanation': '',
+            'version': '2-[19980101]-[jjjjmmdd]',
+            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+          })
+        ]
       )
-
-      expect(factReference.data['DISCIPL_FLINT_FACT']).to.deep.equal(
-        { 'fact': '[betrokkene]', 'function': '[ingezetene] OF [overheid]', 'reference': 'art 1.3' }
-      )
-
-      expect(dutyReference.data['DISCIPL_FLINT_DUTY']).to.deep.equal({
-        'duty': '<verwelkomen binnen 14 dagen na aanvragen>',
-        'duty-holder': '[overheid]',
-        'claimant': '[ingezetene]',
-        'create': '<<verwelkomen>>',
-        'enforce': '<<klagen>>',
-        'terminate': '',
-        'reference': 'art 2.2, art 3.1',
-        'sourcetext': '',
-        'explanation': '',
-        'version': '2-[19980101]-[jjjjmmdd]',
-        'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
-      })
-
-      expect(modelLink).to.be.a('string')
     })
 
     it('should be able to take an action', async () => {
@@ -177,7 +166,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'ingezetene': ['[ingezetene]'] },
         [
-          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (fact) => true),
+          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', () => true),
           expectData('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (actors) => {
             return {
               '[overheid]': true,
@@ -338,7 +327,7 @@ describe('discipl-law-reg', () => {
         ],
         'duties': []
       }
-      const factResolver = async (fact) => true
+      const factResolver = async () => true
       await runScenario(
         model,
         { 'ingezetene': ['[ingezetene]'] },
@@ -517,66 +506,66 @@ describe('discipl-law-reg', () => {
       )
     })
 
-    it('should be able to determine active duties', async () => {
-      const model = {
-        'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
-        'acts': [
-          {
-            'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
-            'action': '[aanvragen]',
-            'actor': '[ingezetene]',
-            'object': '[verwelkomst]',
-            'recipient': '[overheid]',
-            'preconditions': '[]',
-            'create': '<verwelkomen>',
-            'terminate': '',
-            'reference': 'art 2.1',
-            'sourcetext': '',
-            'explanation': '',
-            'version': '2-[19980101]-[jjjjmmdd]',
-            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
-          },
-          {
-            'act': '<<ingezetene geeft aan dat verwelkomen niet nodig is>>',
-            'action': '[aangeven]',
-            'actor': '[ingezetene]',
-            'object': '[verwelkomst]',
-            'recipient': '[overheid]',
-            'preconditions': '[]',
-            'create': '',
-            'terminate': '<verwelkomen>',
-            'reference': 'art 2.1',
-            'sourcetext': '',
-            'explanation': '',
-            'version': '2-[19980101]-[jjjjmmdd]',
-            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
-          }],
-        'facts': [
-          { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' },
-          { 'fact': '[overheid]', 'function': '[]', 'reference': '' }
-        ],
-        'duties': [
-          {
-            'duty': '<verwelkomen>',
-            'duty-components': '',
-            'duty-holder': '[overheid]',
-            'claimant': '[ingezetene]',
-            'create': '<<ingezetene kan verwelkomst van overheid aanvragen>>>',
-            'terminate': '<<ingezetene geeft aan dat verwelkomen niet nodig is>>',
-            'version': '',
-            'reference': '',
-            'juriconnect': '',
-            'sourcetext': '',
-            'explanation': ''
-          }
-        ]
-      }
+    const verwelkomingsregeling = {
+      'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
+      'acts': [
+        {
+          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
+          'action': '[aanvragen]',
+          'actor': '[ingezetene]',
+          'object': '[verwelkomst]',
+          'recipient': '[overheid]',
+          'preconditions': '[]',
+          'create': '<verwelkomen>',
+          'terminate': '',
+          'reference': 'art 2.1',
+          'sourcetext': '',
+          'explanation': '',
+          'version': '2-[19980101]-[jjjjmmdd]',
+          'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+        },
+        {
+          'act': '<<ingezetene geeft aan dat verwelkomen niet nodig is>>',
+          'action': '[aangeven]',
+          'actor': '[ingezetene]',
+          'object': '[verwelkomst]',
+          'recipient': '[overheid]',
+          'preconditions': '[]',
+          'create': '',
+          'terminate': '<verwelkomen>',
+          'reference': 'art 2.1',
+          'sourcetext': '',
+          'explanation': '',
+          'version': '2-[19980101]-[jjjjmmdd]',
+          'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
+        }],
+      'facts': [
+        { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' },
+        { 'fact': '[overheid]', 'function': '[]', 'reference': '' }
+      ],
+      'duties': [
+        {
+          'duty': '<verwelkomen>',
+          'duty-components': '',
+          'duty-holder': '[overheid]',
+          'claimant': '[ingezetene]',
+          'create': '<<ingezetene kan verwelkomst van overheid aanvragen>>>',
+          'terminate': '<<ingezetene geeft aan dat verwelkomen niet nodig is>>',
+          'version': '',
+          'reference': '',
+          'juriconnect': '',
+          'sourcetext': '',
+          'explanation': ''
+        }
+      ]
+    }
 
+    it('should be able to determine active duties', async () => {
       await runScenario(
-        model,
+        verwelkomingsregeling,
         { 'ingezetene': ['[ingezetene]'], 'overheid': ['[overheid]'] },
         [
-          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (fact) => true),
+          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', () => true),
           expectActiveDuties('ingezetene', []),
           expectActiveDuties('overheid', ['<verwelkomen>'])
         ]
@@ -584,99 +573,19 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to determine active duties being terminated', async () => {
-      // TODO
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
-      const model = {
-        'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
-        'acts': [
-          {
-            'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
-            'action': '[aanvragen]',
-            'actor': '[ingezetene]',
-            'object': '[verwelkomst]',
-            'recipient': '[overheid]',
-            'preconditions': '[]',
-            'create': '<verwelkomen>',
-            'terminate': '',
-            'reference': 'art 2.1',
-            'sourcetext': '',
-            'explanation': '',
-            'version': '2-[19980101]-[jjjjmmdd]',
-            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
-          },
-          {
-            'act': '<<ingezetene geeft aan dat verwelkomen niet nodig is>>',
-            'action': '[aangeven]',
-            'actor': '[ingezetene]',
-            'object': '[verwelkomst]',
-            'recipient': '[overheid]',
-            'preconditions': '[]',
-            'create': '',
-            'terminate': '<verwelkomen>',
-            'reference': 'art 2.1',
-            'sourcetext': '',
-            'explanation': '',
-            'version': '2-[19980101]-[jjjjmmdd]',
-            'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
-          }],
-        'facts': [
-          { 'fact': '[ingezetene]', 'function': '[]', 'reference': 'art 1.1' },
-          { 'fact': '[overheid]', 'function': '[]', 'reference': '' }
-        ],
-        'duties': [
-          {
-            'duty': '<verwelkomen>',
-            'duty-components': '',
-            'duty-holder': '[overheid]',
-            'claimant': '[ingezetene]',
-            'create': '<<ingezetene kan verwelkomst van overheid aanvragen>>>',
-            'terminate': '<<ingezetene geeft aan dat verwelkomen niet nodig is>>',
-            'version': '',
-            'reference': '',
-            'juriconnect': '',
-            'sourcetext': '',
-            'explanation': ''
-          }
+      await runScenario(
+        verwelkomingsregeling,
+        { 'overheid': [], 'ingezetene': [] },
+        [
+          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', () => true),
+          takeAction('ingezetene', '<<ingezetene geeft aan dat verwelkomen niet nodig is>>', () => true),
+          expectActiveDuties('ingezetene', []),
+          expectActiveDuties('overheid', [])
         ]
-      }
-
-      const lawmakerSsid = await core.newSsid('ephemeral')
-      await core.allow(lawmakerSsid)
-      const needSsid = await core.newSsid('ephemeral')
-      await core.allow(needSsid)
-
-      const actorSsid = await core.newSsid('ephemeral')
-      await core.allow(actorSsid)
-
-      const overheidSsid = await core.newSsid('ephemeral')
-
-      const modelLink = await lawReg.publish(lawmakerSsid, model, {
-        '[ingezetene]':
-          'IS:' + actorSsid.did,
-        '[overheid]': 'IS:' + overheidSsid.did
-      })
-
-      const needLink = await core.claim(needSsid, {
-        'need': {
-          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const factResolver = (fact) => true
-
-      const actionLink = await lawReg.take(actorSsid, needLink, '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver)
-      const actionLink2 = await lawReg.take(actorSsid, actionLink, '<<ingezetene geeft aan dat verwelkomen niet nodig is>>', factResolver)
-      const activeDuties = (await lawReg.getActiveDuties(actionLink2, actorSsid)).map(dutyInformation => dutyInformation.duty)
-      const activeDuties2 = (await lawReg.getActiveDuties(actionLink2, overheidSsid)).map(dutyInformation => dutyInformation.duty)
-      expect(activeDuties).to.deep.equal([])
-      expect(activeDuties2).to.deep.equal([])
+      )
     })
 
     it('should be able to determine available acts', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
         'acts': [
@@ -703,39 +612,18 @@ describe('discipl-law-reg', () => {
         'duties': []
       }
 
-      const lawmakerSsid = await core.newSsid('ephemeral')
-      await core.allow(lawmakerSsid)
-      const needSsid = await core.newSsid('ephemeral')
-      await core.allow(needSsid)
-
-      const ingezeteneSsid = await core.newSsid('ephemeral')
-      await core.allow(ingezeteneSsid)
-
-      const overheidSsid = await core.newSsid('ephemeral')
-
-      const modelLink = await lawReg.publish(lawmakerSsid, model, {
-        '[ingezetene]': IdentityUtil.identityExpression(ingezeteneSsid.did),
-        '[overheid]': IdentityUtil.identityExpression(overheidSsid.did)
-      })
-
-      const needLink = await core.claim(needSsid, {
-        'need': {
-          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const possibleActs = await lawReg.getAvailableActs(needLink, ingezeteneSsid, [], [])
-      expect(possibleActs).to.deep.equal([])
-
-      const possibleActs2 = (await lawReg.getAvailableActs(needLink, ingezeteneSsid, ['[aanvraag verwelkomst]'], [])).map((actInfo) => actInfo.act)
-      expect(possibleActs2).to.deep.equal(['<<ingezetene kan verwelkomst van overheid aanvragen>>'])
+      await runScenario(
+        model,
+        { 'ingezetene': ['[ingezetene]'], 'overheid': ['[overheid]'] },
+        [
+          expectAvailableActs('ingezetene', []),
+          expectAvailableActs('ingezetene', ['<<ingezetene kan verwelkomst van overheid aanvragen>>'], factResolverOf({ '[aanvraag verwelkomst]': true }))
+        ]
+      )
     })
 
     it('should be able to determine possible actions with a list', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-      const util = new Util(lawReg)
-      const { ssids, modelLink } = await util.setupModel({
+      const model = {
         'model': 'Fictieve kinderbijslag',
         'acts': [
           {
@@ -761,28 +649,20 @@ describe('discipl-law-reg', () => {
           { 'fact': '[ingezetene]', 'function': '[]', 'reference': '' }
         ],
         'duties': []
-      }, ['actor'], {})
+      }
 
-      const needLink = await core.claim(ssids['actor'], {
-        'need': {
-          'act': '<<kinderbijslag aanvragen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const possibleActs = (await lawReg.getAvailableActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
-
-      expect(possibleActs).to.deep.equal([])
-
-      const potentialActs = (await lawReg.getPotentialActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
-
-      expect(potentialActs).to.deep.equal(['<<kinderbijslag aanvragen>>'])
+      await runScenario(
+        model,
+        { 'actor': [] },
+        [
+          expectAvailableActs('actor', []),
+          expectPotentialActs('actor', ['<<kinderbijslag aanvragen>>'])
+        ]
+      )
     })
 
     it('should be able to determine possible actions with a less than', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-      const util = new Util(lawReg)
-      const { ssids, modelLink } = await util.setupModel({
+      const model = {
         'model': 'Fictieve kinderbijslag',
         'acts': [
           {
@@ -808,28 +688,20 @@ describe('discipl-law-reg', () => {
           }],
         'facts': [],
         'duties': []
-      }, ['actor'], {})
+      }
 
-      const needLink = await core.claim(ssids['actor'], {
-        'need': {
-          'act': '<<kinderbijslag aanvragen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const possibleActs = (await lawReg.getAvailableActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
-
-      expect(possibleActs).to.deep.equal([])
-
-      const potentialActs = (await lawReg.getPotentialActs(needLink, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
-
-      expect(potentialActs).to.deep.equal(['<<kinderbijslag aanvragen>>'])
+      await runScenario(
+        model,
+        { 'actor': [] },
+        [
+          expectAvailableActs('actor', []),
+          expectPotentialActs('actor', ['<<kinderbijslag aanvragen>>'])
+        ]
+      )
     })
 
     it('should be able to determine possible actions with multiple options for created facts', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-      const util = new Util(lawReg)
-      const { ssids, modelLink } = await util.setupModel({
+      const model = {
         'model': 'Fictieve kinderbijslag',
         'acts': [
           {
@@ -864,29 +736,20 @@ describe('discipl-law-reg', () => {
           }
         ],
         'duties': []
-      }, ['actor'], {})
-
-      const needLink = await core.claim(ssids['actor'], {
-        'need': {
-          'act': '<<kinderbijslag aanvragen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const actionLink = await lawReg.take(ssids['actor'], needLink, '<<kinderbijslag aanvragen>>', () => true)
-      const actionLink2 = await lawReg.take(ssids['actor'], actionLink, '<<kinderbijslag aanvragen>>', () => true)
-      const possibleActs = (await lawReg.getAvailableActs(actionLink2, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
-
-      expect(possibleActs).to.deep.equal([])
-
-      const potentialActs = (await lawReg.getPotentialActs(actionLink2, ssids['actor'], [], [])).map((actInfo) => actInfo.act)
-
-      expect(potentialActs).to.deep.equal(['<<kinderbijslag aanvragen>>', '<<aanvraag kinderbijslag toekennen>>'])
+      }
+      await runScenario(
+        model,
+        { 'actor': [] },
+        [
+          takeAction('actor', '<<kinderbijslag aanvragen>>', () => true),
+          takeAction('actor', '<<kinderbijslag aanvragen>>', () => true),
+          expectAvailableActs('actor', []),
+          expectPotentialActs('actor', ['<<kinderbijslag aanvragen>>', '<<aanvraag kinderbijslag toekennen>>'])
+        ]
+      )
     })
 
     it('should not show an act as available when only a not prevents it', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
       const model = {
         'model': 'Fictieve verwelkomingsregeling Staat der Nederlanden',
         'acts': [
@@ -912,87 +775,37 @@ describe('discipl-law-reg', () => {
         ],
         'duties': []
       }
-
-      const lawmakerSsid = await core.newSsid('ephemeral')
-      await core.allow(lawmakerSsid)
-      const needSsid = await core.newSsid('ephemeral')
-      await core.allow(needSsid)
-
-      const actorSsid = await core.newSsid('ephemeral')
-      await core.allow(actorSsid)
-
-      const overheidSsid = await core.newSsid('ephemeral')
-
-      const modelLink = await lawReg.publish(lawmakerSsid, model, {
-        '[ingezetene]':
-          'IS:' + actorSsid.did,
-        '[overheid]': 'IS:' + overheidSsid.did
-      })
-
-      const needLink = await core.claim(needSsid, {
-        'need': {
-          'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const possibleActs = await lawReg.getAvailableActs(needLink, actorSsid, [], [])
-      expect(possibleActs).to.deep.equal([])
-
-      const possibleActs2 = (await lawReg.getAvailableActs(needLink, actorSsid, ['[aanvraag verwelkomst]'], [])).map((actInfo) => actInfo.act)
-      expect(possibleActs2).to.deep.equal([])
+      await runScenario(
+        model,
+        { 'ingezetene': ['[ingezetene]'], 'overheid': ['[overheid]'] },
+        [
+          expectAvailableActs('ingezetene', []),
+          expectAvailableActs('ingezetene', [], factResolverOf({ '[aanvraag verwelkomst]': true }))
+        ]
+      )
     })
 
     it('should be able to take an action dependent on recursive facts', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
-      const lawmakerSsid = await core.newSsid('ephemeral')
-      await core.allow(lawmakerSsid)
-
-      const actorSsid = await core.newSsid('ephemeral')
-
-      const modelLink = await lawReg.publish(lawmakerSsid, { ...awb, 'model': 'AWB' }, {
-        '[persoon wiens belang rechtstreeks bij een besluit is betrokken]': IdentityUtil.identityExpression(actorSsid.did)
-      })
-
-      const retrievedModel = await core.get(modelLink)
-
-      const needSsid = await core.newSsid('ephemeral')
-
-      await core.allow(needSsid)
-      const needLink = await core.claim(needSsid, {
-        'need': {
-          'act': '<<indienen verzoek een besluit te nemen>>',
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const factResolver = (fact) => {
-        if (typeof fact === 'string') {
-          return fact === '[verzoek een besluit te nemen]' ||
-            fact === '[wetgevende macht]'
-        }
-        return false
+      const completedFacts = {
+        '[verzoek een besluit te nemen]': true,
+        '[wetgevende macht]': true,
+        '[bij wettelijk voorschrift is anders bepaald]': false
       }
-
-      const actionLink = await lawReg.take(actorSsid, needLink, '<<indienen verzoek een besluit te nemen>>', factResolver)
-
-      const action = await core.get(actionLink, actorSsid)
-
-      expect(action).to.deep.equal({
-        'data': {
-          'DISCIPL_FLINT_ACT_TAKEN': Object.values(retrievedModel.data['DISCIPL_FLINT_MODEL'].acts[0])[0],
-          'DISCIPL_FLINT_FACTS_SUPPLIED': {
-            '[belanghebbende]': IdentityUtil.identityExpression(actorSsid.did),
-            '[bij wettelijk voorschrift is anders bepaald]': false,
-            '[verzoek een besluit te nemen]': true,
-            '[wetgevende macht]': true
-          },
-          'DISCIPL_FLINT_GLOBAL_CASE': needLink,
-          'DISCIPL_FLINT_PREVIOUS_CASE': needLink
-        },
-        'previous': null
-      })
+      await runScenario(
+        awb,
+        { 'actor': ['[persoon wiens belang rechtstreeks bij een besluit is betrokken]'] },
+        [
+          takeAction('actor', '<<indienen verzoek een besluit te nemen>>', factResolverOf(completedFacts)),
+          expectData('actor', '<<indienen verzoek een besluit te nemen>>', (actors) => {
+            return {
+              '[belanghebbende]': IdentityUtil.identityExpression(actors['actor'].did),
+              '[bij wettelijk voorschrift is anders bepaald]': false,
+              '[verzoek een besluit te nemen]': true,
+              '[wetgevende macht]': true
+            }
+          })
+        ]
+      )
     })
 
     it('should be able to take an action where the object originates from another action - AWB', async () => {
@@ -1029,9 +842,6 @@ describe('discipl-law-reg', () => {
     })
 
     it('should be able to fill functions of single and multiple facts', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-      const ssid = await core.newSsid('ephemeral')
-
       const model = {
         'acts': [],
         'facts': [
@@ -1084,92 +894,31 @@ describe('discipl-law-reg', () => {
         'duties': []
       }
 
-      const modelLink = await lawReg.publish(ssid, { ...model, 'model': 'AWB' }, {
-        '[uitreiking besluit aan aanvrager]':
-          'IS:did:discipl:ephemeral:1234',
-        '[toezending besluit aan aanvrager]':
-          'IS:did:discipl:ephemeral:1234'
-      })
-
-      const retrievedModel = await core.get(modelLink, ssid)
-
-      let retrievedFact = await core.get(retrievedModel.data['DISCIPL_FLINT_MODEL'].facts[3]['[uitreiking besluit aan aanvrager]'], ssid)
-
-      retrievedFact = retrievedFact.data['DISCIPL_FLINT_FACT'].function
-      expect(retrievedFact).to.deep.equal('IS:did:discipl:ephemeral:1234')
-
-      let retrievedSecondFact = await core.get(retrievedModel.data['DISCIPL_FLINT_MODEL'].facts[1]['[toezending besluit aan aanvrager]'], ssid)
-      retrievedSecondFact = retrievedSecondFact.data['DISCIPL_FLINT_FACT'].function
-      expect(retrievedSecondFact).to.deep.equal('IS:did:discipl:ephemeral:1234')
+      await runScenario(
+        model,
+        { 'actor': ['[uitreiking besluit aan aanvrager]', '[toezending besluit aan aanvrager]'] },
+        [
+          expectRetrievedFactFunction('actor', '[uitreiking besluit aan aanvrager]',
+            {
+              'expression': 'OR',
+              'operands': [
+                'IS:did:discipl:ephemeral:1234'
+              ]
+            }),
+          expectRetrievedFactFunction('actor', '[toezending besluit aan aanvrager]',
+            {
+              'expression': 'OR',
+              'operands': [
+                'IS:did:discipl:ephemeral:1234'
+              ]
+            })
+        ],
+        {
+          '[uitreiking besluit aan aanvrager]': 'IS:did:discipl:ephemeral:1234',
+          '[toezending besluit aan aanvrager]': 'IS:did:discipl:ephemeral:1234'
+        }
+      )
     })
-
-    const checkActionModel = {
-      'acts': [{
-        'act': '<<ingezetene kan verwelkomst van overheid aanvragen>>',
-        'action': '[aanvragen]',
-        'actor': '[aanvrager]',
-        'object': '[verwelkomst]',
-        'recipient': '[overheid]',
-        'preconditions': '[]',
-        'create': '<verwelkomen>',
-        'terminate': '',
-        'reference': 'art 2.1',
-        'sourcetext': '',
-        'explanation': '',
-        'version': '2-[19980101]-[jjjjmmdd]',
-        'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:3&lid=3&z=2017-03-01&g=2017-03-01'
-      }],
-      'facts': [{
-        'explanation': '',
-        'fact': '[belanghebbende]',
-        'function': '[persoon wiens belang rechtstreeks bij een besluit is betrokken]',
-        'reference': 'art. 1:2 lid 1 Awb',
-        'version': '2-[19940101]-[jjjjmmdd]',
-        'juriconnect': 'jci1.3:c:BWBR0005537&hoofdstuk=1&titeldeel=1.1&artikel=1:2&lid=1&z=2017-03-10&g=2017-03-10',
-        'sourcetext': '{Onder belanghebbende wordt verstaan: degene wiens belang rechtstreeks bij een besluit is betrokken}'
-      }, {
-        'explanation': '',
-        'fact': '[aanvrager]',
-        'function': '[]',
-        'reference': 'art 3:41 lid 1 Awb',
-        'version': '',
-        'juriconnect': '',
-        'sourcetext': ''
-      }, {
-        'explanation': '',
-        'fact': '[toezending besluit aan aanvrager]',
-        'function': '[]',
-        'reference': 'art 3:41 lid 1 Awb',
-        'version': '',
-        'juriconnect': '',
-        'sourcetext': ''
-      }, {
-        'explanation': '',
-        'fact': '[toezending besluit aan meer belanghebbenden]',
-        'function': '[]',
-        'reference': 'art 3:41 lid 1 Awb',
-        'version': '',
-        'juriconnect': '',
-        'sourcetext': ''
-      }, {
-        'explanation': '',
-        'fact': '[uitreiking besluit aan aanvrager]',
-        'function': '[]',
-        'reference': 'art 3:41 lid 1 Awb',
-        'version': '',
-        'juriconnect': '',
-        'sourcetext': ''
-      }, {
-        'explanation': '',
-        'fact': '[uitreiking besluit aan meer belanghebbenden]',
-        'function': '[]',
-        'reference': 'art 3:41 lid 1 Awb',
-        'version': '',
-        'juriconnect': '',
-        'sourcetext': ''
-      }],
-      'duties': []
-    }
 
     it('should be able to perform an action where the object originates from one of two other actions', async () => {
       const model = {
@@ -1202,18 +951,6 @@ describe('discipl-law-reg', () => {
         ],
         'duties': []
       }
-
-      const util = new Util(lawReg)
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
-      const { ssids, modelLink } = await util.setupModel(model, ['baker'], { 'baker': '[baker]' })
-
-      const needLink = await core.claim(ssids['baker'], {
-        'need': {
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
       const factResolver = (fact, _listNames, _listIndices, creatingOptions) => {
         if (['[dough]', '[bakery]', '[baker]'].includes(fact)) {
           return true
@@ -1223,308 +960,29 @@ describe('discipl-law-reg', () => {
         return creatingOptions[1]
       }
 
-      const firstBakeAction = await lawReg.take(ssids['baker'], needLink, '<<bake cookie>>', factResolver)
-      const secondBakeAction = await lawReg.take(ssids['baker'], firstBakeAction, '<<bake cookie>>', factResolver)
-      const eatAction = await lawReg.take(ssids['baker'], secondBakeAction, '<<eat cookie>>', factResolver)
-
-      const eatDetails = await core.get(eatAction, ssids['baker'])
-
-      expect(eatDetails.data['DISCIPL_FLINT_FACTS_SUPPLIED']).to.deep.equal({
-        '[baker]': IdentityUtil.identityExpression(ssids['baker'].did),
-        '[bakery]': true,
-        '[cookie]': firstBakeAction
-      })
-
-      const eatAction2 = await lawReg.take(ssids['baker'], eatAction, '<<eat cookie>>', factResolver)
-
-      const eatDetails2 = await core.get(eatAction2, ssids['baker'])
-
-      expect(eatDetails2.data['DISCIPL_FLINT_FACTS_SUPPLIED']).to.deep.equal({
-        '[baker]': IdentityUtil.identityExpression(ssids['baker'].did),
-        '[bakery]': true,
-        '[cookie]': secondBakeAction
-      })
-    })
-
-    it('should perform a checkAction', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
-      const model = checkActionModel
-
-      const ssid = await core.newSsid('ephemeral')
-      const modelLink = await lawReg.publish(ssid, model, {
-        '[aanvrager]':
-          'IS:' + ssid.did
-      })
-      const modelRef = await core.get(modelLink, ssid)
-
-      const actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
-
-      const factResolver = (fact) => {
-        return true
-      }
-
-      const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
-
-      expect(result).to.deep.equal({
-        'invalidReasons': [],
-        'valid': true
-      })
-    })
-
-    it('should perform a checkAction with async factResolver', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
-      const model = checkActionModel
-
-      const ssid = await core.newSsid('ephemeral')
-      const modelLink = await lawReg.publish(ssid, model, {
-        '[aanvrager]':
-          'IS:' + ssid.did
-      })
-      const modelRef = await core.get(modelLink, ssid)
-
-      const actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
-
-      const factResolver = async (fact) => {
-        return true
-      }
-
-      const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
-
-      expect(result).to.deep.equal({
-        'invalidReasons': [],
-        'valid': true
-      })
-    })
-
-    it('should perform a checkAction with false result', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
-      const model = checkActionModel
-
-      const ssid = await core.newSsid('ephemeral')
-      const modelLink = await lawReg.publish(ssid, model, {
-        '[aanvrager]': IdentityUtil.identityExpression(ssid.did)
-      })
-      const modelRef = await core.get(modelLink, ssid)
-
-      const actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
-
-      const factResolver = (fact) => {
-        return false
-      }
-
-      const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver })
-
-      expect(result).to.deep.equal({
-        'invalidReasons': [
-          'object',
-          'recipient'
-        ],
-        'valid': false
-      })
-    })
-
-    it('should short-circuit a checkAction if needed', async () => {
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
-      const model = checkActionModel
-
-      const ssid = await core.newSsid('ephemeral')
-      const modelLink = await lawReg.publish(ssid, model, {
-        '[aanvrager]': IdentityUtil.identityExpression(ssid.did)
-      })
-      const modelRef = await core.get(modelLink, ssid)
-
-      const actsLink = modelRef.data['DISCIPL_FLINT_MODEL'].acts[0]['<<ingezetene kan verwelkomst van overheid aanvragen>>']
-
-      const factResolver = sinon.stub()
-
-      factResolver.returns(false)
-
-      const result = await lawReg.checkAction(modelLink, actsLink, ssid, { 'factResolver': factResolver }, true)
-
-      expect(result).to.deep.equal({
-        'invalidReasons': [
-          'object'
-        ],
-        'valid': false
-      })
-
-      expect(factResolver.callCount).to.equal(1)
-      expect(factResolver.args[0][0]).to.equal('[verwelkomst]')
-    })
-
-    const explainExpression = async (expression, factSpec, expectedResult) => {
-      const model = {
-        'acts': [
-          {
-            'act': '<<explain something>>',
-            'actor': '[person]',
-            'object': '[explanation]',
-            'recipient': '[everyone]',
-            'preconditions': '[expression]',
-            'create': []
-          }
-        ],
-        'facts': [
-          {
-            'fact': '[expression]',
-            'function': expression
-          },
-          {
-            'fact': '[person]',
-            'function': '[]'
-          }
-        ],
-        'duties': []
-      }
-
-      const util = new Util(lawReg)
-      const core = lawReg.getAbundanceService().getCoreAPI()
-
-      const { ssids, modelLink } = await util.setupModel(model, ['person'], { '[person]': 'person' })
-
-      const needLink = await core.claim(ssids['person'], {
-        'need': {
-          'DISCIPL_FLINT_MODEL_LINK': modelLink
-        }
-      })
-
-      const factResolver = (fact, _item, _listNames, _listIndices, creatingOptions) => {
-        if (factSpec.hasOwnProperty(fact)) {
-          return factSpec[fact]
-        }
-
-        if (['[everyone]', '[explanation]'].includes(fact)) {
-          return true
-        }
-      }
-
-      const explanation = await lawReg.explain(ssids['person'], needLink, '<<explain something>>', factResolver)
-
-      const expressionExplanation = explanation.operandExplanations.filter(explanation => explanation.fact === '[expression]')[0]
-
-      // console.log(JSON.stringify(expressionExplanation, null, 2))
-      expect(expressionExplanation).to.deep.equal(expectedResult)
-    }
-
-    it('should be able to explain an expression', async () => {
-      await explainExpression({
-        'expression': 'EQUAL',
-        'operands': [
-          {
-            'expression': 'LITERAL',
-            'operand': 'banana'
-          },
-          '[favourite meal]'
+      await runScenario(
+        model,
+        { 'baker': ['[baker]'] },
+        [
+          takeAction('baker', '<<bake cookie>>', factResolver),
+          takeAction('baker', '<<bake cookie>>', factResolver),
+          takeAction('baker', '<<eat cookie>>', factResolver),
+          expectData('baker', '<<eat cookie>>', (actors, actionLinks) => {
+            return {
+              '[baker]': IdentityUtil.identityExpression(actors['baker'].did),
+              '[bakery]': true,
+              '[cookie]': actionLinks[1]
+            }
+          }),
+          takeAction('baker', '<<eat cookie>>', factResolver),
+          expectData('baker', '<<eat cookie>>', (actors, actionLinks) => {
+            return {
+              '[baker]': IdentityUtil.identityExpression(actors['baker'].did),
+              '[bakery]': true,
+              '[cookie]': actionLinks[2]
+            }
+          })
         ]
-      },
-      {
-        '[favourite meal]': 'banana'
-      },
-      {
-        'fact': '[expression]',
-        'operandExplanations': [
-          {
-            'expression': 'EQUAL',
-            'operandExplanations': [
-              {
-                'expression': 'LITERAL',
-                'value': 'banana'
-              },
-              {
-                'fact': '[favourite meal]',
-                'operandExplanations': [
-                  {
-                    'value': 'banana'
-                  }
-                ],
-                'value': 'banana'
-              }
-            ],
-            'value': true
-          }
-        ],
-        'value': true
-      }
-      )
-    })
-
-    it('should be able to explain a less-than expression', async () => {
-      await explainExpression({
-        'expression': 'LESS_THAN',
-        'operands': [
-          {
-            'expression': 'LITERAL',
-            'operand': 5
-          },
-          {
-            'expression': 'LITERAL',
-            'operand': 6
-          }
-        ]
-      },
-      {},
-      {
-        'fact': '[expression]',
-        'operandExplanations': [
-          {
-            'expression': 'LESS_THAN',
-            'operandExplanations': [
-              {
-                'expression': 'LITERAL',
-                'value': '5'
-              },
-              {
-                'expression': 'LITERAL',
-                'value': '6'
-              }
-            ],
-            'value': true
-          }
-        ],
-        'value': true
-      }
-      )
-    })
-
-    it('should be able to explain a min expression', async () => {
-      await explainExpression({
-        'expression': 'MIN',
-        'operands': [
-          {
-            'expression': 'LITERAL',
-            'operand': 5
-          },
-          {
-            'expression': 'LITERAL',
-            'operand': 6
-          }
-        ]
-      },
-      {},
-      {
-        'fact': '[expression]',
-        'operandExplanations': [
-          {
-            'expression': 'MIN',
-            'operandExplanations': [
-              {
-                'expression': 'LITERAL',
-                'value': '5'
-              },
-              {
-                'expression': 'LITERAL',
-                'value': '6'
-              }
-            ],
-            'value': '5'
-          }
-        ],
-        'value': '5'
-      }
       )
     })
   })
