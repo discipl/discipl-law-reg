@@ -1,28 +1,8 @@
 /* eslint-env mocha */
-import { expect } from 'chai'
-
-import sinon from 'sinon'
-import { LawReg } from '../src/index.js'
-import Util from '../src/util'
-
-import awb from './flint-example-awb'
-import IdentityUtil from '../src/identity_util'
 import { setupLogging } from './logging'
-import {
-  expectActiveDuties,
-  expectAvailableAct,
-  expectAvailableActs,
-  expectData, expectExplainResult,
-  expectPotentialActs,
-  expectRetrievedFactFunction,
-  factResolverOf,
-  runScenario,
-  takeAction,
-  takeFailingAction
-} from './testUtils'
+import { expectExplainResult, runScenario } from './testUtils'
 
 setupLogging()
-const lawReg = new LawReg()
 
 describe('discipl-law-reg', () => {
   describe('Explain an expression', () => {
