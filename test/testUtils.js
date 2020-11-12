@@ -4,7 +4,7 @@ import { expect } from 'chai'
 
 /**
  * @typedef Step
- * @property {function(lawReg: LawReg, ssids: object, prevLink: string, stepIndex: Int, actionLinks: string[], modelLink: string): string} execute
+ * @property {function(lawReg: LawReg, ssids: ssid[], prevLink: string, stepIndex: number, actionLinks: string[], modelLink: string): Promise<string>} execute
  */
 
 /**
@@ -37,7 +37,7 @@ function takeAction (actor, act, factResolver = () => false) {
  */
 function takeFailingAction (actor, act, message, factResolver = () => false) {
   return {
-    execute: async function (lawReg, ssids, link, index) {
+    execute: async function (lawReg, ssids, link, index, actionLinks) {
       try {
         return await lawReg.take(ssids[actor], link, act, factResolver)
       } catch (e) {
@@ -126,14 +126,6 @@ function expectActiveDuties (actor, duties) {
     }
   }
 }
-
-/**
- * @typedef ActionData
- * @property {string} DISCIPL_FLINT_ACT_TAKEN
- * @property {object} DISCIPL_FLINT_FACTS_SUPPLIED
- * @property {string} DISCIPL_FLINT_GLOBAL_CASE
- * @property {string} DISCIPL_FLINT_PREVIOUS_CASE
- */
 
 /**
  * @param {string} actor - actor name

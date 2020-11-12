@@ -37,6 +37,7 @@
   "homepage": "https://github.com/discipl/discipl-law-reg#readme",
   "dependencies": {
     "@discipl/abundance-service": "0.5.3",
+    "@discipl/core": "^0.12.2",
     "@discipl/core-baseconnector": "0.2.1",
     "big.js": "^5.2.2",
     "jsonc-parser": "^2.1.1",
