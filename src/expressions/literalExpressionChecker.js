@@ -4,14 +4,28 @@ import Big from 'big.js'
 export class LiteralExpressionChecker {
   /**
    * Create a LiteralExpressionChecker
-   * @param {ExpressionChecker} expressionChecker
-   * @param {ContextExplainer} contextExplainer
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (expressionChecker, contextExplainer) {
-    this.contextExplainer = contextExplainer
-    this.expressionChecker = expressionChecker
+  constructor (serviceProvider) {
+    this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
     this.expression = 'LITERAL'
+  }
+
+  /**
+   * Get expression checker
+   * @return {ExpressionChecker}
+   */
+  _getExpressionChecker () {
+    return this.serviceProvider.expressionChecker
+  }
+
+  /**
+   * Get context explainer
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
   }
 
   async checkSubExpression (fact, ssid, context) {
@@ -21,7 +35,7 @@ export class LiteralExpressionChecker {
       literalValue = Big(literalValue)
     }
 
-    this.contextExplainer.extendContextExplanationWithResult(context, literalValue)
+    this._getContextExplainer().extendContextExplanationWithResult(context, literalValue)
     return literalValue
   }
 }

@@ -1,4 +1,5 @@
 import { DISCIPL_FLINT_MODEL } from './index'
+// Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'
 import { getDiscplLogger } from './loggingUtil'
@@ -7,17 +8,11 @@ import { wrapWithDefault } from './defaultFactResolver'
 export class ActFetcher {
   /**
    * Create an ActFetcher
-   * @param {ContextExplainer} contextExplainer
-   * @param {AbundanceService} abundance
-   * @param {ActionChecker} actionChecker
-   * @param {LinkUtils} linkUtils
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (contextExplainer, abundance, actionChecker, linkUtils) {
-    this.contextExplainer = contextExplainer
+  constructor (serviceProvider) {
     this.logger = getDiscplLogger()
-    this.abundance = abundance
-    this.actionChecker = actionChecker
-    this.linkUtils = linkUtils
+    this.serviceProvider = serviceProvider
   }
 
   /**
@@ -25,7 +20,23 @@ export class ActFetcher {
    * @return {AbundanceService}
    */
   _getAbundanceService () {
-    return this.abundance
+    return this.serviceProvider.abundanceService
+  }
+
+  /**
+   * Get link utils
+   * @return {LinkUtils}
+   */
+  _getLinkUtils () {
+    return this.serviceProvider.linkUtils
+  }
+
+  /**
+   * Get action checker
+   * @return {ActionChecker}
+   */
+  _getActionChecker () {
+    return this.serviceProvider.actionChecker
   }
 
   /**
@@ -62,8 +73,8 @@ export class ActFetcher {
   async getAvailableActsWithResolver (caseLink, ssid, factResolver) {
     const core = this._getAbundanceService().getCoreAPI()
 
-    const firstCaseLink = await this.linkUtils.getFirstCaseLink(caseLink, ssid)
-    const modelLink = await this.linkUtils.getModelLink(firstCaseLink, ssid)
+    const firstCaseLink = await this._getLinkUtils().getFirstCaseLink(caseLink, ssid)
+    const modelLink = await this._getLinkUtils().getModelLink(firstCaseLink, ssid)
 
     const model = await core.get(modelLink, ssid)
 
@@ -78,7 +89,7 @@ export class ActFetcher {
 
       const link = Object.values(actWithLink)[0]
 
-      const checkActionInfo = await this.actionChecker.checkAction(modelLink, link, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink })
+      const checkActionInfo = await this._getActionChecker().checkAction(modelLink, link, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink })
       if (checkActionInfo.valid) {
         const actionInformation = {
           'act': Object.keys(actWithLink)[0],
@@ -125,10 +136,10 @@ export class ActFetcher {
    * @returns {Promise<Array>}
    */
   async getPotentialActsWithResolver (caseLink, ssid, factResolver) {
-    const core = this.abundance.getCoreAPI()
+    const core = this._getAbundanceService().getCoreAPI()
 
-    const firstCaseLink = await this.linkUtils.getFirstCaseLink(caseLink, ssid)
-    const modelLink = await this.linkUtils.getModelLink(firstCaseLink, ssid)
+    const firstCaseLink = await this._getLinkUtils().getFirstCaseLink(caseLink, ssid)
+    const modelLink = await this._getLinkUtils().getModelLink(firstCaseLink, ssid)
 
     const model = await core.get(modelLink, ssid)
 
@@ -143,7 +154,7 @@ export class ActFetcher {
       this.logger.debug('Checking whether', actWithLink, 'is a potentially available option')
 
       const link = Object.values(actWithLink)[0]
-      const checkActionInfo = await this.actionChecker.checkAction(modelLink, link, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink })
+      const checkActionInfo = await this._getActionChecker().checkAction(modelLink, link, ssid, { 'factResolver': defaultFactResolver, 'caseLink': caseLink })
       this.logger.debug('Unknown items', unknownItems)
       if (typeof checkActionInfo.valid === 'undefined') {
         const actionInformation = {

@@ -4,14 +4,28 @@ import { DISCIPL_ANYONE_MARKER } from '../index'
 export class IsExpressionChecker {
   /**
    * Create an IsExpressionChecker
-   * @param {ExpressionChecker} expressionChecker
-   * @param {ContextExplainer} contextExplainer
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (expressionChecker, contextExplainer) {
-    this.contextExplainer = contextExplainer
-    this.expressionChecker = expressionChecker
+  constructor (serviceProvider) {
+    this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
     this.expression = 'IS'
+  }
+
+  /**
+   * Get expression checker
+   * @return {ExpressionChecker}
+   */
+  _getExpressionChecker () {
+    return this.serviceProvider.expressionChecker
+  }
+
+  /**
+   * Get context explainer
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
   }
 
   async checkSubExpression (fact, ssid, context) {
@@ -37,7 +51,7 @@ export class IsExpressionChecker {
   _checkForIsAnyone (did, context) {
     if (did === DISCIPL_ANYONE_MARKER) {
       this.logger.debug('Resolved IS as true, because anyone can be this')
-      this.contextExplainer.extendContextExplanationWithResult(context, true)
+      this._getContextExplainer().extendContextExplanationWithResult(context, true)
       return true
     }
     return false
@@ -55,7 +69,7 @@ export class IsExpressionChecker {
     if (did != null) {
       const didIsIdentified = ssid.did === did || !context.myself
       this.logger.debug('Resolving fact IS as', didIsIdentified, 'by', context.myself ? 'did-identification' : 'the concerned being someone else')
-      this.contextExplainer.extendContextExplanationWithResult(context, didIsIdentified)
+      this._getContextExplainer().extendContextExplanationWithResult(context, didIsIdentified)
       return didIsIdentified
     }
     return undefined

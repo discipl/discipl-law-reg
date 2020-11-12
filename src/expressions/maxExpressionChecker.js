@@ -3,14 +3,28 @@ import { getDiscplLogger } from '../loggingUtil'
 export class MaxExpressionChecker {
   /**
    * Create a MaxExpressionChecker
-   * @param {ExpressionChecker} expressionChecker
-   * @param {ContextExplainer} contextExplainer
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (expressionChecker, contextExplainer) {
-    this.contextExplainer = contextExplainer
-    this.expressionChecker = expressionChecker
+  constructor (serviceProvider) {
+    this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
     this.expression = 'MAX'
+  }
+
+  /**
+   * Get expression checker
+   * @return {ExpressionChecker}
+   */
+  _getExpressionChecker () {
+    return this.serviceProvider.expressionChecker
+  }
+
+  /**
+   * Get context explainer
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
   }
 
   async checkSubExpression (fact, ssid, context) {
@@ -19,8 +33,8 @@ export class MaxExpressionChecker {
     this.logger.debug('Switch case: MAX')
     let maxResult
     for (const op of fact.operands) {
-      const newContext = this.contextExplainer.extendContextWithExplanation(context)
-      const operandResult = await this.expressionChecker.checkExpression(op, ssid, newContext)
+      const newContext = this._getContextExplainer().extendContextWithExplanation(context)
+      const operandResult = await this._getExpressionChecker().checkExpression(op, ssid, newContext)
       this.logger.debug('OperandResult in MAX', operandResult, 'for operand', op)
       if (typeof maxResult === 'undefined' || operandResult > maxResult) {
         maxResult = operandResult
@@ -32,7 +46,7 @@ export class MaxExpressionChecker {
     }
     const finalMaxResult = hasUndefined ? undefined : maxResult
     this.logger.debug('Resolved MAX as', finalMaxResult)
-    this.contextExplainer.extendContextExplanationWithResult(context, finalMaxResult)
+    this._getContextExplainer().extendContextExplanationWithResult(context, finalMaxResult)
     return finalMaxResult
   }
 }

@@ -17,29 +17,43 @@ import { SumExpressionChecker } from './sumExpressionChecker'
 export class ExpressionChecker {
   /**
    * Create a ExpressionChecker
-   * @param {ContextExplainer} contextExplainer
-   * @param {FactChecker} factChecker
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (contextExplainer, factChecker) {
-    this.contextExplainer = contextExplainer
+  constructor (serviceProvider) {
     this.logger = getDiscplLogger()
-    this.factChecker = factChecker
+    this.serviceProvider = serviceProvider
     this.subExpressionCheckers = [
-      new AndExpressionChecker(this, contextExplainer),
-      new EqualExpressionChecker(this, contextExplainer),
-      new IsExpressionChecker(this, contextExplainer),
-      new LessThanExpressionChecker(this, contextExplainer),
-      new ListExpressionChecker(this, contextExplainer),
-      new LiteralExpressionChecker(this, contextExplainer),
-      new MaxExpressionChecker(this, contextExplainer),
-      new MinExpressionChecker(this, contextExplainer),
-      new NotExpressionChecker(this, contextExplainer),
-      new OrExpressionChecker(this, contextExplainer),
-      new ProductExpressionChecker(this, contextExplainer),
-      new SumExpressionChecker(this, contextExplainer),
-      new CreateExpressionChecker(this, contextExplainer, factChecker),
-      new ProjectionExpressionChecker(this, contextExplainer, factChecker)
+      new AndExpressionChecker(this.serviceProvider),
+      new EqualExpressionChecker(this.serviceProvider),
+      new IsExpressionChecker(this.serviceProvider),
+      new LessThanExpressionChecker(this.serviceProvider),
+      new ListExpressionChecker(this.serviceProvider),
+      new LiteralExpressionChecker(this.serviceProvider),
+      new MaxExpressionChecker(this.serviceProvider),
+      new MinExpressionChecker(this.serviceProvider),
+      new NotExpressionChecker(this.serviceProvider),
+      new OrExpressionChecker(this.serviceProvider),
+      new ProductExpressionChecker(this.serviceProvider),
+      new SumExpressionChecker(this.serviceProvider),
+      new CreateExpressionChecker(this.serviceProvider),
+      new ProjectionExpressionChecker(this.serviceProvider)
     ]
+  }
+
+  /**
+   * Get fact checker
+   * @return {FactChecker}
+   */
+  _getFactChecker () {
+    return this.serviceProvider.factChecker
+  }
+
+  /**
+   * Get context explainer
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
   }
 
   /**
@@ -62,9 +76,9 @@ export class ExpressionChecker {
       this.logger.debug(`Handling: ${expr}`)
       if (typeof fact === 'string') {
         // Purposely do not alter context for explanation, this happens in checkFact
-        const result = await this.factChecker.checkFact(fact, ssid, context)
+        const result = await this._getFactChecker().checkFact(fact, ssid, context)
 
-        this.contextExplainer.extendContextExplanationWithResult(context, result)
+        this._getContextExplainer().extendContextExplanationWithResult(context, result)
         return result
       }
 

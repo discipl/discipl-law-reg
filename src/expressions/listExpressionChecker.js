@@ -3,14 +3,28 @@ import { getDiscplLogger } from '../loggingUtil'
 export class ListExpressionChecker {
   /**
    * Create a ListExpressionChecker
-   * @param {ExpressionChecker} expressionChecker
-   * @param {ContextExplainer} contextExplainer
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (expressionChecker, contextExplainer) {
-    this.contextExplainer = contextExplainer
-    this.expressionChecker = expressionChecker
+  constructor (serviceProvider) {
+    this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
     this.expression = 'LIST'
+  }
+
+  /**
+   * Get expression checker
+   * @return {ExpressionChecker}
+   */
+  _getExpressionChecker () {
+    return this.serviceProvider.expressionChecker
+  }
+
+  /**
+   * Get context explainer
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
   }
 
   async checkSubExpression (fact, ssid, context) {
@@ -26,8 +40,8 @@ export class ListExpressionChecker {
     const listContentResult = []
     while (true) {
       const op = fact.items
-      const newContext = this.contextExplainer.extendContextWithExplanation(context)
-      const operandResult = await this.expressionChecker.checkExpression(op, ssid, newContext)
+      const newContext = this._getContextExplainer().extendContextWithExplanation(context)
+      const operandResult = await this._getExpressionChecker().checkExpression(op, ssid, newContext)
       this.logger.debug('OperandResult in LIST', operandResult, 'for operand', op, 'and index', context.listIndices[listIndex])
 
       listContentResult.push(operandResult)
@@ -50,7 +64,7 @@ export class ListExpressionChecker {
 
     const listResult = hasUndefined ? undefined : (resultIndex !== 0 ? listContentResult : false)
     this.logger.debug('Resolved LIST as', listResult)
-    this.contextExplainer.extendContextExplanationWithResult(context, listResult)
+    this._getContextExplainer().extendContextExplanationWithResult(context, listResult)
     return listResult
   }
 }

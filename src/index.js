@@ -2,15 +2,10 @@ import { AbundanceService } from '@discipl/abundance-service'
 import { ModelValidator } from './modelValidator'
 
 import IdentityUtil from './identity_util'
-import { ExpressionChecker } from './expressions/expressionChecker'
-import { ContextExplainer } from './contextExplainer'
-import { FactChecker } from './factChecker'
 import { getDiscplLogger } from './loggingUtil'
-import { ActionChecker } from './actionChecker'
 import { arrayToObject } from './arrayUtils'
-import { LinkUtils } from './linkUtils'
-import { ActFetcher } from './actFetcher'
 import { wrapWithDefault } from './defaultFactResolver'
+import { ServiceProvider } from './serviceProvider'
 
 export const DISCIPL_ANYONE_MARKER = 'ANYONE'
 export const DISCIPL_FLINT_FACT = 'DISCIPL_FLINT_FACT'
@@ -27,13 +22,7 @@ const logger = getDiscplLogger()
 
 class LawReg {
   constructor (abundanceService = new AbundanceService()) {
-    this.abundance = abundanceService
-    this.contextExplainer = new ContextExplainer()
-    this.factChecker = new FactChecker(this.contextExplainer, this)
-    this.actionChecker = new ActionChecker(this.contextExplainer, this)
-    this.expressionChecker = new ExpressionChecker(this.contextExplainer, this.factChecker)
-    this.linkUtils = new LinkUtils(this.abundance)
-    this.actFetcher = new ActFetcher(this.contextExplainer, this.abundance, this.actionChecker, this.linkUtils)
+    this.serviceProvider = new ServiceProvider(abundanceService)
   }
 
   /**
@@ -41,23 +30,47 @@ class LawReg {
    * @return {AbundanceService}
    */
   getAbundanceService () {
-    return this.abundance
+    return this.serviceProvider.abundanceService
   }
 
   /**
-   * Get expression checker
-   * @return {ExpressionChecker}
+   * Get link utils
+   * @return {LinkUtils}
    */
-  getExpressionChecker () {
-    return this.expressionChecker
+  _getLinkUtils () {
+    return this.serviceProvider.linkUtils
+  }
+
+  /**
+   * Get action checker
+   * @return {ActionChecker}
+   */
+  _getActionChecker () {
+    return this.serviceProvider.actionChecker
+  }
+
+  /**
+   * Get act fetcher
+   * @return {ActFetcher}
+   */
+  _getActFetcher () {
+    return this.serviceProvider.actFetcher
   }
 
   /**
    * Get fact checker
    * @return {FactChecker}
    */
-  getFactChecker () {
-    return this.factChecker
+  _getFactChecker () {
+    return this.serviceProvider.factChecker
+  }
+
+  /**
+   * Get expression checker
+   * @return {ExpressionChecker}
+   */
+  _getExpressionChecker () {
+    return this.serviceProvider.expressionChecker
   }
 
   /**
@@ -69,7 +82,7 @@ class LawReg {
    * @returns {Promise<boolean>}
    */
   async checkExpression (fact, ssid, context) {
-    return this.expressionChecker.checkExpression(fact, ssid, context)
+    return this._getExpressionChecker().checkExpression(fact, ssid, context)
   }
 
   /**
@@ -82,7 +95,7 @@ class LawReg {
    * @returns {Promise<boolean>}
    */
   async checkFactLink (factLink, fact, ssid, context) {
-    return this.factChecker.checkFactLink(factLink, fact, ssid, context)
+    return this._getFactChecker().checkFactLink(factLink, fact, ssid, context)
   }
 
   /**
@@ -98,7 +111,7 @@ class LawReg {
    * @returns {Promise<boolean>} - result of the fact
    */
   async checkFact (fact, ssid, context) {
-    return this.factChecker.checkFact(fact, ssid, context)
+    return this._getFactChecker().checkFact(fact, ssid, context)
   }
 
   /**
@@ -112,7 +125,7 @@ class LawReg {
    * @returns {Promise<boolean>}
    */
   async checkFactWithResolver (fact, ssid, context) {
-    return this.factChecker.checkFactWithResolver(fact, ssid, context)
+    return this._getFactChecker().checkFactWithResolver(fact, ssid, context)
   }
 
   /**
@@ -124,7 +137,7 @@ class LawReg {
    * @returns {Promise<boolean>} - true if the fact has been created
    */
   async checkCreatedFact (fact, ssid, context) {
-    return this.factChecker.checkCreatedFact(fact, ssid, context)
+    return this._getFactChecker().checkCreatedFact(fact, ssid, context)
   }
 
   /**
@@ -136,7 +149,7 @@ class LawReg {
    * @returns {Promise<object>} - the facts value or false if it hasn't been provided
    */
   async checkFactProvidedInAct (fact, ssid, context) {
-    return this.factChecker.checkFactProvidedInAct(fact, ssid, context)
+    return this._getFactChecker().checkFactProvidedInAct(fact, ssid, context)
   }
 
   /**
@@ -147,7 +160,7 @@ class LawReg {
    * @returns {object}
    */
   async getActDetails (actLink, ssid) {
-    const core = this.abundance.getCoreAPI()
+    const core = this.getAbundanceService().getCoreAPI()
     const claimData = await core.get(actLink, ssid)
     return claimData.data[DISCIPL_FLINT_ACT]
   }
@@ -167,7 +180,7 @@ class LawReg {
    * @returns {Promise<CheckActionResult>}
    */
   async checkAction (modelLink, actLink, ssid, context, earlyEscape = false) {
-    return this.actionChecker.checkAction(modelLink, actLink, ssid, context, earlyEscape)
+    return this._getActionChecker().checkAction(modelLink, actLink, ssid, context, earlyEscape)
   }
 
   /**
@@ -180,7 +193,7 @@ class LawReg {
    * @returns {Promise<Array>}
    */
   async getAvailableActs (caseLink, ssid, facts = [], nonFacts = []) {
-    return this.actFetcher.getAvailableActs(caseLink, ssid, facts, nonFacts)
+    return this._getActFetcher().getAvailableActs(caseLink, ssid, facts, nonFacts)
   }
 
   /**
@@ -192,7 +205,7 @@ class LawReg {
    * @returns {Promise<Array>}
    */
   async getAvailableActsWithResolver (caseLink, ssid, factResolver) {
-    return this.actFetcher.getAvailableActsWithResolver(caseLink, ssid, factResolver)
+    return this._getActFetcher().getAvailableActsWithResolver(caseLink, ssid, factResolver)
   }
 
   /**
@@ -206,7 +219,7 @@ class LawReg {
    * @returns {Promise<Array>}
    */
   async getPotentialActs (caseLink, ssid, facts = [], nonFacts = []) {
-    return this.actFetcher.getPotentialActs(caseLink, ssid, facts, nonFacts)
+    return this._getActFetcher().getPotentialActs(caseLink, ssid, facts, nonFacts)
   }
 
   /**
@@ -219,7 +232,7 @@ class LawReg {
    * @returns {Promise<Array>}
    */
   async getPotentialActsWithResolver (caseLink, ssid, factResolver) {
-    return this.actFetcher.getPotentialActsWithResolver(caseLink, ssid, factResolver)
+    return this._getActFetcher().getPotentialActsWithResolver(caseLink, ssid, factResolver)
   }
 
   /**
@@ -230,9 +243,9 @@ class LawReg {
    * @returns {Promise<DutyInformation[]>}
    */
   async getActiveDuties (caseLink, ssid) {
-    const core = this.abundance.getCoreAPI()
-    const firstCaseLink = await this.linkUtils.getFirstCaseLink(caseLink, ssid)
-    const modelLink = await this.linkUtils.getModelLink(firstCaseLink, ssid)
+    const core = this.getAbundanceService().getCoreAPI()
+    const firstCaseLink = await this._getLinkUtils().getFirstCaseLink(caseLink, ssid)
+    const modelLink = await this._getLinkUtils().getModelLink(firstCaseLink, ssid)
 
     const model = await core.get(modelLink, ssid)
 
@@ -309,7 +322,7 @@ class LawReg {
    */
   async publish (ssid, flintModel, factFunctions = {}) {
     logger.debug('Publishing model')
-    const core = this.abundance.getCoreAPI()
+    const core = this.getAbundanceService().getCoreAPI()
     const result = { model: flintModel.model, acts: [], facts: [], duties: [] }
     for (const fact of flintModel.facts) {
       let resultFact = fact
@@ -343,7 +356,7 @@ class LawReg {
    * @returns {Promise<ActionInformation[]>}
    */
   async getActions (caseLink, ssid) {
-    const core = this.abundance.getCoreAPI()
+    const core = this.getAbundanceService().getCoreAPI()
     let actionLink = caseLink
 
     const acts = []
@@ -405,7 +418,7 @@ class LawReg {
    * @returns {Promise<object>} The supplied facts
    */
   async _addActorIsExpression (actLink, factsSupplied, ssid) {
-    const core = this.abundance.getCoreAPI()
+    const core = this.getAbundanceService().getCoreAPI()
     const actReference = await core.get(actLink, ssid)
     const actor = actReference.data[DISCIPL_FLINT_ACT].actor
     factsSupplied[actor] = IdentityUtil.identityExpression(ssid.did)
@@ -434,9 +447,9 @@ class LawReg {
   }
 
   async _getModelAndActFromCase (caseLink, ssid, act) {
-    const core = this.abundance.getCoreAPI()
-    const firstCaseLink = await this.linkUtils.getFirstCaseLink(caseLink, ssid)
-    const modelLink = await this.linkUtils.getModelLink(firstCaseLink, ssid)
+    const core = this.getAbundanceService().getCoreAPI()
+    const firstCaseLink = await this._getLinkUtils().getFirstCaseLink(caseLink, ssid)
+    const modelLink = await this._getLinkUtils().getModelLink(firstCaseLink, ssid)
     const model = await core.get(modelLink, ssid)
     const actLink = await model.data[DISCIPL_FLINT_MODEL].acts.filter((actWithLink) => {
       return Object.keys(actWithLink).includes(act)

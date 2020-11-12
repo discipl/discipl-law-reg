@@ -4,14 +4,28 @@ import { BigUtil } from '../big_util'
 export class SumExpressionChecker {
   /**
    * Create a SumExpressionChecker
-   * @param {ExpressionChecker} expressionChecker
-   * @param {ContextExplainer} contextExplainer
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (expressionChecker, contextExplainer) {
-    this.contextExplainer = contextExplainer
-    this.expressionChecker = expressionChecker
+  constructor (serviceProvider) {
+    this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
     this.expression = 'SUM'
+  }
+
+  /**
+   * Get expression checker
+   * @return {ExpressionChecker}
+   */
+  _getExpressionChecker () {
+    return this.serviceProvider.expressionChecker
+  }
+
+  /**
+   * Get context explainer
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
   }
 
   async checkSubExpression (fact, ssid, context) {
@@ -19,8 +33,8 @@ export class SumExpressionChecker {
     let hasUndefined = false
     let sumResult = 0
     for (const op of fact.operands) {
-      const newContext = this.contextExplainer.extendContextWithExplanation(context)
-      const operandResult = await this.expressionChecker.checkExpression(op, ssid, newContext)
+      const newContext = this._getContextExplainer().extendContextWithExplanation(context)
+      const operandResult = await this._getExpressionChecker().checkExpression(op, ssid, newContext)
       this.logger.debug('OperandResult in SUM', String(operandResult), 'for operand', op)
       if (Array.isArray(operandResult)) {
         for (const arrayOp of operandResult) {
@@ -38,7 +52,7 @@ export class SumExpressionChecker {
     }
     const finalSumResult = hasUndefined ? undefined : sumResult
     this.logger.debug('Resolved SUM as', String(finalSumResult))
-    this.contextExplainer.extendContextExplanationWithResult(context, finalSumResult)
+    this._getContextExplainer().extendContextExplanationWithResult(context, finalSumResult)
     return finalSumResult
   }
 }

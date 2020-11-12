@@ -1,19 +1,18 @@
 import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_MODEL } from './index'
 import { getDiscplLogger } from './loggingUtil'
+// Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'
-import { arrayToObject } from './arrayUtils' // Improve intelisense
+import { arrayToObject } from './arrayUtils'
 
 export class ActionChecker {
   /**
    * Create an ActionChecker
-   * @param {ContextExplainer} contextExplainer
-   * @param {LawReg} lawReg
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (contextExplainer, lawReg) {
-    this.contextExplainer = contextExplainer
+  constructor (serviceProvider) {
     this.logger = getDiscplLogger()
-    this.lawReg = lawReg
+    this.serviceProvider = serviceProvider
   }
 
   /**
@@ -21,15 +20,7 @@ export class ActionChecker {
    * @return {AbundanceService}
    */
   _getAbundanceService () {
-    return this.lawReg.getAbundanceService()
-  }
-
-  /**
-   * Get expression checker
-   * @return {ExpressionChecker}
-   */
-  _getExpressionChecker () {
-    return this.lawReg.getExpressionChecker()
+    return this.serviceProvider.abundanceService
   }
 
   /**
@@ -37,7 +28,15 @@ export class ActionChecker {
    * @return {FactChecker}
    */
   _getFactChecker () {
-    return this.lawReg.getFactChecker()
+    return this.serviceProvider.factChecker
+  }
+
+  /**
+   * Get context explainer
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
   }
 
   /**
@@ -67,7 +66,7 @@ export class ActionChecker {
 
     const invalidReasons = []
 
-    const actorContext = this.contextExplainer.extendContextWithExplanation(context)
+    const actorContext = this._getContextExplainer().extendContextWithExplanation(context)
 
     this.logger.info('Checking if', actor, 'is', ssid.did)
     const checkedActor = await this._getFactChecker().checkFact(actor, ssid, { ...actorContext, 'facts': factReference, 'myself': true })
@@ -86,7 +85,7 @@ export class ActionChecker {
 
     this.logger.debug('Original object', object)
 
-    const objectContext = this.contextExplainer.extendContextWithExplanation(context)
+    const objectContext = this._getContextExplainer().extendContextWithExplanation(context)
     const checkedObject = await this._getFactChecker().checkFact(object, ssid, { ...objectContext, 'facts': factReference })
 
     if (!checkedObject) {
@@ -101,7 +100,7 @@ export class ActionChecker {
 
     const recipient = actReference.data[DISCIPL_FLINT_ACT].recipient
     this.logger.debug('Original recipient', recipient)
-    const interestedPartyContext = this.contextExplainer.extendContextWithExplanation(context)
+    const interestedPartyContext = this._getContextExplainer().extendContextWithExplanation(context)
     const checkedInterestedParty = await this._getFactChecker().checkFact(recipient, ssid, { ...interestedPartyContext, 'facts': factReference })
 
     if (!checkedInterestedParty) {
@@ -118,8 +117,9 @@ export class ActionChecker {
 
     this.logger.debug('Original preconditions', preconditions)
     // Empty string, null, undefined are all explictly interpreted as no preconditions, hence the action can proceed
-    const preconditionContext = this.contextExplainer.extendContextWithExplanation(context)
-    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this._getFactChecker().checkFact(preconditions, ssid, { ...preconditionContext, 'facts': factReference })
+    const preconditionContext = this._getContextExplainer().extendContextWithExplanation(context)
+    const checkedPreConditions = preconditions !== '[]' && preconditions != null && preconditions !== '' ? await this._getFactChecker().checkFact(preconditions, ssid,
+      { ...preconditionContext, 'facts': factReference })
       : true
 
     if (!checkedPreConditions) {

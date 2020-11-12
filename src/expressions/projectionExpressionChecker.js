@@ -3,28 +3,48 @@ import { getDiscplLogger } from '../loggingUtil'
 export class ProjectionExpressionChecker {
   /**
    * Create a ProjectionExpressionChecker
-   * @param {ExpressionChecker} expressionChecker
-   * @param {ContextExplainer} contextExplainer
-   * @param {FactChecker} factChecker
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (expressionChecker, contextExplainer, factChecker) {
-    this.contextExplainer = contextExplainer
-    this.expressionChecker = expressionChecker
-    this.factChecker = factChecker
+  constructor (serviceProvider) {
+    this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
     this.expression = 'PROJECTION'
   }
 
+  /**
+   * Get expression checker
+   * @return {ExpressionChecker}
+   */
+  _getExpressionChecker () {
+    return this.serviceProvider.expressionChecker
+  }
+
+  /**
+   * Get context explainer
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
+  }
+
+  /**
+   * Get fact checker
+   * @return {FactChecker}
+   */
+  _getFactChecker () {
+    return this.serviceProvider.factChecker
+  }
+
   async checkSubExpression (fact, ssid, context) {
     this.logger.debug(`Handling: ${this.expression}`)
-    const core = this.factChecker.getAbundanceService().getCoreAPI()
+    const core = this._getFactChecker().getAbundanceService().getCoreAPI()
     const lawregContext = context
 
     if (!fact.context || fact.context.length === 0) {
       throw new Error('A \'context\' array must be given for the PROJECTION expression')
     }
 
-    const initialLink = await this.factChecker.checkFact(fact.context[0], ssid, lawregContext)
+    const initialLink = await this._getFactChecker().checkFact(fact.context[0], ssid, lawregContext)
     const caseLink = await fact.context.slice(1).reduce(async (previousCaseLink, currentContextFact) => {
       if (previousCaseLink) {
         const factContext = await core.get(previousCaseLink, ssid)
@@ -42,7 +62,7 @@ export class ProjectionExpressionChecker {
       if (Object.keys(caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED).includes(fact.fact)) {
         const projectionResult = caseObject.data.DISCIPL_FLINT_FACTS_SUPPLIED[fact.fact]
         if (typeof projectionResult === 'object') {
-          return this.factChecker.checkFact(projectionResult, ssid, context)
+          return this._getFactChecker().checkFact(projectionResult, ssid, context)
         }
         return projectionResult
       }

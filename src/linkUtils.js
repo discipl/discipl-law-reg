@@ -6,16 +6,24 @@ import { getDiscplLogger } from './loggingUtil'
 export class LinkUtils {
   /**
    * Create an LinkUtils
-   * @param {AbundanceService} abundance
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (abundance) {
+  constructor (serviceProvider) {
     this.logger = getDiscplLogger()
-    this.abundance = abundance
+    this.serviceProvider = serviceProvider
+  }
+
+  /**
+   * Get abundance service
+   * @return {AbundanceService}
+   */
+  _getAbundanceService () {
+    return this.serviceProvider.abundanceService
   }
 
   // TODO docs
   async getModelLink (firstCaseLink, ssid) {
-    const core = this.abundance.getCoreAPI()
+    const core = this._getAbundanceService().getCoreAPI()
     const firstCase = await core.get(firstCaseLink, ssid)
 
     const modelLink = firstCase.data['need'][DISCIPL_FLINT_MODEL_LINK]
@@ -25,7 +33,7 @@ export class LinkUtils {
 
   // TODO docs
   async getFirstCaseLink (caseLink, ssid) {
-    const core = this.abundance.getCoreAPI()
+    const core = this._getAbundanceService().getCoreAPI()
     const caseClaim = await core.get(caseLink, ssid)
     const isFirstActionInCase = !Object.keys(caseClaim.data).includes(DISCIPL_FLINT_ACT_TAKEN)
     const firstCaseLink = isFirstActionInCase ? caseLink : caseClaim.data[DISCIPL_FLINT_GLOBAL_CASE]

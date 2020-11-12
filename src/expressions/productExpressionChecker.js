@@ -4,14 +4,28 @@ import { BigUtil } from '../big_util'
 export class ProductExpressionChecker {
   /**
    * Create a ProductExpressionChecker
-   * @param {ExpressionChecker} expressionChecker
-   * @param {ContextExplainer} contextExplainer
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (expressionChecker, contextExplainer) {
-    this.contextExplainer = contextExplainer
-    this.expressionChecker = expressionChecker
+  constructor (serviceProvider) {
+    this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
     this.expression = 'PRODUCT'
+  }
+
+  /**
+   * Get expression checker
+   * @return {ExpressionChecker}
+   */
+  _getExpressionChecker () {
+    return this.serviceProvider.expressionChecker
+  }
+
+  /**
+   * Get context explainer
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
   }
 
   async checkSubExpression (fact, ssid, context) {
@@ -19,8 +33,8 @@ export class ProductExpressionChecker {
     let hasUndefined = false
     let productResult = 1
     for (const op of fact.operands) {
-      const newContext = this.contextExplainer.extendContextWithExplanation(context)
-      const operandResult = await this.expressionChecker.checkExpression(op, ssid, newContext)
+      const newContext = this._getContextExplainer().extendContextWithExplanation(context)
+      const operandResult = await this._getExpressionChecker().checkExpression(op, ssid, newContext)
       this.logger.debug('OperandResult in PRODUCT', String(operandResult), 'for operand', op)
       if (Array.isArray(operandResult)) {
         for (const arrayOp of operandResult) {
@@ -38,7 +52,7 @@ export class ProductExpressionChecker {
     }
     const finalProductResult = hasUndefined ? undefined : productResult
     this.logger.debug('Resolved PRODUCT as', String(finalProductResult))
-    this.contextExplainer.extendContextExplanationWithResult(context, finalProductResult)
+    this._getContextExplainer().extendContextExplanationWithResult(context, finalProductResult)
     return finalProductResult
   }
 }

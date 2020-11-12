@@ -1,19 +1,18 @@
 import Big from 'big.js'
 import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_ACT_TAKEN, DISCIPL_FLINT_FACT, DISCIPL_FLINT_FACTS_SUPPLIED, DISCIPL_FLINT_PREVIOUS_CASE } from './index'
 import { getDiscplLogger } from './loggingUtil'
+// Improve intelisense
 // eslint-disable-next-line no-unused-vars
-import { AbundanceService } from '@discipl/abundance-service' // Improve intelisense
+import { AbundanceService } from '@discipl/abundance-service'
 
 export class FactChecker {
   /**
    * Create a ExpressionChecker
-   * @param {ContextExplainer} contextExplainer
-   * @param {LawReg} lawReg
+   * @param {ServiceProvider} serviceProvider
    */
-  constructor (contextExplainer, lawReg) {
-    this.contextExplainer = contextExplainer
+  constructor (serviceProvider) {
     this.logger = getDiscplLogger()
-    this.lawReg = lawReg
+    this.serviceProvider = serviceProvider
   }
 
   /**
@@ -21,7 +20,7 @@ export class FactChecker {
    * @return {AbundanceService}
    */
   getAbundanceService () {
-    return this.lawReg.getAbundanceService()
+    return this.serviceProvider.abundanceService
   }
 
   /**
@@ -29,7 +28,15 @@ export class FactChecker {
    * @return {ExpressionChecker}
    */
   _getExpressionChecker () {
-    return this.lawReg.getExpressionChecker()
+    return this.serviceProvider.expressionChecker
+  }
+
+  /**
+   * Get expression checker
+   * @return {ContextExplainer}
+   */
+  _getContextExplainer () {
+    return this.serviceProvider.contextExplainer
   }
 
   /**
@@ -53,10 +60,10 @@ export class FactChecker {
       if (context.explanation) {
         context.explanation.fact = fact
       }
-      const newContext = this.contextExplainer.extendContextWithExplanation(context)
+      const newContext = this._getContextExplainer().extendContextWithExplanation(context)
       const result = await this.checkFactLink(factLink, fact, ssid, newContext)
 
-      this.contextExplainer.extendContextExplanationWithResult(context, result)
+      this._getContextExplainer().extendContextExplanationWithResult(context, result)
       printResult(result)
       return result
     }
@@ -65,14 +72,14 @@ export class FactChecker {
       if (context.explanation) {
         context.explanation.fact = fact
       }
-      const newContext = this.contextExplainer.extendContextWithExplanation(context)
+      const newContext = this._getContextExplainer().extendContextWithExplanation(context)
       const result = await this.checkFactWithResolver(fact, ssid, newContext)
-      this.contextExplainer.extendContextExplanationWithResult(context, result)
+      this._getContextExplainer().extendContextExplanationWithResult(context, result)
       printResult(result)
       return result
     } else {
       const result = await this._getExpressionChecker().checkExpression(fact, ssid, context)
-      this.contextExplainer.extendContextExplanationWithResult(context, result)
+      this._getContextExplainer().extendContextExplanationWithResult(context, result)
       printResult(result)
       return result
     }
@@ -99,7 +106,7 @@ export class FactChecker {
     }
 
     this.logger.debug('Resolving fact', fact, 'as', String(resolvedResult), 'via', factToCheck, 'by factresolver')
-    this.contextExplainer.extendContextExplanationWithResult(context, resolvedResult)
+    this._getContextExplainer().extendContextExplanationWithResult(context, resolvedResult)
     return resolvedResult
   }
 
@@ -118,7 +125,7 @@ export class FactChecker {
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
     const result = await this.checkFact(functionRef, ssid, { ...context, previousFact: fact })
-    this.contextExplainer.extendContextExplanationWithResult(context, result)
+    this._getContextExplainer().extendContextExplanationWithResult(context, result)
     return result
   }
 
