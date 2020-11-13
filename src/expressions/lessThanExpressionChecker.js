@@ -15,6 +15,7 @@ export class LessThanExpressionChecker {
   /**
    * Get expression checker
    * @return {ExpressionChecker}
+   * @private
    */
   _getExpressionChecker () {
     return this.serviceProvider.expressionChecker
@@ -23,13 +24,14 @@ export class LessThanExpressionChecker {
   /**
    * Get context explainer
    * @return {ContextExplainer}
+   * @private
    */
   _getContextExplainer () {
     return this.serviceProvider.contextExplainer
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug('Switch case: LESS_THAN')
+    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     let lastOperandResult
     for (const op of fact.operands) {

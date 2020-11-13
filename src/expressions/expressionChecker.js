@@ -43,6 +43,7 @@ export class ExpressionChecker {
   /**
    * Get fact checker
    * @return {FactChecker}
+   * @private
    */
   _getFactChecker () {
     return this.serviceProvider.factChecker
@@ -51,6 +52,7 @@ export class ExpressionChecker {
   /**
    * Get context explainer
    * @return {ContextExplainer}
+   * @private
    */
   _getContextExplainer () {
     return this.serviceProvider.contextExplainer

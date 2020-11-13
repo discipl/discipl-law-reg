@@ -14,6 +14,7 @@ export class MaxExpressionChecker {
   /**
    * Get expression checker
    * @return {ExpressionChecker}
+   * @private
    */
   _getExpressionChecker () {
     return this.serviceProvider.expressionChecker
@@ -22,6 +23,7 @@ export class MaxExpressionChecker {
   /**
    * Get context explainer
    * @return {ContextExplainer}
+   * @private
    */
   _getContextExplainer () {
     return this.serviceProvider.contextExplainer
@@ -30,7 +32,6 @@ export class MaxExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
     this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
-    this.logger.debug('Switch case: MAX')
     let maxResult
     for (const op of fact.operands) {
       const newContext = this._getContextExplainer().extendContextWithExplanation(context)

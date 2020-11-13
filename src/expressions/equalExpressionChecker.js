@@ -15,6 +15,7 @@ export class EqualExpressionChecker {
   /**
    * Get expression checker
    * @return {ExpressionChecker}
+   * @private
    */
   _getExpressionChecker () {
     return this.serviceProvider.expressionChecker
@@ -23,6 +24,7 @@ export class EqualExpressionChecker {
   /**
    * Get context explainer
    * @return {ContextExplainer}
+   * @private
    */
   _getContextExplainer () {
     return this.serviceProvider.contextExplainer

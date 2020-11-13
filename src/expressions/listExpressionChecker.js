@@ -14,6 +14,7 @@ export class ListExpressionChecker {
   /**
    * Get expression checker
    * @return {ExpressionChecker}
+   * @private
    */
   _getExpressionChecker () {
     return this.serviceProvider.expressionChecker
@@ -22,13 +23,14 @@ export class ListExpressionChecker {
   /**
    * Get context explainer
    * @return {ContextExplainer}
+   * @private
    */
   _getContextExplainer () {
     return this.serviceProvider.contextExplainer
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug('Switch case: LIST')
+    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     if (!context.listNames) {
       context.listNames = []
