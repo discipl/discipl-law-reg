@@ -7,6 +7,9 @@ import { FactChecker } from './factChecker'
 import { ActionChecker } from './actionChecker'
 import { ExpressionChecker } from './expressions/expressionChecker'
 import { ActFetcher } from './actFetcher'
+import { DutyFetcher } from './dutyFetcher'
+import { ActionService } from './actionService'
+import { ModelPublisher } from './modelPublisher'
 
 export class ServiceProvider {
   /**
@@ -21,6 +24,9 @@ export class ServiceProvider {
     this.actionChecker = new ActionChecker(this)
     this.expressionChecker = new ExpressionChecker(this)
     this.actFetcher = new ActFetcher(this)
+    this.dutyFetcher = new DutyFetcher(this)
+    this.actionService = new ActionService(this)
+    this.modelPublisher = new ModelPublisher(this)
   }
 
   /**
@@ -119,5 +125,47 @@ export class ServiceProvider {
    */
   set contextExplainer (value) {
     this._contextExplainer = value
+  }
+
+  /**
+   * @type {DutyFetcher}
+   */
+  get dutyFetcher () {
+    return this._dutyFetcher
+  }
+
+  /**
+   * @param {DutyFetcher} value
+   */
+  set dutyFetcher (value) {
+    this._dutyFetcher = value
+  }
+
+  /**
+   * @type {ActionService}
+   */
+  get actionService () {
+    return this._actionService
+  }
+
+  /**
+   * @param {ActionService} value
+   */
+  set actionService (value) {
+    this._actionService = value
+  }
+
+  /**
+   * @type {ModelPublisher}
+   */
+  get modelPublisher () {
+    return this._modelPublisher
+  }
+
+  /**
+   * @param {ModelPublisher} value
+   */
+  set modelPublisher (value) {
+    this._modelPublisher = value
   }
 }

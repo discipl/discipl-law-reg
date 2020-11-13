@@ -4,7 +4,7 @@ const logger = log.getLogger('disciplLawReg')
 
 /**
  * Get discpl logger
- * @return {*}
+ * @return {object}
  */
 export function getDiscplLogger () {
   return logger

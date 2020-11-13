@@ -1,4 +1,4 @@
-import { DISCIPL_FLINT_MODEL } from './index'
+import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_MODEL } from './index'
 // Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'
@@ -18,6 +18,7 @@ export class ActFetcher {
   /**
    * Get abundance service
    * @return {AbundanceService}
+   * @private
    */
   _getAbundanceService () {
     return this.serviceProvider.abundanceService
@@ -26,6 +27,7 @@ export class ActFetcher {
   /**
    * Get link utils
    * @return {LinkUtils}
+   * @private
    */
   _getLinkUtils () {
     return this.serviceProvider.linkUtils
@@ -34,6 +36,7 @@ export class ActFetcher {
   /**
    * Get action checker
    * @return {ActionChecker}
+   * @private
    */
   _getActionChecker () {
     return this.serviceProvider.actionChecker
@@ -166,5 +169,18 @@ export class ActFetcher {
     }
 
     return allowedActs
+  }
+
+  /**
+   * Returns details of an act, as registered in the model
+   *
+   * @param {string} actLink - Link to the particular act
+   * @param {ssid} ssid - Identity requesting the information
+   * @returns {object}
+   */
+  async getActDetails (actLink, ssid) {
+    const core = this._getAbundanceService().getCoreAPI()
+    const claimData = await core.get(actLink, ssid)
+    return claimData.data[DISCIPL_FLINT_ACT]
   }
 }

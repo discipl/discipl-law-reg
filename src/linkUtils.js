@@ -16,12 +16,18 @@ export class LinkUtils {
   /**
    * Get abundance service
    * @return {AbundanceService}
+   * @private
    */
   _getAbundanceService () {
     return this.serviceProvider.abundanceService
   }
 
-  // TODO docs
+  /**
+   * Get model link from first case link and actor ssid
+   * @param {string} firstCaseLink
+   * @param {ssid} ssid
+   * @return {Promise<string>}
+   */
   async getModelLink (firstCaseLink, ssid) {
     const core = this._getAbundanceService().getCoreAPI()
     const firstCase = await core.get(firstCaseLink, ssid)
@@ -31,7 +37,12 @@ export class LinkUtils {
     return modelLink
   }
 
-  // TODO docs
+  /**
+   * Get first case link from a case link and actor ssid
+   * @param {string} caseLink
+   * @param {ssid} ssid
+   * @return {Promise<string>}
+   */
   async getFirstCaseLink (caseLink, ssid) {
     const core = this._getAbundanceService().getCoreAPI()
     const caseClaim = await core.get(caseLink, ssid)

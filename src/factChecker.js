@@ -18,6 +18,7 @@ export class FactChecker {
   /**
    * Get abundance service
    * @return {AbundanceService}
+   * @private
    */
   getAbundanceService () {
     return this.serviceProvider.abundanceService
@@ -26,6 +27,7 @@ export class FactChecker {
   /**
    * Get expression checker
    * @return {ExpressionChecker}
+   * @private
    */
   _getExpressionChecker () {
     return this.serviceProvider.expressionChecker
@@ -34,6 +36,7 @@ export class FactChecker {
   /**
    * Get expression checker
    * @return {ContextExplainer}
+   * @private
    */
   _getContextExplainer () {
     return this.serviceProvider.contextExplainer
@@ -61,7 +64,7 @@ export class FactChecker {
         context.explanation.fact = fact
       }
       const newContext = this._getContextExplainer().extendContextWithExplanation(context)
-      const result = await this.checkFactLink(factLink, fact, ssid, newContext)
+      const result = await this._checkFactLink(factLink, fact, ssid, newContext)
 
       this._getContextExplainer().extendContextExplanationWithResult(context, result)
       printResult(result)
@@ -118,8 +121,9 @@ export class FactChecker {
    * @param {ssid} ssid - Identity of the entity performing the check
    * @param {Context} context - Represents the context of the check
    * @returns {Promise<boolean>}
+   * @private
    */
-  async checkFactLink (factLink, fact, ssid, context) {
+  async _checkFactLink (factLink, fact, ssid, context) {
     const core = this.getAbundanceService().getCoreAPI()
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
@@ -185,6 +189,7 @@ export class FactChecker {
    * @param {ssid} ssid - Identity of entity getting the acts
    * @param {Context} context - context of the getting
    * @returns {Promise<object>} - Object where the keys are the found act case links and the values are the provided facts.
+   * @private
    */
   async _getCreatingActs (fact, ssid, context) {
     this.logger.debug('Getting creating actions for', fact)

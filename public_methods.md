@@ -1,0 +1,10 @@
+- lawReg.getActiveDuties
+- lawReg.take
+- lawReg.explain
+- lawReg.getActDetails
+- lawReg.getActions
+- lawReg.getAbundanceService
+- lawReg.getAvailableActs
+- lawReg.getAvailableActsWithResolver
+- lawReg.getPotentialActs
+- lawReg.getPotentialActsWithResolver

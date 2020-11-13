@@ -189,7 +189,7 @@ function expectCheckActionResult (actor, act, checkActionResult, factResolver, e
       const retrievedModel = await core.get(modelLink)
       const acts = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       const actLink = Object.values(acts.find(anAct => Object.keys(anAct).includes(act)))[0]
-      const result = await lawReg.checkAction(modelLink, actLink, ssids[actor], { 'factResolver': factResolver }, earlyEscape)
+      const result = await lawReg._getActionChecker().checkAction(modelLink, actLink, ssids[actor], { 'factResolver': factResolver }, earlyEscape)
       expect(result).to.deep.equal(checkActionResult, `ExpectCheckActionResult${act} Step failed. Step Index ${index}`)
       return link
     }
@@ -345,6 +345,7 @@ async function runScenario (model, actors, steps, extraFacts = {}) {
 /**
  * @param {Object<string, string[]>} actors Object with keys as actors and values as facts that apply to the actor.
  * @return {Object<string, string[]>} Object with keys as facts and values as actors that the fact applies to.
+ * @private
  */
 function _actorFactFunctionSpec (actors) {
   const actorVal = {}
@@ -362,6 +363,7 @@ function _actorFactFunctionSpec (actors) {
 /**
  * @param {Object<string, string[]>} actorVal
  * @param {Object<string, *>} extraFacts
+ * @private
  */
 function _addExtraFacts (actorVal, extraFacts) {
   Object.keys(extraFacts).forEach(extraFact => { actorVal[extraFact] = extraFacts[extraFact] })
