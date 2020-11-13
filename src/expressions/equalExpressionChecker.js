@@ -1,5 +1,5 @@
-import { getDiscplLogger } from '../loggingUtil'
-import { BigUtil } from '../big_util'
+import { getDiscplLogger } from '../utils/logging_util'
+import { BigUtil } from '../utils/big_util'
 
 export class EqualExpressionChecker {
   /**

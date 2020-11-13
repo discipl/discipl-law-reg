@@ -1,9 +1,9 @@
-import { arrayToObject } from './arrayUtils'
-import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_ACT_TAKEN, DISCIPL_FLINT_DUTY, DISCIPL_FLINT_MODEL, DISCIPL_FLINT_PREVIOUS_CASE } from './index'
-import { getDiscplLogger } from './loggingUtil'
+import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_ACT_TAKEN, DISCIPL_FLINT_DUTY, DISCIPL_FLINT_MODEL, DISCIPL_FLINT_PREVIOUS_CASE } from '../index'
+import { getDiscplLogger } from '../utils/logging_util'
 // Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'
+import { arrayToObject } from '../utils/array_util'
 
 export class DutyFetcher {
   /**
@@ -26,11 +26,11 @@ export class DutyFetcher {
 
   /**
    * Get link utils
-   * @return {LinkUtils}
+   * @return {LinkUtil}
    * @private
    */
   _getLinkUtils () {
-    return this.serviceProvider.linkUtils
+    return this.serviceProvider.linkUtil
   }
 
   /**

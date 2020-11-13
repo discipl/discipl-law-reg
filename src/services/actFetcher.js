@@ -1,9 +1,9 @@
-import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_MODEL } from './index'
+import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_MODEL } from '../index'
 // Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'
-import { getDiscplLogger } from './loggingUtil'
-import { wrapWithDefault } from './defaultFactResolver'
+import { getDiscplLogger } from '../utils/logging_util'
+import { wrapWithDefault } from '../defaultFactResolver'
 
 export class ActFetcher {
   /**
@@ -26,11 +26,11 @@ export class ActFetcher {
 
   /**
    * Get link utils
-   * @return {LinkUtils}
+   * @return {LinkUtil}
    * @private
    */
   _getLinkUtils () {
-    return this.serviceProvider.linkUtils
+    return this.serviceProvider.linkUtil
   }
 
   /**

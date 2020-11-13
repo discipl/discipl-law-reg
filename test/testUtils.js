@@ -1,5 +1,5 @@
 import { LawReg } from '../src'
-import Util from '../src/util'
+import Util from '../src/utils/util'
 import { expect } from 'chai'
 
 /**

@@ -1,7 +1,7 @@
-import { wrapWithDefault } from './defaultFactResolver'
-import IdentityUtil from './identity_util'
-import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_ACT_TAKEN, DISCIPL_FLINT_FACTS_SUPPLIED, DISCIPL_FLINT_GLOBAL_CASE, DISCIPL_FLINT_MODEL, DISCIPL_FLINT_PREVIOUS_CASE } from './index'
-import { getDiscplLogger } from './loggingUtil'
+import { wrapWithDefault } from '../defaultFactResolver'
+import IdentityUtil from '../utils/identity_util'
+import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_ACT_TAKEN, DISCIPL_FLINT_FACTS_SUPPLIED, DISCIPL_FLINT_GLOBAL_CASE, DISCIPL_FLINT_MODEL, DISCIPL_FLINT_PREVIOUS_CASE } from '../index'
+import { getDiscplLogger } from '../utils/logging_util'
 // Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'
@@ -27,11 +27,11 @@ export class ActionService {
 
   /**
    * Get link utils
-   * @return {LinkUtils}
+   * @return {LinkUtil}
    * @private
    */
   _getLinkUtils () {
-    return this.serviceProvider.linkUtils
+    return this.serviceProvider.linkUtil
   }
 
   /**

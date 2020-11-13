@@ -1,6 +1,6 @@
 import Big from 'big.js'
-import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_ACT_TAKEN, DISCIPL_FLINT_FACT, DISCIPL_FLINT_FACTS_SUPPLIED, DISCIPL_FLINT_PREVIOUS_CASE } from './index'
-import { getDiscplLogger } from './loggingUtil'
+import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_ACT_TAKEN, DISCIPL_FLINT_FACT, DISCIPL_FLINT_FACTS_SUPPLIED, DISCIPL_FLINT_PREVIOUS_CASE } from '../index'
+import { getDiscplLogger } from '../utils/logging_util'
 // Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'

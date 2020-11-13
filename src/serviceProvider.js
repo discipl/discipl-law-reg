@@ -1,15 +1,15 @@
 // Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'
-import { ContextExplainer } from './contextExplainer'
-import { LinkUtils } from './linkUtils'
-import { FactChecker } from './factChecker'
-import { ActionChecker } from './actionChecker'
-import { ExpressionChecker } from './expressions/expressionChecker'
-import { ActFetcher } from './actFetcher'
-import { DutyFetcher } from './dutyFetcher'
-import { ActionService } from './actionService'
-import { ModelPublisher } from './modelPublisher'
+import { ContextExplainer } from './services/contextExplainer'
+import { FactChecker } from './services/factChecker'
+import { ActionChecker } from './services/actionChecker'
+import { ExpressionChecker } from './services/expressionChecker'
+import { ActFetcher } from './services/actFetcher'
+import { DutyFetcher } from './services/dutyFetcher'
+import { ActionService } from './services/actionService'
+import { ModelPublisher } from './services/modelPublisher'
+import { LinkUtil } from './utils/link_util'
 
 export class ServiceProvider {
   /**
@@ -19,7 +19,7 @@ export class ServiceProvider {
   constructor (abundanceService) {
     this.abundanceService = abundanceService
     this.contextExplainer = new ContextExplainer()
-    this.linkUtils = new LinkUtils(this)
+    this.linkUtil = new LinkUtil(this)
     this.factChecker = new FactChecker(this)
     this.actionChecker = new ActionChecker(this)
     this.expressionChecker = new ExpressionChecker(this)
@@ -58,16 +58,16 @@ export class ServiceProvider {
   }
 
   /**
-   * @type {LinkUtils}
+   * @type {LinkUtil}
    */
-  get linkUtils () {
+  get linkUtil () {
     return this._linkUtils
   }
 
   /**
-   * @param {LinkUtils} value
+   * @param {LinkUtil} value
    */
-  set linkUtils (value) {
+  set linkUtil (value) {
     this._linkUtils = value
   }
 

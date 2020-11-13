@@ -1,5 +1,5 @@
-import { getDiscplLogger } from './loggingUtil'
-import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_DUTY, DISCIPL_FLINT_FACT, DISCIPL_FLINT_MODEL } from './index'
+import { getDiscplLogger } from '../utils/logging_util'
+import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_DUTY, DISCIPL_FLINT_FACT, DISCIPL_FLINT_MODEL } from '../index'
 // Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'

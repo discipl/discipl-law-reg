@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import Util from './../src/util'
+import Util from '../src/utils/util'
 import VW from './Vreemdelingenwet.flint'
 import { LawReg } from '../src'
 import * as log from 'loglevel'
@@ -66,7 +66,7 @@ describe('in het VW model', () => {
     ({ ssids, modelLink } = await util.setupModel(VW, actors, factFunctionSpec, true))
   })
 
-  for (let scenario of scenarios) {
+  for (const scenario of scenarios) {
     it(scenario.name, async () => {
       await util.scenarioTest(ssids, modelLink, scenario.acts, scenario.facts, true)
     })

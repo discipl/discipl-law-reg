@@ -1,4 +1,4 @@
-import { getDiscplLogger } from '../loggingUtil'
+import { getDiscplLogger } from '../utils/logging_util'
 import { DISCIPL_ANYONE_MARKER } from '../index'
 
 export class IsExpressionChecker {

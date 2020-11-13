@@ -1,9 +1,9 @@
-import { DISCIPL_FLINT_ACT_TAKEN, DISCIPL_FLINT_GLOBAL_CASE, DISCIPL_FLINT_MODEL_LINK } from './index'
+import { DISCIPL_FLINT_ACT_TAKEN, DISCIPL_FLINT_GLOBAL_CASE, DISCIPL_FLINT_MODEL_LINK } from '../index'
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'
-import { getDiscplLogger } from './loggingUtil'
+import { getDiscplLogger } from './logging_util'
 
-export class LinkUtils {
+export class LinkUtil {
   /**
    * Create an LinkUtils
    * @param {ServiceProvider} serviceProvider

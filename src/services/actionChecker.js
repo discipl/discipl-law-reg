@@ -1,9 +1,9 @@
-import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_MODEL } from './index'
-import { getDiscplLogger } from './loggingUtil'
+import { DISCIPL_FLINT_ACT, DISCIPL_FLINT_MODEL } from '../index'
+import { getDiscplLogger } from '../utils/logging_util'
 // Improve intelisense
 // eslint-disable-next-line no-unused-vars
 import { AbundanceService } from '@discipl/abundance-service'
-import { arrayToObject } from './arrayUtils'
+import { arrayToObject } from '../utils/array_util'
 
 export class ActionChecker {
   /**

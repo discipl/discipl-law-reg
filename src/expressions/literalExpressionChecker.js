@@ -1,4 +1,4 @@
-import { getDiscplLogger } from '../loggingUtil'
+import { getDiscplLogger } from '../utils/logging_util'
 import Big from 'big.js'
 
 export class LiteralExpressionChecker {
