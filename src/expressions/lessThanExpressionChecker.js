@@ -32,7 +32,7 @@ export class LessThanExpressionChecker {
 
   async checkSubExpression (fact, ssid, context) {
     this.logger.debug(`Handling: ${this.expression}`)
-    let hasUndefined = false
+    let hasNonNumeric = false
     let lastOperandResult
     for (const op of fact.operands) {
       const newContext = this._getContextExplainer().extendContextWithExplanation(context)
@@ -48,11 +48,11 @@ export class LessThanExpressionChecker {
 
       lastOperandResult = operandResult
 
-      if (typeof operandResult === 'undefined') {
-        hasUndefined = true
+      if (!BigUtil.isNumeric(operandResult)) {
+        hasNonNumeric = true
       }
     }
-    const lessThanResult = hasUndefined ? undefined : true
+    const lessThanResult = hasNonNumeric ? undefined : true
     this.logger.debug('Resolved LESS_THAN as', String(lessThanResult))
     this._getContextExplainer().extendContextExplanationWithResult(context, lessThanResult)
     return lessThanResult

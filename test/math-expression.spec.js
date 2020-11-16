@@ -338,5 +338,41 @@ describe('discipl-law-reg', () => {
 
       expect(errorMessage).to.equal('Unknown expression type BANANAS')
     })
+
+    it('should fail to compare non numeric operands', async () => {
+      await testFalseMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          {
+            'expression': 'LITERAL',
+            'operand': false
+          },
+          {
+            'expression': 'LITERAL',
+            'operand': 5
+          }
+        ]
+      },
+      {
+      },
+      'due to preconditions')
+
+      await testFalseMathExpression({
+        'expression': 'LESS_THAN',
+        'operands': [
+          {
+            'expression': 'LITERAL',
+            'operand': 'three'
+          },
+          {
+            'expression': 'LITERAL',
+            'operand': 5
+          }
+        ]
+      },
+      {
+      },
+      'due to preconditions')
+    })
   })
 })
