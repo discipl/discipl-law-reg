@@ -143,7 +143,6 @@ export class FactChecker {
    */
   async checkCreatedFact (fact, ssid, context) {
     this.logger.debug('Checking if', fact, 'was created')
-
     const creatingActions = Object.keys(await this._getCreatingActs(fact, ssid, context))
     if (creatingActions.length === 0) {
       return false
@@ -154,6 +153,14 @@ export class FactChecker {
 
     if (!creatingActions.includes(resolvedResult) && typeof resolvedResult !== 'undefined') {
       throw new Error('Invalid choice for creating action: ' + resolvedResult)
+    }
+
+    if (typeof resolvedResult === 'undefined' && context.myself) {
+      const actorType = context.searchingFor
+      this.logger.debug('Multiple creating acts found. Checking if you are at least a', actorType)
+      const isActorType = await this.checkFact(actorType, ssid, context)
+      this.logger.debug('Resolved you are a', actorType, 'as', isActorType)
+      return isActorType ? undefined : false
     }
 
     return resolvedResult

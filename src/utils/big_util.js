@@ -15,6 +15,11 @@ class BigUtil {
     return fallbackFunction()
   }
 
+  static isNumeric (n) {
+    const NUMERIC = /^-?(\d+(\.\d*)?|\.\d+)(e[+-]?\d+)?$/i
+    return NUMERIC.test(n += '')
+  }
+
   static add (a, b) {
     return this.genericOp(a, b, 'plus', () => a + b)
   }

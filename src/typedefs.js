@@ -11,6 +11,7 @@
  * @property {object} [facts] - Parsed facts from flint model
  * @property {object} [factsSupplied] - Parsed facts from flint model
  * @property {string} [previousFact] - last fact that was considered in the context
+ * @property {string|undefined} [searchingFor] - the fact we are searching for from PROJECTION expression
  * @property {boolean} [myself] - `IS:` constructions will be resolved if it concerns the person themselves
  * @property {object} [factReference] - Map from fact names to fact links in a published FLINT model
  * @property {array} [listNames] - Names of (subsequent) lists that belong to the current context
