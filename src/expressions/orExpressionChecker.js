@@ -36,7 +36,7 @@ export class OrExpressionChecker {
       const newContext = this._getContextExplainer().extendContextWithExplanation(context)
       const operandResult = await this._getExpressionChecker().checkExpression(op, ssid, newContext)
 
-      if (operandResult === true) {
+      if (operandResult) {
         this.logger.debug('Resolved OR as true, because', op, 'is true')
         this._getContextExplainer().extendContextExplanationWithResult(context, true)
         return true

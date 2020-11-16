@@ -338,5 +338,19 @@ describe('discipl-law-reg', () => {
 
       expect(errorMessage).to.equal('Unknown expression type BANANAS')
     })
+
+    it('should support numbers in or expressions', async () => {
+      await testMathExpression({
+        'expression': 'OR',
+        'operands': [
+          '[three]',
+          '[five]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
   })
 })
