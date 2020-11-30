@@ -8,7 +8,6 @@ export class MaxExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'MAX'
   }
 
   /**
@@ -30,7 +29,6 @@ export class MaxExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     let maxResult
     for (const op of fact.operands) {

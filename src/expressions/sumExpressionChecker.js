@@ -9,7 +9,6 @@ export class SumExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'SUM'
   }
 
   /**
@@ -31,7 +30,6 @@ export class SumExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     let sumResult = 0
     for (const op of fact.operands) {

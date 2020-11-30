@@ -8,7 +8,6 @@ export class OrExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'OR'
   }
 
   /**
@@ -30,7 +29,6 @@ export class OrExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     for (const op of fact.operands) {
       const newContext = this._getContextExplainer().extendContextWithExplanation(context)

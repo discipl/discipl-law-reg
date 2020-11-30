@@ -8,7 +8,6 @@ export class MinExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'MIN'
   }
 
   /**
@@ -30,7 +29,6 @@ export class MinExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     let minResult
     for (const op of fact.operands) {

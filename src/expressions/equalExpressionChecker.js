@@ -9,7 +9,6 @@ export class EqualExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'EQUAL'
   }
 
   /**
@@ -31,7 +30,6 @@ export class EqualExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     let lastEqualOperandResult
     for (const op of fact.operands) {

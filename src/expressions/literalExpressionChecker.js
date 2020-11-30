@@ -9,7 +9,6 @@ export class LiteralExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'LITERAL'
   }
 
   /**
@@ -31,7 +30,6 @@ export class LiteralExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let literalValue = fact.operand
     if (typeof literalValue === 'number') {
       literalValue = Big(literalValue)

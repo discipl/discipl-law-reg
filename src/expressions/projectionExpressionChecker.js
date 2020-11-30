@@ -8,7 +8,6 @@ export class ProjectionExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'PROJECTION'
   }
 
   /**
@@ -39,7 +38,6 @@ export class ProjectionExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     const core = this._getFactChecker().getAbundanceService().getCoreAPI()
     const lawregContext = context
 

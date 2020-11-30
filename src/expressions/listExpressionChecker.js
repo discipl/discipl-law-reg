@@ -8,7 +8,6 @@ export class ListExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'LIST'
   }
 
   /**
@@ -30,7 +29,6 @@ export class ListExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     if (!context.listNames) {
       context.listNames = []

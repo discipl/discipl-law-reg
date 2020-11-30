@@ -9,7 +9,6 @@ export class LessThanExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'LESS_THAN'
   }
 
   /**
@@ -31,7 +30,6 @@ export class LessThanExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     let lastOperandResult
     for (const op of fact.operands) {

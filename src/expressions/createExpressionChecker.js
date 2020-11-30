@@ -8,7 +8,6 @@ export class CreateExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'CREATE'
   }
 
   /**
@@ -39,7 +38,6 @@ export class CreateExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let finalCreateResult = await this._getFactChecker().checkCreatedFact(context.previousFact, ssid, context)
 
     if (!finalCreateResult || !fact.operands) {

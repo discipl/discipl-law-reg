@@ -9,7 +9,6 @@ export class IsExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'IS'
   }
 
   /**
@@ -31,7 +30,6 @@ export class IsExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     if (!fact.operand) {
       throw new Error('A operand must be given for the IS expression')
     }

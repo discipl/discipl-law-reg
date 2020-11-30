@@ -9,7 +9,6 @@ export class ProductExpressionChecker {
   constructor (serviceProvider) {
     this.serviceProvider = serviceProvider
     this.logger = getDiscplLogger()
-    this.expression = 'PRODUCT'
   }
 
   /**
@@ -31,7 +30,6 @@ export class ProductExpressionChecker {
   }
 
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let hasUndefined = false
     let productResult = 1
     for (const op of fact.operands) {
