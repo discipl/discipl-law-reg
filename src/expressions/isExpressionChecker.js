@@ -1,34 +1,7 @@
-import { getDiscplLogger } from '../utils/logging_util'
 import { DISCIPL_ANYONE_MARKER } from '../index'
+import { BaseSubExpressionChecker } from './baseSubExpressionChecker'
 
-export class IsExpressionChecker {
-  /**
-   * Create an IsExpressionChecker
-   * @param {ServiceProvider} serviceProvider
-   */
-  constructor (serviceProvider) {
-    this.serviceProvider = serviceProvider
-    this.logger = getDiscplLogger()
-  }
-
-  /**
-   * Get expression checker
-   * @return {ExpressionChecker}
-   * @private
-   */
-  _getExpressionChecker () {
-    return this.serviceProvider.expressionChecker
-  }
-
-  /**
-   * Get context explainer
-   * @return {ContextExplainer}
-   * @private
-   */
-  _getContextExplainer () {
-    return this.serviceProvider.contextExplainer
-  }
-
+export class IsExpressionChecker extends BaseSubExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
     if (!fact.operand) {
       throw new Error('A operand must be given for the IS expression')

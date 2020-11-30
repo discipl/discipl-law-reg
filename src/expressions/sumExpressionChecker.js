@@ -1,34 +1,7 @@
-import { getDiscplLogger } from '../utils/logging_util'
 import { BigUtil } from '../utils/big_util'
+import { BaseSubExpressionChecker } from './baseSubExpressionChecker'
 
-export class SumExpressionChecker {
-  /**
-   * Create a SumExpressionChecker
-   * @param {ServiceProvider} serviceProvider
-   */
-  constructor (serviceProvider) {
-    this.serviceProvider = serviceProvider
-    this.logger = getDiscplLogger()
-  }
-
-  /**
-   * Get expression checker
-   * @return {ExpressionChecker}
-   * @private
-   */
-  _getExpressionChecker () {
-    return this.serviceProvider.expressionChecker
-  }
-
-  /**
-   * Get context explainer
-   * @return {ContextExplainer}
-   * @private
-   */
-  _getContextExplainer () {
-    return this.serviceProvider.contextExplainer
-  }
-
+export class SumExpressionChecker extends BaseSubExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
     let hasUndefined = false
     let sumResult = 0

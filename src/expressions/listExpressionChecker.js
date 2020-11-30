@@ -1,33 +1,6 @@
-import { getDiscplLogger } from '../utils/logging_util'
+import { BaseSubExpressionChecker } from './baseSubExpressionChecker'
 
-export class ListExpressionChecker {
-  /**
-   * Create a ListExpressionChecker
-   * @param {ServiceProvider} serviceProvider
-   */
-  constructor (serviceProvider) {
-    this.serviceProvider = serviceProvider
-    this.logger = getDiscplLogger()
-  }
-
-  /**
-   * Get expression checker
-   * @return {ExpressionChecker}
-   * @private
-   */
-  _getExpressionChecker () {
-    return this.serviceProvider.expressionChecker
-  }
-
-  /**
-   * Get context explainer
-   * @return {ContextExplainer}
-   * @private
-   */
-  _getContextExplainer () {
-    return this.serviceProvider.contextExplainer
-  }
-
+export class ListExpressionChecker extends BaseSubExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
     let hasUndefined = false
     if (!context.listNames) {

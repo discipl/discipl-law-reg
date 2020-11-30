@@ -1,42 +1,6 @@
-import { getDiscplLogger } from '../utils/logging_util'
+import { BaseSubExpressionChecker } from './baseSubExpressionChecker'
 
-export class ProjectionExpressionChecker {
-  /**
-   * Create a ProjectionExpressionChecker
-   * @param {ServiceProvider} serviceProvider
-   */
-  constructor (serviceProvider) {
-    this.serviceProvider = serviceProvider
-    this.logger = getDiscplLogger()
-  }
-
-  /**
-   * Get expression checker
-   * @return {ExpressionChecker}
-   * @private
-   */
-  _getExpressionChecker () {
-    return this.serviceProvider.expressionChecker
-  }
-
-  /**
-   * Get context explainer
-   * @return {ContextExplainer}
-   * @private
-   */
-  _getContextExplainer () {
-    return this.serviceProvider.contextExplainer
-  }
-
-  /**
-   * Get fact checker
-   * @return {FactChecker}
-   * @private
-   */
-  _getFactChecker () {
-    return this.serviceProvider.factChecker
-  }
-
+export class ProjectionExpressionChecker extends BaseSubExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
     const core = this._getFactChecker().getAbundanceService().getCoreAPI()
     const lawregContext = context
