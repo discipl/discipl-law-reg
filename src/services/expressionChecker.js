@@ -22,22 +22,23 @@ export class ExpressionChecker {
   constructor (serviceProvider) {
     this.logger = getDiscplLogger()
     this.serviceProvider = serviceProvider
-    this.subExpressionCheckers = [
-      new AndExpressionChecker(this.serviceProvider),
-      new EqualExpressionChecker(this.serviceProvider),
-      new IsExpressionChecker(this.serviceProvider),
-      new LessThanExpressionChecker(this.serviceProvider),
-      new ListExpressionChecker(this.serviceProvider),
-      new LiteralExpressionChecker(this.serviceProvider),
-      new MaxExpressionChecker(this.serviceProvider),
-      new MinExpressionChecker(this.serviceProvider),
-      new NotExpressionChecker(this.serviceProvider),
-      new OrExpressionChecker(this.serviceProvider),
-      new ProductExpressionChecker(this.serviceProvider),
-      new SumExpressionChecker(this.serviceProvider),
-      new CreateExpressionChecker(this.serviceProvider),
-      new ProjectionExpressionChecker(this.serviceProvider)
-    ]
+
+    this.subExpressionCheckers = {
+      'AND': new AndExpressionChecker(this.serviceProvider),
+      'CREATE': new CreateExpressionChecker(this.serviceProvider),
+      'EQUAL': new EqualExpressionChecker(this.serviceProvider),
+      'IS': new IsExpressionChecker(this.serviceProvider),
+      'LESS_THAN': new LessThanExpressionChecker(this.serviceProvider),
+      'LIST': new ListExpressionChecker(this.serviceProvider),
+      'LITERAL': new LiteralExpressionChecker(this.serviceProvider),
+      'MAX': new MaxExpressionChecker(this.serviceProvider),
+      'MIN': new MinExpressionChecker(this.serviceProvider),
+      'NOT': new NotExpressionChecker(this.serviceProvider),
+      'OR': new OrExpressionChecker(this.serviceProvider),
+      'PRODUCT': new ProductExpressionChecker(this.serviceProvider),
+      'PROJECTION': new ProjectionExpressionChecker(this.serviceProvider),
+      'SUM': new SumExpressionChecker(this.serviceProvider)
+    }
   }
 
   /**
@@ -68,14 +69,14 @@ export class ExpressionChecker {
    */
   async checkExpression (fact, ssid, context) {
     const expr = fact.expression
-    const expressionChecker = this.subExpressionCheckers.find((checker) => checker.expression === expr)
+    this.logger.debug(`Handling: ${expr}`)
+    const expressionChecker = this.subExpressionCheckers[expr]
     if (context.explanation && fact.expression) {
       context.explanation.expression = fact.expression
     }
     if (expressionChecker) {
       return expressionChecker.checkSubExpression(fact, ssid, context)
     } else {
-      this.logger.debug(`Handling: ${expr}`)
       if (typeof fact === 'string') {
         // Purposely do not alter context for explanation, this happens in checkFact
         const result = await this._getFactChecker().checkFact(fact, ssid, context)

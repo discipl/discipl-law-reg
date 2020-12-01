@@ -1,37 +1,8 @@
-import { getDiscplLogger } from '../utils/logging_util'
 import { BigUtil } from '../utils/big_util'
+import { BaseSubExpressionChecker } from './baseSubExpressionChecker'
 
-export class LessThanExpressionChecker {
-  /**
-   * Create a LessThanExpressionChecker
-   * @param {ServiceProvider} serviceProvider
-   */
-  constructor (serviceProvider) {
-    this.serviceProvider = serviceProvider
-    this.logger = getDiscplLogger()
-    this.expression = 'LESS_THAN'
-  }
-
-  /**
-   * Get expression checker
-   * @return {ExpressionChecker}
-   * @private
-   */
-  _getExpressionChecker () {
-    return this.serviceProvider.expressionChecker
-  }
-
-  /**
-   * Get context explainer
-   * @return {ContextExplainer}
-   * @private
-   */
-  _getContextExplainer () {
-    return this.serviceProvider.contextExplainer
-  }
-
+export class LessThanExpressionChecker extends BaseSubExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
-    this.logger.debug(`Handling: ${this.expression}`)
     let hasNonNumeric = false
     let lastOperandResult
     for (const op of fact.operands) {
