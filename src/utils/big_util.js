@@ -35,6 +35,10 @@ class BigUtil {
   static lessThan (a, b) {
     return this.genericOp(a, b, 'lt', () => a < b, 'gt')
   }
+
+  static greaterThan (a, b) {
+    return this.genericOp(a, b, 'gt', () => a > b, 'lt')
+  }
 }
 
 export { BigUtil }
