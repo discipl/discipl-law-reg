@@ -2,7 +2,7 @@
 import { expect } from 'chai'
 
 import awb from './flint-example-awb'
-import IdentityUtil from '../src/identity_util'
+import IdentityUtil from '../src/utils/identity_util'
 import { setupLogging } from './logging'
 import {
   expectActiveDuties,

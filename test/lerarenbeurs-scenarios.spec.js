@@ -2,10 +2,10 @@
 import { expect } from 'chai'
 import { LawReg } from '../src/index.js'
 import * as log from 'loglevel'
-import Util from './../src/util'
+import Util from '../src/utils/util'
 
 import lb from './flint-example-lerarenbeurs'
-import IdentityUtil from '../src/identity_util'
+import IdentityUtil from '../src/utils/identity_util'
 
 // Adjusting log level for debugging can be done here, or in specific tests that need more finegrained logging during development
 log.getLogger('disciplLawReg').setLevel('debug')

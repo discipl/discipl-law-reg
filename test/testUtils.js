@@ -1,10 +1,10 @@
 import { LawReg } from '../src'
-import Util from '../src/util'
+import Util from '../src/utils/util'
 import { expect } from 'chai'
 
 /**
  * @typedef Step
- * @property {function(lawReg: LawReg, ssids: object, prevLink: string, stepIndex: Int, actionLinks: string[], modelLink: string): string} execute
+ * @property {function(lawReg: LawReg, ssids: ssid[], prevLink: string, stepIndex: number, actionLinks: string[], modelLink: string): Promise<string>} execute
  */
 
 /**
@@ -37,7 +37,7 @@ function takeAction (actor, act, factResolver = () => false) {
  */
 function takeFailingAction (actor, act, message, factResolver = () => false) {
   return {
-    execute: async function (lawReg, ssids, link, index) {
+    execute: async function (lawReg, ssids, link, index, actionLinks) {
       try {
         return await lawReg.take(ssids[actor], link, act, factResolver)
       } catch (e) {
@@ -128,14 +128,6 @@ function expectActiveDuties (actor, duties) {
 }
 
 /**
- * @typedef ActionData
- * @property {string} DISCIPL_FLINT_ACT_TAKEN
- * @property {object} DISCIPL_FLINT_FACTS_SUPPLIED
- * @property {string} DISCIPL_FLINT_GLOBAL_CASE
- * @property {string} DISCIPL_FLINT_PREVIOUS_CASE
- */
-
-/**
  * @param {string} actor - actor name
  * @param {string} act - the previous act
  * @param {function(object[], string[]):object} factsSupplied - function that returns the expected supplied acts
@@ -197,7 +189,7 @@ function expectCheckActionResult (actor, act, checkActionResult, factResolver, e
       const retrievedModel = await core.get(modelLink)
       const acts = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       const actLink = Object.values(acts.find(anAct => Object.keys(anAct).includes(act)))[0]
-      const result = await lawReg.checkAction(modelLink, actLink, ssids[actor], { 'factResolver': factResolver }, earlyEscape)
+      const result = await lawReg._getActionChecker().checkAction(modelLink, actLink, ssids[actor], { 'factResolver': factResolver }, earlyEscape)
       expect(result).to.deep.equal(checkActionResult, `ExpectCheckActionResult${act} Step failed. Step Index ${index}`)
       return link
     }
@@ -353,6 +345,7 @@ async function runScenario (model, actors, steps, extraFacts = {}) {
 /**
  * @param {Object<string, string[]>} actors Object with keys as actors and values as facts that apply to the actor.
  * @return {Object<string, string[]>} Object with keys as facts and values as actors that the fact applies to.
+ * @private
  */
 function _actorFactFunctionSpec (actors) {
   const actorVal = {}
@@ -370,6 +363,7 @@ function _actorFactFunctionSpec (actors) {
 /**
  * @param {Object<string, string[]>} actorVal
  * @param {Object<string, *>} extraFacts
+ * @private
  */
 function _addExtraFacts (actorVal, extraFacts) {
   Object.keys(extraFacts).forEach(extraFact => { actorVal[extraFact] = extraFacts[extraFact] })

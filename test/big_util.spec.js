@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-expressions */
 import { expect } from 'chai'
 
-import { BigUtil } from './../src/big_util'
+import { BigUtil } from '../src/utils/big_util'
 import * as log from 'loglevel'
 import Big from 'big.js'
 log.getLogger('disciplLawReg').setLevel('warn')

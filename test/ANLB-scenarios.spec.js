@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import Util from './../src/util'
+import Util from '../src/utils/util'
 import ANLb from './ANLb.flint'
 import { LawReg } from '../src'
 import * as log from 'loglevel'
