@@ -17,7 +17,7 @@ class BigUtil {
 
   static isNumeric (n) {
     const NUMERIC = /^-?(\d+(\.\d*)?|\.\d+)(e[+-]?\d+)?$/i
-    return NUMERIC.test(n += '')
+    return NUMERIC.test(n + '')
   }
 
   static add (a, b) {
