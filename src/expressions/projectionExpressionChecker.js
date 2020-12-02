@@ -9,6 +9,7 @@ export class ProjectionExpressionChecker extends BaseSubExpressionChecker {
       throw new Error('A \'context\' array must be given for the PROJECTION expression')
     }
 
+    lawregContext.searchingFor = fact.fact
     const initialLink = await this._getFactChecker().checkFact(fact.context[0], ssid, lawregContext)
     const caseLink = await fact.context.slice(1).reduce(async (previousCaseLink, currentContextFact) => {
       if (previousCaseLink) {
@@ -18,7 +19,7 @@ export class ProjectionExpressionChecker extends BaseSubExpressionChecker {
           return factContext.data.DISCIPL_FLINT_FACTS_SUPPLIED[currentContextFact]
         }
       }
-      return undefined
+      return previousCaseLink
     }, initialLink)
 
     if (caseLink) {
@@ -33,6 +34,6 @@ export class ProjectionExpressionChecker extends BaseSubExpressionChecker {
       }
     }
 
-    return undefined
+    return caseLink
   }
 }

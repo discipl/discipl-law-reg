@@ -15,6 +15,11 @@ class BigUtil {
     return fallbackFunction()
   }
 
+  static isNumeric (n) {
+    const NUMERIC = /^-?(\d+(\.\d*)?|\.\d+)(e[+-]?\d+)?$/i
+    return NUMERIC.test(n + '')
+  }
+
   static add (a, b) {
     return this.genericOp(a, b, 'plus', () => a + b)
   }
@@ -29,6 +34,10 @@ class BigUtil {
 
   static lessThan (a, b) {
     return this.genericOp(a, b, 'lt', () => a < b, 'gt')
+  }
+
+  static greaterThan (a, b) {
+    return this.genericOp(a, b, 'gt', () => a > b, 'lt')
   }
 }
 

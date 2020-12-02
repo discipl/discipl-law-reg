@@ -180,6 +180,20 @@ describe('discipl-law-reg', () => {
           ]
         )
       })
+
+      it('should check actors match for create expressions', async () => {
+        await runScenario(
+          model,
+          { 'ambtenaar': ['[ambtenaar]'], 'burger1': ['[burger]'], 'burger2': ['[burger]'] },
+          [
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf({ '[verzoek]': true, '[bedrag]': 50 })),
+            takeAction('burger2', '<<subsidie aanvragen>>', factResolverOf({ '[verzoek]': true, '[bedrag]': 51 })),
+            expectPotentialActs('burger1', ['<<subsidie aanvragen>>', '<<subsidie aanvraag intrekken>>']),
+            expectPotentialActs('burger2', ['<<subsidie aanvragen>>', '<<subsidie aanvraag intrekken>>']),
+            expectPotentialActs('ambtenaar', ['<<subsidie aanvraag toekennen>>'])
+          ]
+        )
+      })
     })
 
     describe('With calculatorModel', async function () {

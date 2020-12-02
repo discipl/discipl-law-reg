@@ -3,29 +3,28 @@ import { BaseSubExpressionChecker } from './baseSubExpressionChecker'
 
 export class SumExpressionChecker extends BaseSubExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
-    let hasUndefined = false
     let sumResult = 0
     for (const op of fact.operands) {
+      if (!BigUtil.isNumeric(sumResult)) { break }
       const newContext = this._getContextExplainer().extendContextWithExplanation(context)
       const operandResult = await this._getExpressionChecker().checkExpression(op, ssid, newContext)
       this.logger.debug('OperandResult in SUM', String(operandResult), 'for operand', op)
-      if (Array.isArray(operandResult)) {
-        for (const arrayOp of operandResult) {
-          if (arrayOp) {
-            sumResult = BigUtil.add(sumResult, arrayOp)
-          }
+      const opArray = Array.isArray(operandResult) ? operandResult : [operandResult]
+      for (const arrayOp of opArray) {
+        this.logger.debug('ArrayOperandResult in SUM', String(arrayOp), 'for operand', op)
+        if (arrayOp === undefined) {
+          sumResult = undefined
+          break
+        } else if (!BigUtil.isNumeric(arrayOp)) {
+          sumResult = false
+          break
+        } else {
+          sumResult = BigUtil.add(sumResult, arrayOp)
         }
-      } else {
-        sumResult = BigUtil.add(sumResult, operandResult)
-      }
-
-      if (typeof operandResult === 'undefined') {
-        hasUndefined = true
       }
     }
-    const finalSumResult = hasUndefined ? undefined : sumResult
-    this.logger.debug('Resolved SUM as', String(finalSumResult))
-    this._getContextExplainer().extendContextExplanationWithResult(context, finalSumResult)
-    return finalSumResult
+    this.logger.debug('Resolved SUM as', String(sumResult))
+    this._getContextExplainer().extendContextExplanationWithResult(context, sumResult)
+    return sumResult
   }
 }
