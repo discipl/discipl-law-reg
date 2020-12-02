@@ -383,6 +383,20 @@ describe('discipl-law-reg', () => {
       'due to preconditions')
     })
 
+    it('should support numbers in or expressions', async () => {
+      await testMathExpression({
+        'expression': 'OR',
+        'operands': [
+          '[three]',
+          '[five]'
+        ]
+      },
+      {
+        '[three]': 3,
+        '[five]': 5
+      })
+    })
+
     describe('With non numerical operands', () => {
       const serviceProvider = new ServiceProvider(sinon.mock())
       serviceProvider.expressionChecker = new ExpressionChecker(serviceProvider)
