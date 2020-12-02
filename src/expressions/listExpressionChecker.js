@@ -17,12 +17,12 @@ export class ListExpressionChecker extends BaseSubExpressionChecker {
       const operandResult = await this._getExpressionChecker().checkExpression(op, ssid, newContext)
       this.logger.debug('OperandResult in LIST', operandResult, 'for operand', op, 'and index', context.listIndices[listIndex])
 
-      listContentResult.push(operandResult)
-
       if (operandResult === false) {
         this.logger.debug('Stopping LIST concatenation, because', op, 'is false')
         break
       }
+
+      listContentResult.push(operandResult)
 
       if (typeof operandResult === 'undefined') {
         hasUndefined = true

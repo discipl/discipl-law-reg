@@ -9,6 +9,9 @@ import { MinExpressionChecker } from '../src/expressions/minExpressionChecker'
 import Big from 'big.js'
 import { LessThanExpressionChecker } from '../src/expressions/lessThanExpressionChecker'
 import { ExpressionChecker } from '../src/services/expressionChecker'
+import { SumExpressionChecker } from '../src/expressions/sumExpressionChecker'
+import { ProductExpressionChecker } from '../src/expressions/productExpressionChecker'
+import { EqualExpressionChecker } from '../src/expressions/equalExpressionChecker'
 
 setupLogging()
 describe('discipl-law-reg', () => {
@@ -429,6 +432,45 @@ describe('discipl-law-reg', () => {
         expect(result).equals(undefined)
       })
 
+      it('SUM should return undefined when an operand is undefined', async () => {
+        const expression = {
+          'expression': 'SUM',
+          'operands': [
+            '[three]',
+            '[undefined]',
+            '[five]'
+          ]
+        }
+        const result = await new SumExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(undefined)
+      })
+
+      it('PRODUCT should return undefined when an operand is undefined', async () => {
+        const expression = {
+          'expression': 'PRODUCT',
+          'operands': [
+            '[three]',
+            '[undefined]',
+            '[five]'
+          ]
+        }
+        const result = await new ProductExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(undefined)
+      })
+
+      it('EQUAL should return undefined when an operand is undefined', async () => {
+        const expression = {
+          'expression': 'EQUAL',
+          'operands': [
+            '[three]',
+            '[undefined]',
+            '[three]'
+          ]
+        }
+        const result = await new EqualExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(undefined)
+      })
+
       it('MAX should return false when an operand is non numerical', async () => {
         const expression = {
           'expression': 'MAX',
@@ -465,6 +507,32 @@ describe('discipl-law-reg', () => {
           ]
         }
         const result = await new LessThanExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(false)
+      })
+
+      it('SUM should return false when an operand is non numerical', async () => {
+        const expression = {
+          'expression': 'SUM',
+          'operands': [
+            '[three]',
+            '[non-numerical]',
+            '[five]'
+          ]
+        }
+        const result = await new SumExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(false)
+      })
+
+      it('PRODUCT should return false when an operand is non numerical', async () => {
+        const expression = {
+          'expression': 'PRODUCT',
+          'operands': [
+            '[three]',
+            '[non-numerical]',
+            '[five]'
+          ]
+        }
+        const result = await new ProductExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
         expect(result).equals(false)
       })
     })
