@@ -2,6 +2,13 @@
 import { setupLogging } from './logging'
 import { factResolverOf, runScenario, takeAction, takeFailingAction } from './testUtils'
 import { expect } from 'chai'
+import { ServiceProvider } from '../src/serviceProvider'
+import sinon from 'sinon'
+import { MaxExpressionChecker } from '../src/expressions/maxExpressionChecker'
+import { MinExpressionChecker } from '../src/expressions/minExpressionChecker'
+import Big from 'big.js'
+import { LessThanExpressionChecker } from '../src/expressions/lessThanExpressionChecker'
+import { ExpressionChecker } from '../src/services/expressionChecker'
 
 setupLogging()
 describe('discipl-law-reg', () => {
@@ -353,8 +360,7 @@ describe('discipl-law-reg', () => {
           }
         ]
       },
-      {
-      },
+      {},
       'due to preconditions')
 
       await testFalseMathExpression({
@@ -370,9 +376,97 @@ describe('discipl-law-reg', () => {
           }
         ]
       },
-      {
-      },
+      {},
       'due to preconditions')
+    })
+
+    describe('With non numerical operands', () => {
+      const serviceProvider = new ServiceProvider(sinon.mock())
+      serviceProvider.expressionChecker = new ExpressionChecker(serviceProvider)
+      serviceProvider.expressionChecker.checkExpression = async function (fact, ssid, context) {
+        if (fact === '[three]') return Big(3)
+        if (fact === '[five]') return Big(5)
+        if (fact === '[non-numerical]') return 'non-numerical'
+        return undefined
+      }
+
+      it('MAX should return undefined when an operand is undefined', async () => {
+        const expression = {
+          'expression': 'MAX',
+          'operands': [
+            '[three]',
+            '[undefined]',
+            '[five]'
+          ]
+        }
+        const result = await new MaxExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(undefined)
+      })
+
+      it('MIN should return undefined when an operand is undefined', async () => {
+        const expression = {
+          'expression': 'MIN',
+          'operands': [
+            '[three]',
+            '[undefined]',
+            '[five]'
+          ]
+        }
+        const result = await new MinExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(undefined)
+      })
+
+      it('LESS_THAN should return undefined when an operand is undefined', async () => {
+        const expression = {
+          'expression': 'LESS_THAN',
+          'operands': [
+            '[three]',
+            '[undefined]',
+            '[five]'
+          ]
+        }
+        const result = await new LessThanExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(undefined)
+      })
+
+      it('MAX should return false when an operand is non numerical', async () => {
+        const expression = {
+          'expression': 'MAX',
+          'operands': [
+            '[three]',
+            '[non-numerical]',
+            '[five]'
+          ]
+        }
+        const result = await new MaxExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(false)
+      })
+
+      it('MIN should return false when an operand is non numerical', async () => {
+        const expression = {
+          'expression': 'MIN',
+          'operands': [
+            '[three]',
+            '[non-numerical]',
+            '[five]'
+          ]
+        }
+        const result = await new MinExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(false)
+      })
+
+      it('LESS_THAN should return false when an operand is non numerical', async () => {
+        const expression = {
+          'expression': 'LESS_THAN',
+          'operands': [
+            '[three]',
+            '[non-numerical]',
+            '[five]'
+          ]
+        }
+        const result = await new LessThanExpressionChecker(serviceProvider).checkSubExpression(expression, {}, {})
+        expect(result).equals(false)
+      })
     })
   })
 })

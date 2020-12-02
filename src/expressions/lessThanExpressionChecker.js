@@ -24,7 +24,7 @@ export class LessThanExpressionChecker extends BaseSubExpressionChecker {
         lastOperandResult = operandResult
       }
     }
-    const lessThanResult = lastOperandResult !== false
+    const lessThanResult = lastOperandResult === undefined ? undefined : lastOperandResult !== false
     if (lessThanResult) {
       this.logger.debug('Resolved LESS_THAN as', String(lessThanResult))
     }

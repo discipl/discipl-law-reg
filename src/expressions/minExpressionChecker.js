@@ -8,11 +8,11 @@ export class MinExpressionChecker extends BaseSubExpressionChecker {
       const newContext = this._getContextExplainer().extendContextWithExplanation(context)
       const operandResult = await this._getExpressionChecker().checkExpression(op, ssid, newContext)
       this.logger.debug('OperandResult in MIN', operandResult, 'for operand', op)
-      if (!BigUtil.isNumeric(operandResult)) {
-        minResult = false
-        break
-      } else if (operandResult === undefined) {
+      if (operandResult === undefined) {
         minResult = undefined
+        break
+      } else if (!BigUtil.isNumeric(operandResult)) {
+        minResult = false
         break
       } else if (!BigUtil.isNumeric(minResult) || BigUtil.lessThan(operandResult, minResult)) {
         minResult = operandResult
