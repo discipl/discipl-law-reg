@@ -11,13 +11,15 @@ import { expect } from 'chai'
  * @param {string} actor - actor name
  * @param {string} act - description of the act to be taken
  * @param {function(string) : *} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
+ * @param {Object<string, number[]|number>} cases - Object where the keys are createable facts and the values are the action index to use for that fact
  * @returns {Step}
  */
-function takeAction (actor, act, factResolver = () => false) {
+function takeAction (actor, act, factResolver = () => false, cases = {}) {
   return {
     execute: async function (lawReg, ssids, link, index, actionLinks) {
       try {
-        const actionLink = await lawReg.take(ssids[actor], link, act, factResolver)
+        const resolver = _factResolverWithCases(factResolver, cases, actionLinks)
+        const actionLink = await lawReg.take(ssids[actor], link, act, resolver)
         actionLinks.push(actionLink)
         return actionLink
       } catch (e) {
@@ -33,13 +35,15 @@ function takeAction (actor, act, factResolver = () => false) {
  * @param {string} act - description of the act to be taken
  * @param {string} message - the failure message
  * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
+ * @param {Object<string, number[]|number>} cases - Object where the keys are createable facts and the values are the action index to use for that fact
  * @returns {Step}
  */
-function takeFailingAction (actor, act, message, factResolver = () => false) {
+function takeFailingAction (actor, act, message, factResolver = () => false, cases = {}) {
   return {
     execute: async function (lawReg, ssids, link, index, actionLinks) {
       try {
-        return await lawReg.take(ssids[actor], link, act, factResolver)
+        const resolver = _factResolverWithCases(factResolver, cases, actionLinks)
+        return await lawReg.take(ssids[actor], link, act, resolver)
       } catch (e) {
         expect(e.message).to.equal(message, `TakeFailingAction${act} Step failed. Step Index ${index}`)
         return link
@@ -367,6 +371,33 @@ function _actorFactFunctionSpec (actors) {
  */
 function _addExtraFacts (actorVal, extraFacts) {
   Object.keys(extraFacts).forEach(extraFact => { actorVal[extraFact] = extraFacts[extraFact] })
+}
+
+/**
+ * Wrap fact resolver to resolve what case to use for a createable fact
+ * @param factResolver - the fact resolver to wrap
+ * @param {Object<string, number[]|number>} cases - Object where the keys are createable facts and the values are the action index to use for that fact
+ * @param {string[]} actionLinks - The action links
+ * @return {function(*): Promise<*>}
+ * @private
+ */
+function _factResolverWithCases (factResolver, cases, actionLinks) {
+  return async function (fact) {
+    const actionIndex = cases[fact]
+    if (typeof actionIndex === 'number') {
+      // 0 is global link
+      const link = actionLinks[actionIndex + 1]
+      console.log('Using action with index', actionIndex + 1, 'with link', link)
+      return link
+    }
+    if (Array.isArray(actionIndex)) {
+      // 0 is global link
+      const links = actionIndex.map((index) => actionLinks[index + 1])
+      console.log('Using actions with indexes', actionIndex, 'with links', links)
+      return links
+    }
+    return factResolver.apply(this, arguments)
+  }
 }
 
 export {

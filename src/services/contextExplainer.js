@@ -2,7 +2,7 @@ export class ContextExplainer {
   /**
    * Extend context with explanation
    * @param {Context} context
-   * @return {Explanation}
+   * @return {Context}
    */
   extendContextWithExplanation (context) {
     if (context.explanation) {

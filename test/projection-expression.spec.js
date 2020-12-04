@@ -84,7 +84,7 @@ describe('discipl-law-reg', () => {
               'context': [
                 '[aanvraag]'
               ],
-              'fact': '[bedrag]'
+              'operand': '[bedrag]'
             },
             'sources': []
           },
@@ -95,7 +95,7 @@ describe('discipl-law-reg', () => {
               'context': [
                 '[aanvraag]'
               ],
-              'fact': '[burger]'
+              'operand': '[burger]'
             },
             'sources': []
           },
@@ -139,6 +139,23 @@ describe('discipl-law-reg', () => {
             expectAvailableActs('burger1', ['<<subsidie aanvraag intrekken>>']),
             expectAvailableActs('burger2', []),
             expectAvailableActs('ambtenaar', ['<<subsidie aanvraag toekennen>>'])
+          ]
+        )
+      })
+
+      it('should only be able to take action on fact you have a relation to', async () => {
+        const facts = { '[bedrag]': 50, '[verzoek]': true }
+        await runScenario(
+          model,
+          { 'ambtenaar': ['[ambtenaar]'], 'burger1': ['[burger]'], 'burger2': ['[burger]'] },
+          [
+            expectAvailableActs('burger1', ['<<subsidie aanvragen>>'], factResolverOf(facts)),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf(facts)),
+            takeFailingAction('burger2', '<<subsidie aanvraag intrekken>>', 'Action <<subsidie aanvraag intrekken>> is not allowed due to actor', factResolverOf(facts)),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf(facts)),
+            takeAction('burger2', '<<subsidie aanvragen>>', factResolverOf(facts)),
+            takeFailingAction('burger2', '<<subsidie aanvraag intrekken>>', 'Action <<subsidie aanvraag intrekken>> is not allowed due to actor', factResolverOf(facts), { '[aanvraag]': 1 }),
+            takeAction('burger2', '<<subsidie aanvraag intrekken>>', factResolverOf(facts), { '[aanvraag]': 2 })
           ]
         )
       })
@@ -275,7 +292,7 @@ describe('discipl-law-reg', () => {
               'context': [
                 '[paper]'
               ],
-              'fact': '[number]'
+              'operand': '[number]'
             }
           ]
         })
@@ -306,7 +323,7 @@ describe('discipl-law-reg', () => {
               'context': [
                 '[paper]'
               ],
-              'fact': '[number]'
+              'operand': '[number]'
             }
           ]
         })
@@ -344,7 +361,7 @@ describe('discipl-law-reg', () => {
                   'context': [
                     '[paper]'
                   ],
-                  'fact': '[number]'
+                  'operand': '[number]'
                 }
               ]
             }
@@ -384,7 +401,7 @@ describe('discipl-law-reg', () => {
                   'context': [
                     '[paper]'
                   ],
-                  'fact': '[number]'
+                  'operand': '[number]'
                 }
               ]
             }
@@ -400,6 +417,155 @@ describe('discipl-law-reg', () => {
             expectPotentialAct('Actor', '<<accept number>>'),
             takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
             expectPotentialAct('Actor', '<<accept number>>')
+          ]
+        )
+      })
+
+      it('Should be able to chose one of the previously created facts', async () => {
+        const model = calculatorModel({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 10
+            },
+            {
+              'expression': 'PROJECTION',
+              'context': [
+                '[paper]'
+              ],
+              'operand': '[number]'
+            }
+          ]
+        })
+
+        const facts = { '[number]': 10, '[calculator]': true }
+        await runScenario(
+          model,
+          { 'Actor': ['[actor1]'] },
+          [
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<accept number>>', factResolverOf(facts), { '[paper]': 1 })
+          ]
+        )
+      })
+
+      it('Should be able to have expression in operand with single scope', async () => {
+        const model = calculatorModel({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 20
+            },
+            {
+              'expression': 'PROJECTION',
+              'context': [
+                '[paper]'
+              ],
+              'operand': {
+                'expression': 'PRODUCT',
+                'operands': [
+                  '[number]',
+                  {
+                    'expression': 'LITERAL',
+                    'operand': 2
+                  }
+                ]
+              }
+            }
+          ]
+        })
+
+        const facts = { '[number]': 10, '[calculator]': true }
+        await runScenario(
+          model,
+          { 'Actor': ['[actor1]'] },
+          [
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<accept number>>', factResolverOf(facts))
+          ]
+        )
+      })
+
+      it('Should be able to have expression in operand with all scope', async () => {
+        const model = calculatorModel({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 20
+            },
+            {
+              'expression': 'PROJECTION',
+              'scope': 'all',
+              'context': [
+                '[paper]'
+              ],
+              'operand': {
+                'expression': 'SUM',
+                'operands': [
+                  '[number]'
+                ]
+              }
+            }
+          ]
+        })
+
+        const facts1 = { '[number]': 12, '[calculator]': true }
+        const facts2 = { '[number]': 5, '[calculator]': true }
+        const facts3 = { '[number]': 3, '[calculator]': true }
+        const facts4 = { '[calculator]': true }
+
+        await runScenario(
+          model,
+          { 'Actor': ['[actor1]'] },
+          [
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts1)),
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts2)),
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts3)),
+            takeAction('Actor', '<<accept number>>', factResolverOf(facts4))
+          ]
+        )
+      })
+
+      it('Should be able to have expression in operand with some scope', async () => {
+        const model = calculatorModel({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 20
+            },
+            {
+              'expression': 'PROJECTION',
+              'scope': 'some',
+              'context': [
+                '[paper]'
+              ],
+              'operand': {
+                'expression': 'SUM',
+                'operands': [
+                  '[number]'
+                ]
+              }
+            }
+          ]
+        })
+
+        const facts1 = { '[number]': 15, '[calculator]': true }
+        const facts2 = { '[number]': 5, '[calculator]': true }
+        const facts = { '[number]': 10, '[calculator]': true }
+        await runScenario(
+          model,
+          { 'Actor': ['[actor1]'] },
+          [
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts1)),
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts2)),
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<accept number>>', factResolverOf(facts), { '[paper]': [0, 1] })
           ]
         )
       })
@@ -447,7 +613,7 @@ describe('discipl-law-reg', () => {
                     '[aanvraag]',
                     '[persoonlijke gegevens]'
                   ],
-                  'fact': '[naam]'
+                  'operand': '[naam]'
                 },
                 {
                   'expression': 'LITERAL',
@@ -510,7 +676,7 @@ describe('discipl-law-reg', () => {
                   'context': [
                     '[aanvraag]'
                   ],
-                  'fact': '[niet bestaand bedrag]'
+                  'operand': '[niet bestaand bedrag]'
                 },
                 {
                   'expression': 'LITERAL',
