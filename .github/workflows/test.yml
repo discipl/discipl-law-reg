@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-node@v2-beta
         with:
           node-version: '14'
+      - name: Install
+        run: npm install
       - name: Check Lint
         run: npm run lint
       - name: Audit
