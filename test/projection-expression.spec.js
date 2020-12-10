@@ -661,6 +661,179 @@ describe('discipl-law-reg', () => {
       )
     })
 
+    it('should project a series of CREATE facts car accident example', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<create driver>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': '[license]',
+            'create': ['[driver]']
+          },
+          {
+            'act': '<<create passenger>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': '[license]',
+            'create': ['[passenger]']
+          },
+          {
+            'act': '<<create victims car>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[driver]', '[license plate]', '[passengers]'
+              ]
+            },
+            'create': ['[victims car]']
+          },
+          {
+            'act': '<<create causing car>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[driver]', '[license plate]', '[passengers]'
+              ]
+            },
+            'create': ['[causing car]']
+          },
+          {
+            'act': '<<create car accident>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': ['[causing car]', '[victims car]']
+            },
+            'create': ['[car accident]']
+          },
+          {
+            'act': '<<check license of causing driver>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': {
+              'expression': 'EQUALS',
+              'operands': [
+                {
+                  'expression': 'LITERAL',
+                  'operand': 'causing car license'
+                },
+                {
+                  'expression': 'PROJECTION',
+                  'context': [
+                    '[causing car]',
+                    '[driver]'
+                  ],
+                  'operand': '[license]'
+                }
+              ]
+            },
+            'create': []
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[driver]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[license]'
+              ]
+            }
+          },
+          {
+            'fact': '[passengers]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[license]'
+              ]
+            }
+          },
+          {
+            'fact': '[causing car]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[driver]',
+                '[license plate]',
+                '[passengers]'
+              ]
+            }
+          },
+          {
+            'fact': '[victims car]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[driver]',
+                '[license plate]',
+                '[passengers]'
+              ]
+            }
+          },
+          {
+            'fact': '[police officer]',
+            'function': '[]'
+          },
+          {
+            'fact': '[object]',
+            'function': {
+              'expression': 'LITERAL',
+              'operand': true
+            }
+          },
+          {
+            'fact': '[car-accident]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[causing car]',
+                '[victims car]'
+              ]
+            }
+          },
+          {
+            'fact': '[passengers]',
+            'function': {
+              'expression': 'PROJECTION',
+              'scope': 'some',
+              'context': ['[passenger]'],
+              'operand': '[passenger]'
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      await runScenario(
+        model,
+        { 'officer': ['[police officer]'] },
+        [
+          takeAction('officer', '<<create driver>>', factResolverOf({ '[license]': 'causing license' })),
+          takeAction('officer', '<<create driver>>', factResolverOf({ '[license]': 'victim license' })),
+          takeAction('officer', '<<create driver>>', factResolverOf({ '[license]': 'random license' })),
+          takeAction('officer', '<<create passenger>>', factResolverOf({ '[license]': 'passenger1 license' })),
+          takeAction('officer', '<<create passenger>>', factResolverOf({ '[license]': 'passenger2 license' })),
+          takeAction('officer', '<<create passenger>>', factResolverOf({ '[license]': 'passenger3 license' })),
+          takeAction('officer', '<<create victims car>>', factResolverOf({ '[license plate]': 'victims plate' }), { '[driver]': 2, '[passenger]': [4, 5] }),
+          takeAction('officer', '<<create causing car>>', factResolverOf({ '[license plate]': 'causing plate' }), { '[driver]': 1, '[passenger]': [3] }),
+          takeAction('officer', '<<create car accident>>', factResolverOf({})),
+          takeAction('officer', '<<check license of causing driver>>', factResolverOf({}))
+        ]
+      )
+    })
     it('should not allow an act if the projection failed', async () => {
       const model = {
         'acts': [
