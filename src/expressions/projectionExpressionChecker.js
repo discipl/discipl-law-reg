@@ -128,7 +128,7 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
    * @param {string} contextFact - the context fact
    * @param {ssid} ssid - Identifies the actor
    * @param {Context} context - Context of the action
-   * @return {Object<string, Object<string, *>>}
+   * @return {Promise<Object<string, Object<string, *>>>}
    * @protected
    */
   async _filter (creatingActs, contextFact, ssid, context) {
@@ -194,7 +194,7 @@ class SingleScopeProjectionExpressionChecker extends BaseScopeProjectionExpressi
    * @param {string} contextFact - the context fact
    * @param {ssid} ssid - Identifies the actor
    * @param {Context} context - Context of the action
-   * @return {Object<string, Object<string, *>>}
+   * @return {Promise<Object<string, Object<string, *>>>}
    * @protected
    */
   async _filter (creatingActs, contextFact, ssid, context) {
@@ -226,7 +226,7 @@ class AllScopeProjectionExpressionChecker extends BaseScopeProjectionExpressionC
    * @param {string} contextFact - the context fact
    * @param {ssid} ssid - Identifies the actor
    * @param {Context} context - Context of the action
-   * @return {Object<string, Object<string, *>>}
+   * @return {Promise<Object<string, Object<string, *>>>}
    * @protected
    */
   async _filter (creatingActs, contextFact, ssid, context) {
@@ -250,7 +250,7 @@ class SomeScopeProjectionExpressionChecker extends BaseScopeProjectionExpression
    * @param {string} contextFact - the context fact
    * @param {ssid} ssid - Identifies the actor
    * @param {Context} context - Context of the action
-   * @return {Object<string, Object<string, *>>}
+   * @return {Promise<Object<string, Object<string, *>>>}
    * @protected
    */
   async _filter (creatingActs, contextFact, ssid, context) {
