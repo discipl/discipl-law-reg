@@ -43,26 +43,15 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
    * @param {object} fact - the create expression
    * @param {ssid} ssid - Identifies the actor
    * @param {Context} context - Context of the action
-   * @return {Promise<Object<string, Object<string, *>>>} - Object where key is the act link and value is the provided facts
+   * @return {Promise<CreatingAct[]>} - Object where key is the act link and value is the provided facts
    * @protected
    */
   async _getCreatingActs (fact, ssid, context) {
     const contextFact = fact.context[0]
     const creatingActs = await this._getFactChecker().getCreatingActs(contextFact, ssid, context)
     const filteredActs = await this._filter(creatingActs, contextFact, ssid, context)
-    const reducedActs = await Promise.all(Object.keys(filteredActs).map(key => this._reduce({ link: key, facts: filteredActs[key], contextFact: contextFact }, fact.context.slice(1), ssid)))
-    return reducedActs.reduce((previousValue, currentValue) => {
-      previousValue[currentValue.link] = currentValue.facts
-      return previousValue
-    }, {})
+    return Promise.all(filteredActs.map(act => this._reduce(act, fact.context.slice(1), ssid)))
   }
-
-  /**
-   * @typedef CreatingAct
-   * @property {string} link - Act link
-   * @property {string} contextFact - The fact that was created by this act
-   * @property {Object<string, *>} facts - Facts provided for act
-   */
 
   /**
    * Reduce the create act using the context array to get the targets creating act
@@ -124,11 +113,11 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
 
   /**
    * Filter the creating acts (Should be implemented in sub expressions)
-   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @param {CreatingAct[]} creatingActs - the creating acts
    * @param {string} contextFact - the context fact
    * @param {ssid} ssid - Identifies the actor
    * @param {Context} context - Context of the action
-   * @return {Promise<Object<string, Object<string, *>>>}
+   * @return {Promise<CreatingAct[]>}
    * @protected
    */
   async _filter (creatingActs, contextFact, ssid, context) {
@@ -137,24 +126,23 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
 
   /**
    * Combine the values of creating acts into one provided facts object
-   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @param {CreatingAct[]} creatingActs - the creating acts
    * @return {Object<string, *[]>} - object where key is the fact and value is an array of the facts values
    * @protected
    */
   _toProvidedFacts (creatingActs) {
-    const providedFacts = {}
-    for (const key in creatingActs) {
-      if (creatingActs.hasOwnProperty(key)) {
-        for (const fact in creatingActs[key]) {
-          if (creatingActs[key].hasOwnProperty(fact)) {
-            const array = providedFacts[fact] ? providedFacts[fact] : []
-            array.push(creatingActs[key][fact])
-            providedFacts[fact] = array
-          }
+    const addCreatingAct = (providedFacts, creatingAct) => {
+      const facts = creatingAct.facts
+      for (const fact in facts) {
+        if (facts.hasOwnProperty(fact)) {
+          const array = providedFacts[fact] ? providedFacts[fact] : []
+          array.push(facts[fact])
+          providedFacts[fact] = array
         }
       }
+      return providedFacts
     }
-    return providedFacts
+    return creatingActs.reduce((previousValue, currentValue) => addCreatingAct(previousValue, currentValue), {})
   }
 }
 
@@ -162,12 +150,11 @@ class SingleScopeProjectionExpressionChecker extends BaseScopeProjectionExpressi
   async checkSubExpression (fact, ssid, context) {
     this._checkProjectionIsValid(fact)
     const creatingActs = await this._getCreatingActs(fact, ssid, context)
-    const creatingActsLinks = Object.keys(creatingActs)
-    if (creatingActsLinks.length !== 1) {
+    if (creatingActs.length !== 1) {
       context.searchingFor = fact.operand
       return this._checkAtLeastTypeOf(fact.operand, ssid, context)
     }
-    return this._resolve(fact, ssid, context, creatingActs[creatingActsLinks[0]])
+    return this._resolve(fact, ssid, context, creatingActs[0].facts)
   }
 
   /**
@@ -190,23 +177,17 @@ class SingleScopeProjectionExpressionChecker extends BaseScopeProjectionExpressi
 
   /**
    * Filter the creating acts
-   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @param {CreatingAct[]} creatingActs - the creating acts
    * @param {string} contextFact - the context fact
    * @param {ssid} ssid - Identifies the actor
    * @param {Context} context - Context of the action
-   * @return {Promise<Object<string, Object<string, *>>>}
+   * @return {Promise<CreatingAct[]>}
    * @protected
    */
   async _filter (creatingActs, contextFact, ssid, context) {
-    const linkValueKeys = Object.keys(creatingActs)
-    const resolverLink = await this._getFactChecker().checkFactWithResolver(contextFact, ssid, context, linkValueKeys)
-    const resolverLinks = [resolverLink]
-    return Object.keys(creatingActs)
-      .filter(key => resolverLinks.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = creatingActs[key]
-        return obj
-      }, {})
+    const actLinks = creatingActs.map(act => act.link)
+    const resolverLink = await this._getFactChecker().checkFactWithResolver(contextFact, ssid, context, actLinks)
+    return creatingActs.filter(act => resolverLink === act.link)
   }
 }
 
@@ -214,19 +195,18 @@ class AllScopeProjectionExpressionChecker extends BaseScopeProjectionExpressionC
   async checkSubExpression (fact, ssid, context) {
     this._checkProjectionIsValid(fact)
     const creatingActs = await this._getCreatingActs(fact, ssid, context)
-    const creatingActLinks = Object.keys(creatingActs)
-    if (creatingActLinks.length <= 0) return false
+    if (creatingActs.length <= 0) return false
     const providedFacts = this._toProvidedFacts(creatingActs)
     return this._resolve(fact, ssid, context, providedFacts)
   }
 
   /**
    * Filter the creating acts
-   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @param {CreatingAct[]} creatingActs - the creating acts
    * @param {string} contextFact - the context fact
    * @param {ssid} ssid - Identifies the actor
    * @param {Context} context - Context of the action
-   * @return {Promise<Object<string, Object<string, *>>>}
+   * @return {Promise<CreatingAct[]>}
    * @protected
    */
   async _filter (creatingActs, contextFact, ssid, context) {
@@ -238,33 +218,27 @@ class SomeScopeProjectionExpressionChecker extends BaseScopeProjectionExpression
   async checkSubExpression (fact, ssid, context) {
     this._checkProjectionIsValid(fact)
     const creatingActs = await this._getCreatingActs(fact, ssid, context)
-    const creatingActLinks = Object.keys(creatingActs)
-    if (creatingActLinks.length <= 0) return false
+    if (creatingActs.length <= 0) return false
     const providedFacts = this._toProvidedFacts(creatingActs)
     return this._resolve(fact, ssid, context, providedFacts)
   }
 
   /**
    * Filter the creating acts
-   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @param {CreatingAct[]} creatingActs - the creating acts
    * @param {string} contextFact - the context fact
    * @param {ssid} ssid - Identifies the actor
    * @param {Context} context - Context of the action
-   * @return {Promise<Object<string, Object<string, *>>>}
+   * @return {Promise<CreatingAct[]>}
    * @protected
    */
   async _filter (creatingActs, contextFact, ssid, context) {
-    const linkValueKeys = Object.keys(creatingActs)
+    const actLinks = creatingActs.map(act => act.link)
     /**
      * @type {string[]}
      */
-    let resolverLinks = await this._getFactChecker().checkFactWithResolver(contextFact, ssid, context, linkValueKeys)
+    let resolverLinks = await this._getFactChecker().checkFactWithResolver(contextFact, ssid, context, actLinks)
     if (!Array.isArray(resolverLinks)) resolverLinks = []
-    return Object.keys(creatingActs)
-      .filter(key => resolverLinks.includes(key))
-      .reduce((obj, key) => {
-        obj[key] = creatingActs[key]
-        return obj
-      }, {})
+    return creatingActs.filter(act => resolverLinks.includes(act.link))
   }
 }

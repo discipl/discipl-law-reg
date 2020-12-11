@@ -41,7 +41,7 @@ export class BaseSubExpressionChecker {
   }
 
   /**
-   * Get fact checker
+   * Get abundance service
    * @return {AbundanceService}
    * @protected
    */

@@ -144,19 +144,18 @@ export class FactChecker {
    */
   async checkCreatableFactCreated (fact, ssid, context) {
     this.logger.debug('Checking if', fact, 'was created')
-    const creatingActions = Object.keys(await this.getCreatingActs(fact, ssid, context))
+    const creatingActions = (await this.getCreatingActs(fact, ssid, context)).map(action => action.link)
     if (creatingActions.length === 0) {
       return false
     }
 
-    const result = context.factResolver(fact, context.listNames || [], context.listIndices || [], creatingActions)
-    const resolvedResult = await Promise.resolve(result)
+    const result = await context.factResolver(fact, context.listNames || [], context.listIndices || [], creatingActions)
 
-    if (!creatingActions.includes(resolvedResult) && typeof resolvedResult !== 'undefined') {
-      throw new Error('Invalid choice for creating action: ' + resolvedResult)
+    if (!creatingActions.includes(result) && typeof result !== 'undefined') {
+      throw new Error('Invalid choice for creating action: ' + result)
     }
 
-    if (typeof resolvedResult === 'undefined' && context.myself) {
+    if (typeof result === 'undefined' && context.myself) {
       const actorType = context.searchingFor
       this.logger.debug('Multiple creating acts found. Checking if you are at least a', actorType)
       const isActorType = await this.checkFact(actorType, ssid, context)
@@ -164,7 +163,7 @@ export class FactChecker {
       return isActorType ? undefined : false
     }
 
-    return resolvedResult
+    return result
   }
 
   /**
@@ -173,13 +172,16 @@ export class FactChecker {
    * @param {string} fact - Description of the fact, surrounded with []
    * @param {ssid} ssid - Identity of entity getting the acts
    * @param {Context} context - context of the getting
-   * @returns {Promise<object>} - Object where the keys are the found act case links and the values are the provided facts.
+   * @returns {Promise<CreatingAct[]>}
    */
   async getCreatingActs (fact, ssid, context) {
     this.logger.debug('Getting creating actions for', fact)
     const core = this._getAbundanceService().getCoreAPI()
     let caseLink = context.caseLink
-    const possibleCreatingActions = {}
+    /**
+     * @type {CreatingAct[]}
+     */
+    const possibleCreatingActions = []
     const terminatedCreatingActions = []
 
     while (caseLink != null) {
@@ -192,7 +194,11 @@ export class FactChecker {
 
         if (act.create != null && act.create.includes(fact)) {
           this.logger.debug('Found possible creating act', act.act)
-          possibleCreatingActions[caseLink] = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
+          possibleCreatingActions.push({
+            link: caseLink,
+            contextFact: fact,
+            facts: caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
+          })
         }
 
         if (act.terminate != null && act.terminate.includes(fact)) {
@@ -204,17 +210,7 @@ export class FactChecker {
       caseLink = caseData.data[DISCIPL_FLINT_PREVIOUS_CASE]
     }
 
-    const filtered = Object
-      .keys(possibleCreatingActions)
-      .filter(key => !terminatedCreatingActions.includes(key))
-      .reduce(
-        (obj, key) => {
-          obj[key] = possibleCreatingActions[key]
-          return obj
-        },
-        {}
-      )
-
+    const filtered = possibleCreatingActions.filter(creatingAction => !terminatedCreatingActions.includes(creatingAction.link))
     this.logger.debug('Creating acts', filtered)
     return filtered
   }
