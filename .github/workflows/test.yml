@@ -1,0 +1,34 @@
+name: Tests
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '14'
+      - name: Install
+        run: npm install
+      - name: Check Lint
+        run: npm run lint
+      - name: Audit
+        run: npm audit
+      - name: Test
+        run: npm test
+      - name: Coverage
+        run: npm run coverage
+      - name: Sonar
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

@@ -45,3 +45,10 @@
  * @property {Array.<ParsedExpression|string>} [operands] - Operands of an AND/OR
  * @property {ParsedExpression|string} [operand] - Operand of a NOT
  */
+
+/**
+ * @typedef CreatingAct
+ * @property {string} link - Act link
+ * @property {string} contextFact - The fact that was created by this act
+ * @property {Object<string, *>} facts - Facts provided for act
+ */

@@ -20,7 +20,7 @@ export class FactChecker {
    * @return {AbundanceService}
    * @private
    */
-  getAbundanceService () {
+  _getAbundanceService () {
     return this.serviceProvider.abundanceService
   }
 
@@ -96,13 +96,14 @@ export class FactChecker {
    * @param {string} fact - Description of the fact, surrounded with []
    * @param {ssid} ssid - Identity of entity doing the checking
    * @param {Context} context - context of the checking
-   * @returns {Promise<boolean>}
+   * @param {string[]} possibleCreatingActions - Possible creating actions
+   * @returns {Promise<*>}
    */
-  async checkFactWithResolver (fact, ssid, context) {
+  async checkFactWithResolver (fact, ssid, context, possibleCreatingActions = []) {
     const factToCheck = fact === '[]' || fact === '' ? context.previousFact : fact
     const listNames = context.listNames || []
     const listIndices = context.listIndices || []
-    const result = context.factResolver(factToCheck, listNames, listIndices)
+    const result = context.factResolver(factToCheck, listNames, listIndices, possibleCreatingActions)
     let resolvedResult = await Promise.resolve(result)
     if (typeof resolvedResult === 'number') {
       resolvedResult = Big(resolvedResult)
@@ -124,7 +125,7 @@ export class FactChecker {
    * @private
    */
   async _checkFactLink (factLink, fact, ssid, context) {
-    const core = this.getAbundanceService().getCoreAPI()
+    const core = this._getAbundanceService().getCoreAPI()
     const factReference = await core.get(factLink, ssid)
     const functionRef = factReference.data[DISCIPL_FLINT_FACT].function
 
@@ -141,21 +142,20 @@ export class FactChecker {
    * @param {Context} context - context of the checking
    * @returns {Promise<boolean>} - true if the fact has been created
    */
-  async checkCreatedFact (fact, ssid, context) {
+  async checkCreatableFactCreated (fact, ssid, context) {
     this.logger.debug('Checking if', fact, 'was created')
-    const creatingActions = Object.keys(await this._getCreatingActs(fact, ssid, context))
+    const creatingActions = (await this.getCreatingActs(fact, ssid, context)).map(action => action.link)
     if (creatingActions.length === 0) {
       return false
     }
 
-    const result = context.factResolver(fact, context.listNames || [], context.listIndices || [], creatingActions)
-    const resolvedResult = await Promise.resolve(result)
+    const result = await context.factResolver(fact, context.listNames || [], context.listIndices || [], creatingActions)
 
-    if (!creatingActions.includes(resolvedResult) && typeof resolvedResult !== 'undefined') {
-      throw new Error('Invalid choice for creating action: ' + resolvedResult)
+    if (!creatingActions.includes(result) && typeof result !== 'undefined') {
+      throw new Error('Invalid choice for creating action: ' + result)
     }
 
-    if (typeof resolvedResult === 'undefined' && context.myself) {
+    if (typeof result === 'undefined' && context.myself) {
       const actorType = context.searchingFor
       this.logger.debug('Multiple creating acts found. Checking if you are at least a', actorType)
       const isActorType = await this.checkFact(actorType, ssid, context)
@@ -163,30 +163,7 @@ export class FactChecker {
       return isActorType ? undefined : false
     }
 
-    return resolvedResult
-  }
-
-  /**
-   * Checks if a given fact was provided in an act that wasn't terminated yet that the given entity has access to.
-   *
-   * @param {string} fact - Description of the fact, surrounded with []
-   * @param {ssid} ssid - Identity of entity doing the checking
-   * @param {Context} context - context of the checking
-   * @returns {Promise<object>} - the facts value or false if it hasn't been provided
-   */
-  async checkFactProvidedInAct (fact, ssid, context) {
-    this.logger.debug('Checking if', fact, 'was provided in an action')
-    const creatingActions = await this._getCreatingActs(context.previousFact, ssid, context)
-    if (Object.keys(creatingActions).length !== 0) {
-      const actionWithTheFact = Object.values(creatingActions).find((value) => value[fact] !== undefined)
-      if (actionWithTheFact !== undefined) {
-        const theFact = actionWithTheFact[fact]
-        this.logger.debug('fact', fact, 'was provided as', theFact)
-        return theFact
-      }
-    }
-    this.logger.debug('fact', fact, 'was not provided')
-    return false
+    return result
   }
 
   /**
@@ -195,14 +172,16 @@ export class FactChecker {
    * @param {string} fact - Description of the fact, surrounded with []
    * @param {ssid} ssid - Identity of entity getting the acts
    * @param {Context} context - context of the getting
-   * @returns {Promise<object>} - Object where the keys are the found act case links and the values are the provided facts.
-   * @private
+   * @returns {Promise<CreatingAct[]>}
    */
-  async _getCreatingActs (fact, ssid, context) {
+  async getCreatingActs (fact, ssid, context) {
     this.logger.debug('Getting creating actions for', fact)
-    const core = this.getAbundanceService().getCoreAPI()
+    const core = this._getAbundanceService().getCoreAPI()
     let caseLink = context.caseLink
-    const possibleCreatingActions = {}
+    /**
+     * @type {CreatingAct[]}
+     */
+    const possibleCreatingActions = []
     const terminatedCreatingActions = []
 
     while (caseLink != null) {
@@ -212,13 +191,18 @@ export class FactChecker {
       if (lastTakenAction != null) {
         const actData = await core.get(lastTakenAction, ssid)
         const act = actData.data[DISCIPL_FLINT_ACT]
-        this.logger.debug('Found earlier act', act.act)
 
         if (act.create != null && act.create.includes(fact)) {
-          possibleCreatingActions[caseLink] = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
+          this.logger.debug('Found possible creating act', act.act)
+          possibleCreatingActions.push({
+            link: caseLink,
+            contextFact: fact,
+            facts: caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
+          })
         }
 
         if (act.terminate != null && act.terminate.includes(fact)) {
+          this.logger.debug('Found possible terminating act', act.act)
           const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
           terminatedCreatingActions.push(terminatedLink)
         }
@@ -226,17 +210,7 @@ export class FactChecker {
       caseLink = caseData.data[DISCIPL_FLINT_PREVIOUS_CASE]
     }
 
-    const filtered = Object
-      .keys(possibleCreatingActions)
-      .filter(key => !terminatedCreatingActions.includes(key))
-      .reduce(
-        (obj, key) => {
-          obj[key] = possibleCreatingActions[key]
-          return obj
-        },
-        {}
-      )
-
+    const filtered = possibleCreatingActions.filter(creatingAction => !terminatedCreatingActions.includes(creatingAction.link))
     this.logger.debug('Creating acts', filtered)
     return filtered
   }

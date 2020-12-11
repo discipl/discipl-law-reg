@@ -13,9 +13,10 @@ import {
   expectModelFact,
   expectPotentialActs,
   expectRetrievedFactFunction,
-  factResolverOf,
+  factResolverFactory,
   runOnModel,
   runScenario,
+  simpleFactResolverFactory,
   takeAction
 } from './testUtils'
 
@@ -166,7 +167,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'ingezetene': ['[ingezetene]'] },
         [
-          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', () => true),
+          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', simpleFactResolverFactory(true)),
           expectData('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (actors) => {
             return {
               '[overheid]': true,
@@ -207,7 +208,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'someone': [], 'someone else': [], 'ANYONE': ['[ingezetene]'] },
         [
-          takeAction('someone', '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolverOf(completedFacts)),
+          takeAction('someone', '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolverFactory(completedFacts)),
           expectData('someone', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (actors) => {
             return {
               '[overheid]': true,
@@ -215,7 +216,7 @@ describe('discipl-law-reg', () => {
               '[ingezetene]': IdentityUtil.identityExpression(actors['someone'].did)
             }
           }),
-          takeAction('someone else', '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolverOf(completedFacts)),
+          takeAction('someone else', '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolverFactory(completedFacts)),
           expectData('someone else', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (actors) => {
             return {
               '[overheid]': true,
@@ -292,7 +293,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'ingezetene1': ['[ingezetene]'], 'ingezetene2': ['[ingezetene]'], 'overheid': ['[overheid]'] },
         [
-          takeAction('ingezetene1', '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolverOf({ '[verwelkomst]': true })),
+          takeAction('ingezetene1', '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolverFactory({ '[verwelkomst]': true })),
           expectData('ingezetene1', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (actors) => {
             return {
               '[ingezetene]': IdentityUtil.identityExpression(actors['ingezetene1'].did),
@@ -327,12 +328,11 @@ describe('discipl-law-reg', () => {
         ],
         'duties': []
       }
-      const factResolver = async () => true
       await runScenario(
         model,
         { 'ingezetene': ['[ingezetene]'] },
         [
-          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', factResolver),
+          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', simpleFactResolverFactory(true)),
           expectData('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', (actors) => {
             return {
               '[overheid]': true,
@@ -391,7 +391,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'actor': [] },
         [
-          takeAction('actor', '<<kinderbijslag aanvragen>>', factResolver),
+          takeAction('actor', '<<kinderbijslag aanvragen>>', () => factResolver),
           expectData('ingezetene', '<<kinderbijslag aanvragen>>', (actors) => {
             return {
               '[ouder]': IdentityUtil.identityExpression(actors['actor'].did),
@@ -465,7 +465,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'actor': [] },
         [
-          takeAction('actor', '<<kinderbijslag aanvragen>>', factResolver),
+          takeAction('actor', '<<kinderbijslag aanvragen>>', () => factResolver),
           expectData('ingezetene', '<<kinderbijslag aanvragen>>', (actors) => {
             return {
               '[ouder]': IdentityUtil.identityExpression(actors['actor'].did),
@@ -565,7 +565,7 @@ describe('discipl-law-reg', () => {
         verwelkomingsregeling,
         { 'ingezetene': ['[ingezetene]'], 'overheid': ['[overheid]'] },
         [
-          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', () => true),
+          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', simpleFactResolverFactory(true)),
           expectActiveDuties('ingezetene', []),
           expectActiveDuties('overheid', ['<verwelkomen>'])
         ]
@@ -577,8 +577,8 @@ describe('discipl-law-reg', () => {
         verwelkomingsregeling,
         { 'overheid': [], 'ingezetene': [] },
         [
-          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', () => true),
-          takeAction('ingezetene', '<<ingezetene geeft aan dat verwelkomen niet nodig is>>', () => true),
+          takeAction('ingezetene', '<<ingezetene kan verwelkomst van overheid aanvragen>>', simpleFactResolverFactory(true)),
+          takeAction('ingezetene', '<<ingezetene geeft aan dat verwelkomen niet nodig is>>', simpleFactResolverFactory(true)),
           expectActiveDuties('ingezetene', []),
           expectActiveDuties('overheid', [])
         ]
@@ -617,7 +617,7 @@ describe('discipl-law-reg', () => {
         { 'ingezetene': ['[ingezetene]'], 'overheid': ['[overheid]'] },
         [
           expectAvailableActs('ingezetene', []),
-          expectAvailableActs('ingezetene', ['<<ingezetene kan verwelkomst van overheid aanvragen>>'], factResolverOf({ '[aanvraag verwelkomst]': true }))
+          expectAvailableActs('ingezetene', ['<<ingezetene kan verwelkomst van overheid aanvragen>>'], factResolverFactory({ '[aanvraag verwelkomst]': true }))
         ]
       )
     })
@@ -741,8 +741,8 @@ describe('discipl-law-reg', () => {
         model,
         { 'actor': [] },
         [
-          takeAction('actor', '<<kinderbijslag aanvragen>>', () => true),
-          takeAction('actor', '<<kinderbijslag aanvragen>>', () => true),
+          takeAction('actor', '<<kinderbijslag aanvragen>>', simpleFactResolverFactory(true)),
+          takeAction('actor', '<<kinderbijslag aanvragen>>', simpleFactResolverFactory(true)),
           expectAvailableActs('actor', []),
           expectPotentialActs('actor', ['<<kinderbijslag aanvragen>>', '<<aanvraag kinderbijslag toekennen>>'])
         ]
@@ -780,7 +780,7 @@ describe('discipl-law-reg', () => {
         { 'ingezetene': ['[ingezetene]'], 'overheid': ['[overheid]'] },
         [
           expectAvailableActs('ingezetene', []),
-          expectAvailableActs('ingezetene', [], factResolverOf({ '[aanvraag verwelkomst]': true }))
+          expectAvailableActs('ingezetene', [], factResolverFactory({ '[aanvraag verwelkomst]': true }))
         ]
       )
     })
@@ -795,7 +795,7 @@ describe('discipl-law-reg', () => {
         awb,
         { 'actor': ['[persoon wiens belang rechtstreeks bij een besluit is betrokken]'] },
         [
-          takeAction('actor', '<<indienen verzoek een besluit te nemen>>', factResolverOf(completedFacts)),
+          takeAction('actor', '<<indienen verzoek een besluit te nemen>>', factResolverFactory(completedFacts)),
           expectData('actor', '<<indienen verzoek een besluit te nemen>>', (actors) => {
             return {
               '[belanghebbende]': IdentityUtil.identityExpression(actors['actor'].did),
@@ -826,8 +826,8 @@ describe('discipl-law-reg', () => {
         awb,
         { 'belanghebbende': [], 'bestuursorgaan': [] },
         [
-          takeAction('belanghebbende', '<<indienen verzoek een besluit te nemen>>', factResolverOf(belanghebbendeFacts)),
-          takeAction('bestuursorgaan', '<<besluiten de aanvraag niet te behandelen>>', factResolverOf(bestuursorgaanFacts)),
+          takeAction('belanghebbende', '<<indienen verzoek een besluit te nemen>>', factResolverFactory(belanghebbendeFacts)),
+          takeAction('bestuursorgaan', '<<besluiten de aanvraag niet te behandelen>>', factResolverFactory(bestuursorgaanFacts)),
           expectData('ingezetene', '<<besluiten de aanvraag niet te behandelen>>', (actors, actionLinks) => {
             return {
               '[bestuursorgaan]': IdentityUtil.identityExpression(actors['bestuursorgaan'].did),
@@ -960,13 +960,15 @@ describe('discipl-law-reg', () => {
         return creatingOptions[1]
       }
 
+      const factResolverFactory = () => factResolver
+
       await runScenario(
         model,
         { 'baker': ['[baker]'] },
         [
-          takeAction('baker', '<<bake cookie>>', factResolver),
-          takeAction('baker', '<<bake cookie>>', factResolver),
-          takeAction('baker', '<<eat cookie>>', factResolver),
+          takeAction('baker', '<<bake cookie>>', factResolverFactory),
+          takeAction('baker', '<<bake cookie>>', factResolverFactory),
+          takeAction('baker', '<<eat cookie>>', factResolverFactory),
           expectData('baker', '<<eat cookie>>', (actors, actionLinks) => {
             return {
               '[baker]': IdentityUtil.identityExpression(actors['baker'].did),
@@ -974,7 +976,7 @@ describe('discipl-law-reg', () => {
               '[cookie]': actionLinks[1]
             }
           }),
-          takeAction('baker', '<<eat cookie>>', factResolver),
+          takeAction('baker', '<<eat cookie>>', factResolverFactory),
           expectData('baker', '<<eat cookie>>', (actors, actionLinks) => {
             return {
               '[baker]': IdentityUtil.identityExpression(actors['baker'].did),

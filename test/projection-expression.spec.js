@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { expectAvailableActs, expectPotentialAct, expectPotentialActs, factResolverOf, runScenario, takeAction, takeFailingAction } from './testUtils'
+import { expectAvailableActs, expectPotentialAct, expectPotentialActs, factResolverFactory, runScenario, takeAction, takeFailingAction } from './testUtils'
 import { setupLogging } from './logging'
 
 setupLogging()
@@ -84,7 +84,7 @@ describe('discipl-law-reg', () => {
               'context': [
                 '[aanvraag]'
               ],
-              'fact': '[bedrag]'
+              'operand': '[bedrag]'
             },
             'sources': []
           },
@@ -95,7 +95,7 @@ describe('discipl-law-reg', () => {
               'context': [
                 '[aanvraag]'
               ],
-              'fact': '[burger]'
+              'operand': '[burger]'
             },
             'sources': []
           },
@@ -134,11 +134,28 @@ describe('discipl-law-reg', () => {
           model,
           { 'ambtenaar': ['[ambtenaar]'], 'burger1': ['[burger]'], 'burger2': ['[burger]'] },
           [
-            expectAvailableActs('burger1', ['<<subsidie aanvragen>>'], factResolverOf(facts)),
-            takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf(facts)),
+            expectAvailableActs('burger1', ['<<subsidie aanvragen>>'], factResolverFactory(facts)),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverFactory(facts)),
             expectAvailableActs('burger1', ['<<subsidie aanvraag intrekken>>']),
             expectAvailableActs('burger2', []),
             expectAvailableActs('ambtenaar', ['<<subsidie aanvraag toekennen>>'])
+          ]
+        )
+      })
+
+      it('should only be able to take action on fact you have a relation to', async () => {
+        const facts = { '[bedrag]': 50, '[verzoek]': true }
+        await runScenario(
+          model,
+          { 'ambtenaar': ['[ambtenaar]'], 'burger1': ['[burger]'], 'burger2': ['[burger]'] },
+          [
+            expectAvailableActs('burger1', ['<<subsidie aanvragen>>'], factResolverFactory(facts)),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverFactory(facts)),
+            takeFailingAction('burger2', '<<subsidie aanvraag intrekken>>', 'Action <<subsidie aanvraag intrekken>> is not allowed due to actor', factResolverFactory(facts)),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverFactory(facts)),
+            takeAction('burger2', '<<subsidie aanvragen>>', factResolverFactory(facts)),
+            takeFailingAction('burger2', '<<subsidie aanvraag intrekken>>', 'Action <<subsidie aanvraag intrekken>> is not allowed due to actor', factResolverFactory(facts, { '[aanvraag]': 1 })),
+            takeAction('burger2', '<<subsidie aanvraag intrekken>>', factResolverFactory(facts, { '[aanvraag]': 2 }))
           ]
         )
       })
@@ -160,8 +177,8 @@ describe('discipl-law-reg', () => {
           model,
           { 'ambtenaar': ['[ambtenaar]'], 'burger': ['[burger]'] },
           [
-            takeAction('burger', '<<subsidie aanvragen>>', factResolverOf(completeFacts)),
-            takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverOf(completeFacts))
+            takeAction('burger', '<<subsidie aanvragen>>', factResolverFactory(completeFacts)),
+            takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverFactory(completeFacts))
           ]
         )
       })
@@ -171,11 +188,11 @@ describe('discipl-law-reg', () => {
           model,
           { 'ambtenaar': ['[ambtenaar]'], 'burger': ['[burger]'] },
           [
-            takeAction('burger', '<<subsidie aanvragen>>', factResolverOf({ '[verzoek]': true, '[bedrag]': 50 })),
+            takeAction('burger', '<<subsidie aanvragen>>', factResolverFactory({ '[verzoek]': true, '[bedrag]': 50 })),
             expectAvailableActs('ambtenaar', ['<<subsidie aanvraag toekennen>>']),
             expectPotentialActs('burger', ['<<subsidie aanvragen>>']),
             expectAvailableActs('burger', ['<<subsidie aanvraag intrekken>>']),
-            takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverOf({ '[verzoek]': true })),
+            takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverFactory({ '[verzoek]': true })),
             expectAvailableActs('ambtenaar', [])
           ]
         )
@@ -186,8 +203,8 @@ describe('discipl-law-reg', () => {
           model,
           { 'ambtenaar': ['[ambtenaar]'], 'burger1': ['[burger]'], 'burger2': ['[burger]'] },
           [
-            takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf({ '[verzoek]': true, '[bedrag]': 50 })),
-            takeAction('burger2', '<<subsidie aanvragen>>', factResolverOf({ '[verzoek]': true, '[bedrag]': 51 })),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverFactory({ '[verzoek]': true, '[bedrag]': 50 })),
+            takeAction('burger2', '<<subsidie aanvragen>>', factResolverFactory({ '[verzoek]': true, '[bedrag]': 51 })),
             expectPotentialActs('burger1', ['<<subsidie aanvragen>>', '<<subsidie aanvraag intrekken>>']),
             expectPotentialActs('burger2', ['<<subsidie aanvragen>>', '<<subsidie aanvraag intrekken>>']),
             expectPotentialActs('ambtenaar', ['<<subsidie aanvraag toekennen>>'])
@@ -275,7 +292,7 @@ describe('discipl-law-reg', () => {
               'context': [
                 '[paper]'
               ],
-              'fact': '[number]'
+              'operand': '[number]'
             }
           ]
         })
@@ -285,9 +302,9 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>'),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>')
           ]
         )
@@ -306,7 +323,7 @@ describe('discipl-law-reg', () => {
               'context': [
                 '[paper]'
               ],
-              'fact': '[number]'
+              'operand': '[number]'
             }
           ]
         })
@@ -316,9 +333,9 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>'),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>')
           ]
         )
@@ -344,7 +361,7 @@ describe('discipl-law-reg', () => {
                   'context': [
                     '[paper]'
                   ],
-                  'fact': '[number]'
+                  'operand': '[number]'
                 }
               ]
             }
@@ -356,9 +373,9 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>'),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>')
           ]
         )
@@ -384,7 +401,7 @@ describe('discipl-law-reg', () => {
                   'context': [
                     '[paper]'
                   ],
-                  'fact': '[number]'
+                  'operand': '[number]'
                 }
               ]
             }
@@ -396,10 +413,159 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>'),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>')
+          ]
+        )
+      })
+
+      it('Should be able to chose one of the previously created facts', async () => {
+        const model = calculatorModel({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 10
+            },
+            {
+              'expression': 'PROJECTION',
+              'context': [
+                '[paper]'
+              ],
+              'operand': '[number]'
+            }
+          ]
+        })
+
+        const facts = { '[number]': 10, '[calculator]': true }
+        await runScenario(
+          model,
+          { 'Actor': ['[actor1]'] },
+          [
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<accept number>>', factResolverFactory(facts, { '[paper]': 1 }))
+          ]
+        )
+      })
+
+      it('Should be able to have expression in operand with single scope', async () => {
+        const model = calculatorModel({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 20
+            },
+            {
+              'expression': 'PROJECTION',
+              'context': [
+                '[paper]'
+              ],
+              'operand': {
+                'expression': 'PRODUCT',
+                'operands': [
+                  '[number]',
+                  {
+                    'expression': 'LITERAL',
+                    'operand': 2
+                  }
+                ]
+              }
+            }
+          ]
+        })
+
+        const facts = { '[number]': 10, '[calculator]': true }
+        await runScenario(
+          model,
+          { 'Actor': ['[actor1]'] },
+          [
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<accept number>>', factResolverFactory(facts))
+          ]
+        )
+      })
+
+      it('Should be able to have expression in operand with all scope', async () => {
+        const model = calculatorModel({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 20
+            },
+            {
+              'expression': 'PROJECTION',
+              'scope': 'all',
+              'context': [
+                '[paper]'
+              ],
+              'operand': {
+                'expression': 'SUM',
+                'operands': [
+                  '[number]'
+                ]
+              }
+            }
+          ]
+        })
+
+        const facts1 = { '[number]': 12, '[calculator]': true }
+        const facts2 = { '[number]': 5, '[calculator]': true }
+        const facts3 = { '[number]': 3, '[calculator]': true }
+        const facts4 = { '[calculator]': true }
+
+        await runScenario(
+          model,
+          { 'Actor': ['[actor1]'] },
+          [
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts1)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts2)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts3)),
+            takeAction('Actor', '<<accept number>>', factResolverFactory(facts4))
+          ]
+        )
+      })
+
+      it('Should be able to have expression in operand with some scope', async () => {
+        const model = calculatorModel({
+          'expression': 'EQUAL',
+          'operands': [
+            {
+              'expression': 'LITERAL',
+              'operand': 20
+            },
+            {
+              'expression': 'PROJECTION',
+              'scope': 'some',
+              'context': [
+                '[paper]'
+              ],
+              'operand': {
+                'expression': 'SUM',
+                'operands': [
+                  '[number]'
+                ]
+              }
+            }
+          ]
+        })
+
+        const facts1 = { '[number]': 15, '[calculator]': true }
+        const facts2 = { '[number]': 5, '[calculator]': true }
+        const facts = { '[number]': 10, '[calculator]': true }
+        await runScenario(
+          model,
+          { 'Actor': ['[actor1]'] },
+          [
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts1)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts2)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<accept number>>', factResolverFactory(facts, { '[paper]': [0, 1] }))
           ]
         )
       })
@@ -447,7 +613,7 @@ describe('discipl-law-reg', () => {
                     '[aanvraag]',
                     '[persoonlijke gegevens]'
                   ],
-                  'fact': '[naam]'
+                  'operand': '[naam]'
                 },
                 {
                   'expression': 'LITERAL',
@@ -488,13 +654,187 @@ describe('discipl-law-reg', () => {
         model,
         { 'burger': ['[burger]'], 'ambtenaar': ['[ambtenaar]'] },
         [
-          takeAction('burger', '<<persoonlijk gegevens invullen>>', factResolverOf(completeFacts)),
-          takeAction('burger', '<<subsidie aanvragen>>', factResolverOf(completeFacts)),
-          takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverOf(completeFacts))
+          takeAction('burger', '<<persoonlijk gegevens invullen>>', factResolverFactory(completeFacts)),
+          takeAction('burger', '<<subsidie aanvragen>>', factResolverFactory(completeFacts)),
+          takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverFactory(completeFacts))
         ]
       )
     })
 
+    it('should project a series of CREATE facts car accident example', async () => {
+      const model = {
+        'acts': [
+          {
+            'act': '<<create driver>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': '[license]',
+            'create': ['[driver]']
+          },
+          {
+            'act': '<<create passenger>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': '[license]',
+            'create': ['[passenger]']
+          },
+          {
+            'act': '<<create victims car>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[driver]', '[license plate]', '[passengers]'
+              ]
+            },
+            'create': ['[victims car]']
+          },
+          {
+            'act': '<<create causing car>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': [
+                '[driver]', '[license plate]', '[passengers]'
+              ]
+            },
+            'create': ['[causing car]']
+          },
+          {
+            'act': '<<create car accident>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': {
+              'expression': 'AND',
+              'operands': ['[causing car]', '[victims car]']
+            },
+            'create': ['[car accident]']
+          },
+          {
+            'act': '<<check license of causing driver>>',
+            'actor': '[police officer]',
+            'recipient': '[police officer]',
+            'object': '[object]',
+            'preconditions': {
+              'expression': 'EQUAL',
+              'operands': [
+                {
+                  'expression': 'LITERAL',
+                  'operand': 'causing license'
+                },
+                {
+                  'expression': 'PROJECTION',
+                  'context': [
+                    '[car accident]',
+                    '[causing car]',
+                    '[driver]'
+                  ],
+                  'operand': '[license]'
+                }
+              ]
+            },
+            'create': []
+          }
+        ],
+        'facts': [
+          {
+            'fact': '[driver]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[license]'
+              ]
+            }
+          },
+          {
+            'fact': '[passengers]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[license]'
+              ]
+            }
+          },
+          {
+            'fact': '[causing car]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[driver]',
+                '[license plate]',
+                '[passengers]'
+              ]
+            }
+          },
+          {
+            'fact': '[victims car]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[driver]',
+                '[license plate]',
+                '[passengers]'
+              ]
+            }
+          },
+          {
+            'fact': '[police officer]',
+            'function': '[]'
+          },
+          {
+            'fact': '[object]',
+            'function': {
+              'expression': 'LITERAL',
+              'operand': true
+            }
+          },
+          {
+            'fact': '[car-accident]',
+            'function': {
+              'expression': 'CREATE',
+              'operands': [
+                '[causing car]',
+                '[victims car]'
+              ]
+            }
+          },
+          {
+            'fact': '[passengers]',
+            'function': {
+              'expression': 'PROJECTION',
+              'scope': 'some',
+              'context': ['[passenger]'],
+              'operand': '[passenger]'
+            }
+          }
+        ],
+        'duties': []
+      }
+
+      await runScenario(
+        model,
+        { 'officer': ['[police officer]'] },
+        [
+          takeAction('officer', '<<create driver>>', factResolverFactory({ '[license]': 'causing license' })),
+          takeAction('officer', '<<create driver>>', factResolverFactory({ '[license]': 'victim license' })),
+          takeAction('officer', '<<create driver>>', factResolverFactory({ '[license]': 'random license' })),
+          takeAction('officer', '<<create passenger>>', factResolverFactory({ '[license]': 'passenger1 license' })),
+          takeAction('officer', '<<create passenger>>', factResolverFactory({ '[license]': 'passenger2 license' })),
+          takeAction('officer', '<<create passenger>>', factResolverFactory({ '[license]': 'passenger3 license' })),
+          takeAction('officer', '<<create causing car>>', factResolverFactory({ '[license plate]': 'causing plate' }, { '[driver]': 0, '[passenger]': [3] })),
+          takeAction('officer', '<<create victims car>>', factResolverFactory({ '[license plate]': 'victims plate' }, { '[driver]': 1, '[passenger]': [4, 5] })),
+          takeAction('officer', '<<create car accident>>', factResolverFactory({})),
+          takeAction('officer', '<<check license of causing driver>>', factResolverFactory({}))
+        ]
+      )
+    })
     it('should not allow an act if the projection failed', async () => {
       const model = {
         'acts': [
@@ -510,7 +850,7 @@ describe('discipl-law-reg', () => {
                   'context': [
                     '[aanvraag]'
                   ],
-                  'fact': '[niet bestaand bedrag]'
+                  'operand': '[niet bestaand bedrag]'
                 },
                 {
                   'expression': 'LITERAL',
@@ -541,7 +881,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'burger': ['[burger]'], 'ambtenaar': ['[ambtenaar]'] },
         [
-          takeFailingAction('burger', '<<subsidie aanvraag toekennen>>', 'Action <<subsidie aanvraag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
+          takeFailingAction('burger', '<<subsidie aanvraag toekennen>>', 'Action <<subsidie aanvraag toekennen>> is not allowed due to object', factResolverFactory(completeFacts))
         ]
       )
     })

@@ -3,7 +3,7 @@ import { expect } from 'chai'
 
 import sinon from 'sinon'
 import { setupLogging } from './logging'
-import { expectCheckActionResult, runScenario } from './testUtils'
+import { expectCheckActionResult, runScenario, simpleFactResolverFactory } from './testUtils'
 
 setupLogging()
 describe('discipl-law-reg', () => {
@@ -88,7 +88,7 @@ describe('discipl-law-reg', () => {
               'invalidReasons': [],
               'valid': true
             },
-            () => true
+            simpleFactResolverFactory(true)
           )
         ]
       )
@@ -106,7 +106,7 @@ describe('discipl-law-reg', () => {
               'invalidReasons': [],
               'valid': true
             },
-            () => true
+            simpleFactResolverFactory(true)
           )
         ]
       )
@@ -127,7 +127,7 @@ describe('discipl-law-reg', () => {
               ],
               'valid': false
             },
-            () => false
+            simpleFactResolverFactory(false)
           )
         ]
       )
@@ -136,6 +136,7 @@ describe('discipl-law-reg', () => {
     it('should short-circuit a checkAction if needed', async () => {
       const factResolver = sinon.stub()
       factResolver.returns(false)
+      const factResolverFactory = () => factResolver
 
       await runScenario(
         checkActionModel,
@@ -150,7 +151,7 @@ describe('discipl-law-reg', () => {
               ],
               'valid': false
             },
-            factResolver,
+            factResolverFactory,
             true
           )
         ]
