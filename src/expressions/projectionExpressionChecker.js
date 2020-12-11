@@ -39,11 +39,11 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
   }
 
   /**
-   * // TODO
-   * @param fact
-   * @param ssid
-   * @param context
-   * @return {Promise<*>}
+   * Get filtered creating acts
+   * @param {object} fact - the create expression
+   * @param {ssid} ssid - Identifies the actor
+   * @param {Context} context - Context of the action
+   * @return {Promise<Object<string, Object<string, *>>>} - Object where key is the act link and value is the provided facts
    * @protected
    */
   async _getCreatingActs (fact, ssid, context) {
@@ -58,11 +58,18 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
   }
 
   /**
-   * // TODO
-   * @param creatingAct
-   * @param contextArray
-   * @param ssid
-   * @return {Promise<*>}
+   * @typedef CreatingAct
+   * @property {string} link - Act link
+   * @property {string} contextFact - The fact that was created by this act
+   * @property {Object<string, *>} facts - Facts provided for act
+   */
+
+  /**
+   * Reduce the create act using the context array to get the targets creating act
+   * @param {CreatingAct}  creatingAct - The current creating act
+   * @param {string[]} contextArray - The remaining context facts to reduce
+   * @param {ssid} ssid - Identifies the actor
+   * @return {Promise<CreatingAct>}
    * @protected
    */
   async _reduce (creatingAct, contextArray, ssid) {
@@ -77,10 +84,11 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
   }
 
   /**
-   * // TODO
-   * @param actLink
-   * @param ssid
-   * @return {Promise<{}>}
+   * Get creating act for an act link
+   * @param {string} actLink - Act link
+   * @param {string} contextFact - The fact that was created by this act
+   * @param {ssid} ssid - Identifies the actor
+   * @return {Promise<CreatingAct>}
    * @private
    */
   async _getCreatingAct (actLink, contextFact, ssid) {
@@ -93,11 +101,11 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
   }
 
   /**
-   * // TODO
-   * @param fact
-   * @param ssid
-   * @param context
-   * @param providedFacts
+   * Resolve the value of a fact
+   * @param {object} fact - the create expression
+   * @param {ssid} ssid - Identifies the actor
+   * @param {Context} context - Context of the action
+   * @param {Object<string, *>} providedFacts - the facts provided by the create expression
    * @return {Promise<*>}
    * @protected
    */
@@ -105,6 +113,7 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
     const newContext = { ...context }
     newContext.factResolver = wrapWithDefault(context.factResolver, providedFacts)
     let result = await this._getFactChecker().checkFactWithResolver(fact.operand, ssid, newContext)
+    // noinspection JSUnresolvedVariable
     if (typeof result === 'object' && result.expression) {
       result = await this._getFactChecker().checkFact(result, ssid, newContext)
     } else if (result === undefined) {
@@ -114,12 +123,12 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
   }
 
   /**
-   * // TODO
-   * @param creatingActs
-   * @param contextFact
-   * @param ssid
-   * @param context
-   * @return {Promise<object[]>}
+   * Filter the creating acts (Should be implemented in sub expressions)
+   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @param {string} contextFact - the context fact
+   * @param {ssid} ssid - Identifies the actor
+   * @param {Context} context - Context of the action
+   * @return {Object<string, Object<string, *>>}
    * @protected
    */
   async _filter (creatingActs, contextFact, ssid, context) {
@@ -127,19 +136,19 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
   }
 
   /**
-   * // TODO
-   * @param linkValues
-   * @return {{}}
+   * Combine the values of creating acts into one provided facts object
+   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @return {Object<string, *[]>} - object where key is the fact and value is an array of the facts values
    * @protected
    */
-  _combineLinkValues (linkValues) {
+  _toProvidedFacts (creatingActs) {
     const providedFacts = {}
-    for (const key in linkValues) {
-      if (linkValues.hasOwnProperty(key)) {
-        for (const fact in linkValues[key]) {
-          if (linkValues[key].hasOwnProperty(fact)) {
+    for (const key in creatingActs) {
+      if (creatingActs.hasOwnProperty(key)) {
+        for (const fact in creatingActs[key]) {
+          if (creatingActs[key].hasOwnProperty(fact)) {
             const array = providedFacts[fact] ? providedFacts[fact] : []
-            array.push(linkValues[key][fact])
+            array.push(creatingActs[key][fact])
             providedFacts[fact] = array
           }
         }
@@ -161,6 +170,14 @@ class SingleScopeProjectionExpressionChecker extends BaseScopeProjectionExpressi
     return this._resolve(fact, ssid, context, creatingActs[creatingActsLinks[0]])
   }
 
+  /**
+   * Check if current actor is an actor of type searchingFor
+   * @param {string} searchingFor - The fact we are searching for
+   * @param {ssid} ssid - Identifies the actor
+   * @param {Context} context - Context of the action
+   * @return {Promise<undefined|boolean>}
+   * @private
+   */
   async _checkAtLeastTypeOf (searchingFor, ssid, context) {
     if (context.myself) {
       this.logger.debug('Multiple creating acts found. Checking if you are at least a', searchingFor)
@@ -171,6 +188,15 @@ class SingleScopeProjectionExpressionChecker extends BaseScopeProjectionExpressi
     return undefined
   }
 
+  /**
+   * Filter the creating acts
+   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @param {string} contextFact - the context fact
+   * @param {ssid} ssid - Identifies the actor
+   * @param {Context} context - Context of the action
+   * @return {Object<string, Object<string, *>>}
+   * @protected
+   */
   async _filter (creatingActs, contextFact, ssid, context) {
     const linkValueKeys = Object.keys(creatingActs)
     const resolverLink = await this._getFactChecker().checkFactWithResolver(contextFact, ssid, context, linkValueKeys)
@@ -190,10 +216,19 @@ class AllScopeProjectionExpressionChecker extends BaseScopeProjectionExpressionC
     const creatingActs = await this._getCreatingActs(fact, ssid, context)
     const creatingActLinks = Object.keys(creatingActs)
     if (creatingActLinks.length <= 0) return false
-    const providedFacts = this._combineLinkValues(creatingActs)
+    const providedFacts = this._toProvidedFacts(creatingActs)
     return this._resolve(fact, ssid, context, providedFacts)
   }
 
+  /**
+   * Filter the creating acts
+   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @param {string} contextFact - the context fact
+   * @param {ssid} ssid - Identifies the actor
+   * @param {Context} context - Context of the action
+   * @return {Object<string, Object<string, *>>}
+   * @protected
+   */
   async _filter (creatingActs, contextFact, ssid, context) {
     return creatingActs
   }
@@ -205,10 +240,19 @@ class SomeScopeProjectionExpressionChecker extends BaseScopeProjectionExpression
     const creatingActs = await this._getCreatingActs(fact, ssid, context)
     const creatingActLinks = Object.keys(creatingActs)
     if (creatingActLinks.length <= 0) return false
-    const providedFacts = this._combineLinkValues(creatingActs)
+    const providedFacts = this._toProvidedFacts(creatingActs)
     return this._resolve(fact, ssid, context, providedFacts)
   }
 
+  /**
+   * Filter the creating acts
+   * @param {Object<string, Object<string, *>>} creatingActs - the creating acts
+   * @param {string} contextFact - the context fact
+   * @param {ssid} ssid - Identifies the actor
+   * @param {Context} context - Context of the action
+   * @return {Object<string, Object<string, *>>}
+   * @protected
+   */
   async _filter (creatingActs, contextFact, ssid, context) {
     const linkValueKeys = Object.keys(creatingActs)
     /**
