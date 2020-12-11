@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { expectAvailableActs, expectPotentialAct, expectPotentialActs, factResolverOf, runScenario, takeAction, takeFailingAction } from './testUtils'
+import { expectAvailableActs, expectPotentialAct, expectPotentialActs, factResolverFactory, runScenario, takeAction, takeFailingAction } from './testUtils'
 import { setupLogging } from './logging'
 
 setupLogging()
@@ -134,8 +134,8 @@ describe('discipl-law-reg', () => {
           model,
           { 'ambtenaar': ['[ambtenaar]'], 'burger1': ['[burger]'], 'burger2': ['[burger]'] },
           [
-            expectAvailableActs('burger1', ['<<subsidie aanvragen>>'], factResolverOf(facts)),
-            takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf(facts)),
+            expectAvailableActs('burger1', ['<<subsidie aanvragen>>'], factResolverFactory(facts)),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverFactory(facts)),
             expectAvailableActs('burger1', ['<<subsidie aanvraag intrekken>>']),
             expectAvailableActs('burger2', []),
             expectAvailableActs('ambtenaar', ['<<subsidie aanvraag toekennen>>'])
@@ -149,13 +149,13 @@ describe('discipl-law-reg', () => {
           model,
           { 'ambtenaar': ['[ambtenaar]'], 'burger1': ['[burger]'], 'burger2': ['[burger]'] },
           [
-            expectAvailableActs('burger1', ['<<subsidie aanvragen>>'], factResolverOf(facts)),
-            takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf(facts)),
-            takeFailingAction('burger2', '<<subsidie aanvraag intrekken>>', 'Action <<subsidie aanvraag intrekken>> is not allowed due to actor', factResolverOf(facts)),
-            takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf(facts)),
-            takeAction('burger2', '<<subsidie aanvragen>>', factResolverOf(facts)),
-            takeFailingAction('burger2', '<<subsidie aanvraag intrekken>>', 'Action <<subsidie aanvraag intrekken>> is not allowed due to actor', factResolverOf(facts), { '[aanvraag]': 1 }),
-            takeAction('burger2', '<<subsidie aanvraag intrekken>>', factResolverOf(facts), { '[aanvraag]': 2 })
+            expectAvailableActs('burger1', ['<<subsidie aanvragen>>'], factResolverFactory(facts)),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverFactory(facts)),
+            takeFailingAction('burger2', '<<subsidie aanvraag intrekken>>', 'Action <<subsidie aanvraag intrekken>> is not allowed due to actor', factResolverFactory(facts)),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverFactory(facts)),
+            takeAction('burger2', '<<subsidie aanvragen>>', factResolverFactory(facts)),
+            takeFailingAction('burger2', '<<subsidie aanvraag intrekken>>', 'Action <<subsidie aanvraag intrekken>> is not allowed due to actor', factResolverFactory(facts, { '[aanvraag]': 1 })),
+            takeAction('burger2', '<<subsidie aanvraag intrekken>>', factResolverFactory(facts, { '[aanvraag]': 2 }))
           ]
         )
       })
@@ -177,8 +177,8 @@ describe('discipl-law-reg', () => {
           model,
           { 'ambtenaar': ['[ambtenaar]'], 'burger': ['[burger]'] },
           [
-            takeAction('burger', '<<subsidie aanvragen>>', factResolverOf(completeFacts)),
-            takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverOf(completeFacts))
+            takeAction('burger', '<<subsidie aanvragen>>', factResolverFactory(completeFacts)),
+            takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverFactory(completeFacts))
           ]
         )
       })
@@ -188,11 +188,11 @@ describe('discipl-law-reg', () => {
           model,
           { 'ambtenaar': ['[ambtenaar]'], 'burger': ['[burger]'] },
           [
-            takeAction('burger', '<<subsidie aanvragen>>', factResolverOf({ '[verzoek]': true, '[bedrag]': 50 })),
+            takeAction('burger', '<<subsidie aanvragen>>', factResolverFactory({ '[verzoek]': true, '[bedrag]': 50 })),
             expectAvailableActs('ambtenaar', ['<<subsidie aanvraag toekennen>>']),
             expectPotentialActs('burger', ['<<subsidie aanvragen>>']),
             expectAvailableActs('burger', ['<<subsidie aanvraag intrekken>>']),
-            takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverOf({ '[verzoek]': true })),
+            takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverFactory({ '[verzoek]': true })),
             expectAvailableActs('ambtenaar', [])
           ]
         )
@@ -203,8 +203,8 @@ describe('discipl-law-reg', () => {
           model,
           { 'ambtenaar': ['[ambtenaar]'], 'burger1': ['[burger]'], 'burger2': ['[burger]'] },
           [
-            takeAction('burger1', '<<subsidie aanvragen>>', factResolverOf({ '[verzoek]': true, '[bedrag]': 50 })),
-            takeAction('burger2', '<<subsidie aanvragen>>', factResolverOf({ '[verzoek]': true, '[bedrag]': 51 })),
+            takeAction('burger1', '<<subsidie aanvragen>>', factResolverFactory({ '[verzoek]': true, '[bedrag]': 50 })),
+            takeAction('burger2', '<<subsidie aanvragen>>', factResolverFactory({ '[verzoek]': true, '[bedrag]': 51 })),
             expectPotentialActs('burger1', ['<<subsidie aanvragen>>', '<<subsidie aanvraag intrekken>>']),
             expectPotentialActs('burger2', ['<<subsidie aanvragen>>', '<<subsidie aanvraag intrekken>>']),
             expectPotentialActs('ambtenaar', ['<<subsidie aanvraag toekennen>>'])
@@ -302,9 +302,9 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>'),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>')
           ]
         )
@@ -333,9 +333,9 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>'),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>')
           ]
         )
@@ -373,9 +373,9 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>'),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>')
           ]
         )
@@ -413,9 +413,9 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>'),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
             expectPotentialAct('Actor', '<<accept number>>')
           ]
         )
@@ -444,9 +444,9 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
-            takeAction('Actor', '<<accept number>>', factResolverOf(facts), { '[paper]': 1 })
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<accept number>>', factResolverFactory(facts, { '[paper]': 1 }))
           ]
         )
       })
@@ -483,8 +483,8 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
-            takeAction('Actor', '<<accept number>>', factResolverOf(facts))
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<accept number>>', factResolverFactory(facts))
           ]
         )
       })
@@ -522,10 +522,10 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts1)),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts2)),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts3)),
-            takeAction('Actor', '<<accept number>>', factResolverOf(facts4))
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts1)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts2)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts3)),
+            takeAction('Actor', '<<accept number>>', factResolverFactory(facts4))
           ]
         )
       })
@@ -561,11 +561,11 @@ describe('discipl-law-reg', () => {
           model,
           { 'Actor': ['[actor1]'] },
           [
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts1)),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts2)),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
-            takeAction('Actor', '<<give a number>>', factResolverOf(facts)),
-            takeAction('Actor', '<<accept number>>', factResolverOf(facts), { '[paper]': [0, 1] })
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts1)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts2)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<give a number>>', factResolverFactory(facts)),
+            takeAction('Actor', '<<accept number>>', factResolverFactory(facts, { '[paper]': [0, 1] }))
           ]
         )
       })
@@ -654,9 +654,9 @@ describe('discipl-law-reg', () => {
         model,
         { 'burger': ['[burger]'], 'ambtenaar': ['[ambtenaar]'] },
         [
-          takeAction('burger', '<<persoonlijk gegevens invullen>>', factResolverOf(completeFacts)),
-          takeAction('burger', '<<subsidie aanvragen>>', factResolverOf(completeFacts)),
-          takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverOf(completeFacts))
+          takeAction('burger', '<<persoonlijk gegevens invullen>>', factResolverFactory(completeFacts)),
+          takeAction('burger', '<<subsidie aanvragen>>', factResolverFactory(completeFacts)),
+          takeAction('ambtenaar', '<<subsidie aanvraag toekennen>>', factResolverFactory(completeFacts))
         ]
       )
     })
@@ -822,16 +822,16 @@ describe('discipl-law-reg', () => {
         model,
         { 'officer': ['[police officer]'] },
         [
-          takeAction('officer', '<<create driver>>', factResolverOf({ '[license]': 'causing license' })),
-          takeAction('officer', '<<create driver>>', factResolverOf({ '[license]': 'victim license' })),
-          takeAction('officer', '<<create driver>>', factResolverOf({ '[license]': 'random license' })),
-          takeAction('officer', '<<create passenger>>', factResolverOf({ '[license]': 'passenger1 license' })),
-          takeAction('officer', '<<create passenger>>', factResolverOf({ '[license]': 'passenger2 license' })),
-          takeAction('officer', '<<create passenger>>', factResolverOf({ '[license]': 'passenger3 license' })),
-          takeAction('officer', '<<create causing car>>', factResolverOf({ '[license plate]': 'causing plate' }), { '[driver]': 0, '[passenger]': [3] }),
-          takeAction('officer', '<<create victims car>>', factResolverOf({ '[license plate]': 'victims plate' }), { '[driver]': 1, '[passenger]': [4, 5] }),
-          takeAction('officer', '<<create car accident>>', factResolverOf({})),
-          takeAction('officer', '<<check license of causing driver>>', factResolverOf({}))
+          takeAction('officer', '<<create driver>>', factResolverFactory({ '[license]': 'causing license' })),
+          takeAction('officer', '<<create driver>>', factResolverFactory({ '[license]': 'victim license' })),
+          takeAction('officer', '<<create driver>>', factResolverFactory({ '[license]': 'random license' })),
+          takeAction('officer', '<<create passenger>>', factResolverFactory({ '[license]': 'passenger1 license' })),
+          takeAction('officer', '<<create passenger>>', factResolverFactory({ '[license]': 'passenger2 license' })),
+          takeAction('officer', '<<create passenger>>', factResolverFactory({ '[license]': 'passenger3 license' })),
+          takeAction('officer', '<<create causing car>>', factResolverFactory({ '[license plate]': 'causing plate' }, { '[driver]': 0, '[passenger]': [3] })),
+          takeAction('officer', '<<create victims car>>', factResolverFactory({ '[license plate]': 'victims plate' }, { '[driver]': 1, '[passenger]': [4, 5] })),
+          takeAction('officer', '<<create car accident>>', factResolverFactory({})),
+          takeAction('officer', '<<check license of causing driver>>', factResolverFactory({}))
         ]
       )
     })
@@ -881,7 +881,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'burger': ['[burger]'], 'ambtenaar': ['[ambtenaar]'] },
         [
-          takeFailingAction('burger', '<<subsidie aanvraag toekennen>>', 'Action <<subsidie aanvraag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
+          takeFailingAction('burger', '<<subsidie aanvraag toekennen>>', 'Action <<subsidie aanvraag toekennen>> is not allowed due to object', factResolverFactory(completeFacts))
         ]
       )
     })

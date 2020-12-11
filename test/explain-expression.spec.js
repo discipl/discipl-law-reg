@@ -45,7 +45,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'person': ['[person]'] },
         [
-          expectExplainResult('person', '<<explain something>>', expectedResult, factResolver)
+          expectExplainResult('person', '<<explain something>>', expectedResult, () => factResolver)
         ]
       )
     }

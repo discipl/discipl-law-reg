@@ -10,15 +10,15 @@ import { expect } from 'chai'
 /**
  * @param {string} actor - actor name
  * @param {string} act - description of the act to be taken
- * @param {function(string) : *} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
- * @param {Object<string, number[]|number>} cases - Object where the keys are createable facts and the values are the action index to use for that fact
+ * @param {function(*=): function(*): Promise<*|undefined>} factResolverFactory - Function used create a fact resolver
  * @returns {Step}
  */
-function takeAction (actor, act, factResolver = () => false, cases = {}) {
+function takeAction (actor, act, factResolverFactory = simpleFactResolverFactory(false)) {
   return {
     execute: async function (lawReg, ssids, link, index, actionLinks) {
       try {
-        const resolver = _factResolverWithCases(factResolver, cases, actionLinks)
+        const resolver = factResolverFactory(actionLinks)
+        console.log('resolver', resolver)
         const actionLink = await lawReg.take(ssids[actor], link, act, resolver)
         actionLinks.push(actionLink)
         return actionLink
@@ -34,16 +34,15 @@ function takeAction (actor, act, factResolver = () => false, cases = {}) {
  * @param {string} actor - actor name
  * @param {string} act - description of the act to be taken
  * @param {string} message - the failure message
- * @param {function} factResolver - Function used to resolve facts to fall back on if no other method is available. Defaults to always false
- * @param {Object<string, number[]|number>} cases - Object where the keys are createable facts and the values are the action index to use for that fact
+ * @param {function(*=): function(*): Promise<*|undefined>} factResolverFactory - Function used create a fact resolver
  * @returns {Step}
  */
-function takeFailingAction (actor, act, message, factResolver = () => false, cases = {}) {
+function takeFailingAction (actor, act, message, factResolverFactory = simpleFactResolverFactory(false)) {
   return {
     execute: async function (lawReg, ssids, link, index, actionLinks) {
       let error
       try {
-        const resolver = _factResolverWithCases(factResolver, cases, actionLinks)
+        const resolver = factResolverFactory(actionLinks)
         return await lawReg.take(ssids[actor], link, act, resolver)
       } catch (e) {
         error = e
@@ -58,13 +57,13 @@ function takeFailingAction (actor, act, message, factResolver = () => false, cas
 /**
  * @param {string} actor - actor name
  * @param {string[]} acts - description of the act that is expected
- * @param {function} factResolver - Returns the value of a fact if known, and undefined otherwise
+ * @param {function(*=): function(*): Promise<*|undefined>} factResolverFactory - Function used create a fact resolver
  * @returns {Step}
  */
-function expectPotentialActs (actor, acts, factResolver = factResolverOf({})) {
+function expectPotentialActs (actor, acts, factResolverFactory = simpleFactResolverFactory(undefined)) {
   return {
-    execute: async function (lawReg, ssids, link, index) {
-      const result = (await lawReg.getPotentialActsWithResolver(link, ssids[actor], factResolver)).map((actInfo) => actInfo.act)
+    execute: async function (lawReg, ssids, link, index, actionLinks) {
+      const result = (await lawReg.getPotentialActsWithResolver(link, ssids[actor], factResolverFactory(actionLinks))).map((actInfo) => actInfo.act)
       expect(result).to.deep.equal(acts, `ExpectPotentialActs Step failed. Step Index ${index}`)
       return link
     }
@@ -74,13 +73,13 @@ function expectPotentialActs (actor, acts, factResolver = factResolverOf({})) {
 /**
  * @param {string} actor - actor name
  * @param {string} act - description of the act that is expected
- * @param {function} factResolver - Returns the value of a fact if known, and undefined otherwise
+ * @param {function(*=): function(*): Promise<*|undefined>} factResolverFactory - Function used create a fact resolver
  * @returns {Step}
  */
-function expectPotentialAct (actor, act, factResolver = factResolverOf({})) {
+function expectPotentialAct (actor, act, factResolverFactory = simpleFactResolverFactory(undefined)) {
   return {
-    execute: async function (lawReg, ssids, link, index) {
-      const result = (await lawReg.getPotentialActsWithResolver(link, ssids[actor], factResolver)).map((actInfo) => actInfo.act)
+    execute: async function (lawReg, ssids, link, index, actionLinks) {
+      const result = (await lawReg.getPotentialActsWithResolver(link, ssids[actor], factResolverFactory(actionLinks))).map((actInfo) => actInfo.act)
       expect(result).to.include(act, `ExpectPotentialAct Step failed. Step Index ${index}`)
       return link
     }
@@ -90,13 +89,13 @@ function expectPotentialAct (actor, act, factResolver = factResolverOf({})) {
 /**
  * @param {string} actor - actor name
  * @param {string[]} acts - description of the act that is expected
- * @param {function} factResolver - Returns the value of a fact if known, and undefined otherwise
+ * @param {function(*=): function(*): Promise<*|undefined>} factResolverFactory - Function used create a fact resolver
  * @returns {Step}
  */
-function expectAvailableActs (actor, acts, factResolver = factResolverOf({})) {
+function expectAvailableActs (actor, acts, factResolverFactory = simpleFactResolverFactory(undefined)) {
   return {
-    execute: async function (lawReg, ssids, link, index) {
-      const result = (await lawReg.getAvailableActsWithResolver(link, ssids[actor], factResolver)).map((actInfo) => actInfo.act)
+    execute: async function (lawReg, ssids, link, index, actionLinks) {
+      const result = (await lawReg.getAvailableActsWithResolver(link, ssids[actor], factResolverFactory(actionLinks))).map((actInfo) => actInfo.act)
       expect(result).to.deep.equal(acts, `ExpectAvailableActs Step failed. Step Index ${index}`)
       return link
     }
@@ -106,13 +105,13 @@ function expectAvailableActs (actor, acts, factResolver = factResolverOf({})) {
 /**
  * @param {string} actor - actor name
  * @param {string} act - description of the act that is expected
- * @param {function} factResolver - Returns the value of a fact if known, and undefined otherwise
+ * @param {function(*=): function(*): Promise<*|undefined>} factResolverFactory - Function used create a fact resolver
  * @returns {Step}
  */
-function expectAvailableAct (actor, act, factResolver = factResolverOf({})) {
+function expectAvailableAct (actor, act, factResolverFactory = simpleFactResolverFactory(undefined)) {
   return {
-    execute: async function (lawReg, ssids, link, index) {
-      const result = (await lawReg.getAvailableActsWithResolver(link, ssids[actor], factResolver)).map((actInfo) => actInfo.act)
+    execute: async function (lawReg, ssids, link, index, actionLinks) {
+      const result = (await lawReg.getAvailableActsWithResolver(link, ssids[actor], factResolverFactory(actionLinks))).map((actInfo) => actInfo.act)
       expect(result).to.include(act, `ExpectAvailableAct Step failed. Step Index ${index}`)
       return link
     }
@@ -185,18 +184,18 @@ function expectRetrievedFactFunction (actor, fact, aFunction) {
  * @param {string} actor - actor name
  * @param {string} act - the act to check
  * @param {object} checkActionResult - expected result
- * @param {function} factResolver - Returns the value of a fact if known, and undefined otherwise
+ * @param {function(*=): function(*): Promise<*|undefined>} factResolverFactory - Function used create a fact resolver
  * @param {boolean} earlyEscape - If true, will return a result as ssoon as one of the flint items is detrmined to be false
  * @return {Step}
  */
-function expectCheckActionResult (actor, act, checkActionResult, factResolver, earlyEscape = false) {
+function expectCheckActionResult (actor, act, checkActionResult, factResolverFactory, earlyEscape = false) {
   return {
     execute: async function (lawReg, ssids, link, index, actionLinks, modelLink) {
       const core = lawReg.getAbundanceService().getCoreAPI()
       const retrievedModel = await core.get(modelLink)
       const acts = retrievedModel.data['DISCIPL_FLINT_MODEL'].acts
       const actLink = Object.values(acts.find(anAct => Object.keys(anAct).includes(act)))[0]
-      const result = await lawReg._getActionChecker().checkAction(modelLink, actLink, ssids[actor], { 'factResolver': factResolver }, earlyEscape)
+      const result = await lawReg._getActionChecker().checkAction(modelLink, actLink, ssids[actor], { 'factResolver': factResolverFactory(actionLinks) }, earlyEscape)
       expect(result).to.deep.equal(checkActionResult, `ExpectCheckActionResult${act} Step failed. Step Index ${index}`)
       return link
     }
@@ -207,13 +206,13 @@ function expectCheckActionResult (actor, act, checkActionResult, factResolver, e
  * @param {string} actor - actor name
  * @param {string} act - the act to check
  * @param {object} explainResult - expected result
- * @param {function} factResolver - Returns the value of a fact if known, and undefined otherwise
+ * @param {function(*=): function(*): Promise<*|undefined>} factResolverFactory - Function used create a fact resolver
  * @return {Step}
  */
-function expectExplainResult (actor, act, explainResult, factResolver) {
+function expectExplainResult (actor, act, explainResult, factResolverFactory) {
   return {
-    execute: async function (lawReg, ssids, link, index) {
-      const explanation = await lawReg.explain(ssids['person'], link, '<<explain something>>', factResolver)
+    execute: async function (lawReg, ssids, link, index, actionLinks) {
+      const explanation = await lawReg.explain(ssids['person'], link, '<<explain something>>', factResolverFactory(actionLinks))
       const result = explanation.operandExplanations.filter(explanation => explanation.fact === '[expression]')[0]
       expect(result).to.deep.equal(explainResult, `ExpectExplainResult${act} Step failed. Step Index ${index}`)
       return link
@@ -222,19 +221,43 @@ function expectExplainResult (actor, act, explainResult, factResolver) {
 }
 
 /**
- * @param {object} facts
- * @return {function(string): boolean}
+ * @param {boolean} acceptAll - if it should return true or false for all
+ * @return {function(*=): function(*): Promise<*|undefined>}
  */
-function factResolverOf (facts) {
-  return (fact) => {
-    if (facts[fact] !== undefined) {
-      if (Array.isArray(facts[fact])) {
-        return facts[fact].shift()
-      } else {
-        return facts[fact]
+function simpleFactResolverFactory (acceptAll) {
+  return () => async () => acceptAll
+}
+
+/**
+ * @param {object} facts
+ * @param {Object<string, number[]|number>} cases - Object where the keys are createable facts and the values are the action index to use for that fact
+ * @return {function(*=): function(*): Promise<*|undefined>}
+ */
+function factResolverFactory (facts = {}, cases = {}) {
+  return function (actionLinks) {
+    return async function (fact) {
+      const actionIndex = cases[fact]
+      if (typeof actionIndex === 'number') {
+        // 0 is global link
+        const link = actionLinks[actionIndex + 1]
+        console.log('Using action with index', actionIndex + 1, 'with link', link)
+        return link
       }
+      if (Array.isArray(actionIndex)) {
+        // 0 is global link
+        const links = actionIndex.map((index) => actionLinks[index + 1])
+        console.log('Using actions with indexes', actionIndex, 'with links', links)
+        return links
+      }
+      if (facts[fact] !== undefined) {
+        if (Array.isArray(facts[fact])) {
+          return facts[fact].shift()
+        } else {
+          return facts[fact]
+        }
+      }
+      return undefined
     }
-    return undefined
   }
 }
 
@@ -376,35 +399,9 @@ function _addExtraFacts (actorVal, extraFacts) {
   Object.keys(extraFacts).forEach(extraFact => { actorVal[extraFact] = extraFacts[extraFact] })
 }
 
-/**
- * Wrap fact resolver to resolve what case to use for a createable fact
- * @param factResolver - the fact resolver to wrap
- * @param {Object<string, number[]|number>} cases - Object where the keys are createable facts and the values are the action index to use for that fact
- * @param {string[]} actionLinks - The action links
- * @return {function(*): Promise<*>}
- * @private
- */
-function _factResolverWithCases (factResolver, cases, actionLinks) {
-  return async function (fact) {
-    const actionIndex = cases[fact]
-    if (typeof actionIndex === 'number') {
-      // 0 is global link
-      const link = actionLinks[actionIndex + 1]
-      console.log('Using action with index', actionIndex + 1, 'with link', link)
-      return link
-    }
-    if (Array.isArray(actionIndex)) {
-      // 0 is global link
-      const links = actionIndex.map((index) => actionLinks[index + 1])
-      console.log('Using actions with indexes', actionIndex, 'with links', links)
-      return links
-    }
-    return factResolver.apply(this, arguments)
-  }
-}
-
 export {
-  factResolverOf,
+  factResolverFactory,
+  simpleFactResolverFactory,
   runScenario,
   takeAction,
   takeFailingAction,

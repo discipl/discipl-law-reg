@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 import { setupLogging } from './logging'
-import { factResolverOf, runScenario, takeAction, takeFailingAction } from './testUtils'
+import { factResolverFactory, runScenario, takeAction, takeFailingAction } from './testUtils'
 
 setupLogging()
 describe('discipl-law-reg', () => {
@@ -53,9 +53,9 @@ describe('discipl-law-reg', () => {
         model,
         { 'ouder': ['[ouder]'], 'minister': ['[minister]'] },
         [
-          takeAction('ouder', '<<bedrag vaststellen>>', factResolverOf(completeFacts)),
-          takeAction('ouder', '<<aanvraag kinderbijslag>>', factResolverOf(completeFacts)),
-          takeAction('minister', '<<aanvraag kinderbijslag toekennen>>', factResolverOf(completeFacts))
+          takeAction('ouder', '<<bedrag vaststellen>>', factResolverFactory(completeFacts)),
+          takeAction('ouder', '<<aanvraag kinderbijslag>>', factResolverFactory(completeFacts)),
+          takeAction('minister', '<<aanvraag kinderbijslag toekennen>>', factResolverFactory(completeFacts))
         ]
       )
     })
@@ -87,7 +87,7 @@ describe('discipl-law-reg', () => {
         model,
         { 'ouder': ['[ouder]'], 'minister': ['[minister]'] },
         [
-          takeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
+          takeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverFactory(completeFacts))
         ]
       )
     })
@@ -140,8 +140,8 @@ describe('discipl-law-reg', () => {
         model,
         { 'ouder': ['[ouder]'], 'minister': ['[minister]'] },
         [
-          takeAction('ouder', '<<aanvraag kinderbijslag>>', factResolverOf(completeFacts)),
-          takeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
+          takeAction('ouder', '<<aanvraag kinderbijslag>>', factResolverFactory(completeFacts)),
+          takeFailingAction('minister', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverFactory(completeFacts))
         ]
       )
     })
@@ -192,8 +192,8 @@ describe('discipl-law-reg', () => {
         model,
         { 'ouder': ['[ouder]'], 'ambtenaar': ['[ambtenaar]'] },
         [
-          takeAction('ouder', '<<aanvragen kinderbijslag>>', factResolverOf(completeFacts)),
-          takeFailingAction('ambtenaar', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverOf(completeFacts))
+          takeAction('ouder', '<<aanvragen kinderbijslag>>', factResolverFactory(completeFacts)),
+          takeFailingAction('ambtenaar', '<<aanvraag kinderbijslag toekennen>>', 'Action <<aanvraag kinderbijslag toekennen>> is not allowed due to object', factResolverFactory(completeFacts))
         ]
       )
     })

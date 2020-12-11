@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 import { setupLogging } from './logging'
-import { factResolverOf, runScenario, takeAction, takeFailingAction } from './testUtils'
+import { factResolverFactory, runScenario, takeAction, takeFailingAction } from './testUtils'
 import { expect } from 'chai'
 import { ServiceProvider } from '../src/serviceProvider'
 import sinon from 'sinon'
@@ -33,9 +33,9 @@ describe('discipl-law-reg', () => {
 
       const completeFacts = { '[expression]': true, '[user]': true, '[mathematician]': true, ...facts }
 
-      let step = takeAction('mathematician', '<<compute mathematical expression>>', factResolverOf(completeFacts))
+      let step = takeAction('mathematician', '<<compute mathematical expression>>', factResolverFactory(completeFacts))
       if (reason) {
-        step = takeFailingAction('mathematician', '<<compute mathematical expression>>', `Action <<compute mathematical expression>> is not allowed ${reason}`, factResolverOf(completeFacts))
+        step = takeFailingAction('mathematician', '<<compute mathematical expression>>', `Action <<compute mathematical expression>> is not allowed ${reason}`, factResolverFactory(completeFacts))
       }
 
       await runScenario(
