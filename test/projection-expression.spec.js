@@ -723,15 +723,16 @@ describe('discipl-law-reg', () => {
             'recipient': '[police officer]',
             'object': '[object]',
             'preconditions': {
-              'expression': 'EQUALS',
+              'expression': 'EQUAL',
               'operands': [
                 {
                   'expression': 'LITERAL',
-                  'operand': 'causing car license'
+                  'operand': 'causing license'
                 },
                 {
                   'expression': 'PROJECTION',
                   'context': [
+                    '[car accident]',
                     '[causing car]',
                     '[driver]'
                   ],
@@ -827,8 +828,8 @@ describe('discipl-law-reg', () => {
           takeAction('officer', '<<create passenger>>', factResolverOf({ '[license]': 'passenger1 license' })),
           takeAction('officer', '<<create passenger>>', factResolverOf({ '[license]': 'passenger2 license' })),
           takeAction('officer', '<<create passenger>>', factResolverOf({ '[license]': 'passenger3 license' })),
-          takeAction('officer', '<<create victims car>>', factResolverOf({ '[license plate]': 'victims plate' }), { '[driver]': 2, '[passenger]': [4, 5] }),
-          takeAction('officer', '<<create causing car>>', factResolverOf({ '[license plate]': 'causing plate' }), { '[driver]': 1, '[passenger]': [3] }),
+          takeAction('officer', '<<create causing car>>', factResolverOf({ '[license plate]': 'causing plate' }), { '[driver]': 0, '[passenger]': [3] }),
+          takeAction('officer', '<<create victims car>>', factResolverOf({ '[license plate]': 'victims plate' }), { '[driver]': 1, '[passenger]': [4, 5] }),
           takeAction('officer', '<<create car accident>>', factResolverOf({})),
           takeAction('officer', '<<check license of causing driver>>', factResolverOf({}))
         ]

@@ -1,4 +1,7 @@
 import { getDiscplLogger } from '../utils/logging_util'
+// Improve intelisense
+// eslint-disable-next-line no-unused-vars
+import { AbundanceService } from '@discipl/abundance-service'
 
 export class BaseSubExpressionChecker {
   /**
@@ -35,5 +38,14 @@ export class BaseSubExpressionChecker {
    */
   _getFactChecker () {
     return this.serviceProvider.factChecker
+  }
+
+  /**
+   * Get fact checker
+   * @return {AbundanceService}
+   * @protected
+   */
+  _getAbundanceService () {
+    return this.serviceProvider.abundanceService
   }
 }

@@ -1,5 +1,6 @@
 import { BaseSubExpressionChecker } from './baseSubExpressionChecker'
 import { wrapWithDefault } from '../defaultFactResolver'
+import { DISCIPL_FLINT_FACTS_SUPPLIED } from '../index'
 
 export class ProjectionExpressionChecker extends BaseSubExpressionChecker {
   /**
@@ -17,17 +18,16 @@ export class ProjectionExpressionChecker extends BaseSubExpressionChecker {
 
   async checkSubExpression (fact, ssid, context) {
     const scope = fact.scope ? fact.scope : 'single'
+    this.logger.debug('Handling PROJECTION Expression with', scope, 'scope')
     return this.scopeCheckers[scope].checkSubExpression(fact, ssid, context)
   }
 }
 
 class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
   _checkProjectionIsValid (fact) {
-    // TODO current solution only requires last entry in context array so maybe this should just be a single property
     if (!fact.context || fact.context.length === 0) {
       throw new Error('A \'context\' array must be given for the PROJECTION expression')
     }
-    fact.context = fact.context[fact.context.length - 1]
     if (!fact.operand) {
       // TODO deprecate projection expression fact property
       if (fact.fact !== undefined) {
@@ -38,10 +38,69 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
     }
   }
 
+  /**
+   * // TODO
+   * @param fact
+   * @param ssid
+   * @param context
+   * @return {Promise<*>}
+   * @protected
+   */
   async _getCreatingActs (fact, ssid, context) {
-    return this._getFactChecker().getCreatingActs(fact.context, ssid, context)
+    const contextFact = fact.context[0]
+    const creatingActs = await this._getFactChecker().getCreatingActs(contextFact, ssid, context)
+    const filteredActs = await this._filter(creatingActs, contextFact, ssid, context)
+    const reducedActs = await Promise.all(Object.keys(filteredActs).map(key => this._reduce({ link: key, facts: filteredActs[key], contextFact: contextFact }, fact.context.slice(1), ssid)))
+    return reducedActs.reduce((previousValue, currentValue) => {
+      previousValue[currentValue.link] = currentValue.facts
+      return previousValue
+    }, {})
   }
 
+  /**
+   * // TODO
+   * @param creatingAct
+   * @param contextArray
+   * @param ssid
+   * @return {Promise<*>}
+   * @protected
+   */
+  async _reduce (creatingAct, contextArray, ssid) {
+    this.logger.debug('Case for', creatingAct.contextFact, 'is', creatingAct.link, 'with facts', creatingAct.facts)
+    const contextFact = contextArray[0]
+    const nextLink = creatingAct.facts[contextFact]
+    if (nextLink) {
+      const newCreatingAct = await this._getCreatingAct(nextLink, contextFact, ssid)
+      return this._reduce(newCreatingAct, contextArray.slice(1), ssid)
+    }
+    return creatingAct
+  }
+
+  /**
+   * // TODO
+   * @param actLink
+   * @param ssid
+   * @return {Promise<{}>}
+   * @private
+   */
+  async _getCreatingAct (actLink, contextFact, ssid) {
+    const actData = await this._getAbundanceService().getCoreAPI().get(actLink, ssid)
+    const result = {}
+    result.link = actLink
+    result.contextFact = contextFact
+    result.facts = actData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
+    return result
+  }
+
+  /**
+   * // TODO
+   * @param fact
+   * @param ssid
+   * @param context
+   * @param providedFacts
+   * @return {Promise<*>}
+   * @protected
+   */
   async _resolve (fact, ssid, context, providedFacts) {
     const newContext = { ...context }
     newContext.factResolver = wrapWithDefault(context.factResolver, providedFacts)
@@ -54,6 +113,25 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
     return result
   }
 
+  /**
+   * // TODO
+   * @param creatingActs
+   * @param contextFact
+   * @param ssid
+   * @param context
+   * @return {Promise<object[]>}
+   * @protected
+   */
+  async _filter (creatingActs, contextFact, ssid, context) {
+    throw new Error('Not implemented')
+  }
+
+  /**
+   * // TODO
+   * @param linkValues
+   * @return {{}}
+   * @protected
+   */
   _combineLinkValues (linkValues) {
     const providedFacts = {}
     for (const key in linkValues) {
@@ -74,20 +152,13 @@ class BaseScopeProjectionExpressionChecker extends BaseSubExpressionChecker {
 class SingleScopeProjectionExpressionChecker extends BaseScopeProjectionExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
     this._checkProjectionIsValid(fact)
-    const linkValues = await this._getCreatingActs(fact, ssid, context)
-    const linkValueKeys = Object.keys(linkValues)
-    if (linkValueKeys.length <= 0) return false
-    const resolverLink = await this._getFactChecker().checkFactWithResolver(fact.context, ssid, context, linkValueKeys)
-    let providedFacts
-    if (linkValues[resolverLink]) {
-      providedFacts = linkValues[resolverLink]
-    } else if (linkValueKeys.length === 1) {
-      providedFacts = linkValues[linkValueKeys[0]]
-    } else {
+    const creatingActs = await this._getCreatingActs(fact, ssid, context)
+    const creatingActsLinks = Object.keys(creatingActs)
+    if (creatingActsLinks.length !== 1) {
       context.searchingFor = fact.operand
       return this._checkAtLeastTypeOf(fact.operand, ssid, context)
     }
-    return this._resolve(fact, ssid, context, providedFacts)
+    return this._resolve(fact, ssid, context, creatingActs[creatingActsLinks[0]])
   }
 
   async _checkAtLeastTypeOf (searchingFor, ssid, context) {
@@ -99,37 +170,57 @@ class SingleScopeProjectionExpressionChecker extends BaseScopeProjectionExpressi
     }
     return undefined
   }
+
+  async _filter (creatingActs, contextFact, ssid, context) {
+    const linkValueKeys = Object.keys(creatingActs)
+    const resolverLink = await this._getFactChecker().checkFactWithResolver(contextFact, ssid, context, linkValueKeys)
+    const resolverLinks = [resolverLink]
+    return Object.keys(creatingActs)
+      .filter(key => resolverLinks.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = creatingActs[key]
+        return obj
+      }, {})
+  }
 }
 
 class AllScopeProjectionExpressionChecker extends BaseScopeProjectionExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
     this._checkProjectionIsValid(fact)
-    const linkValues = await this._getCreatingActs(fact, ssid, context)
-    const linkValueKeys = Object.keys(linkValues)
-    if (linkValueKeys.length <= 0) return false
-    const providedFacts = this._combineLinkValues(linkValues)
+    const creatingActs = await this._getCreatingActs(fact, ssid, context)
+    const creatingActLinks = Object.keys(creatingActs)
+    if (creatingActLinks.length <= 0) return false
+    const providedFacts = this._combineLinkValues(creatingActs)
     return this._resolve(fact, ssid, context, providedFacts)
+  }
+
+  async _filter (creatingActs, contextFact, ssid, context) {
+    return creatingActs
   }
 }
 
 class SomeScopeProjectionExpressionChecker extends BaseScopeProjectionExpressionChecker {
   async checkSubExpression (fact, ssid, context) {
     this._checkProjectionIsValid(fact)
-    let linkValues = await this._getCreatingActs(fact, ssid, context)
-    const linkValueKeys = Object.keys(linkValues)
-    if (linkValueKeys.length <= 0) return false
+    const creatingActs = await this._getCreatingActs(fact, ssid, context)
+    const creatingActLinks = Object.keys(creatingActs)
+    if (creatingActLinks.length <= 0) return false
+    const providedFacts = this._combineLinkValues(creatingActs)
+    return this._resolve(fact, ssid, context, providedFacts)
+  }
+
+  async _filter (creatingActs, contextFact, ssid, context) {
+    const linkValueKeys = Object.keys(creatingActs)
     /**
      * @type {string[]}
      */
-    let resolverLinks = await this._getFactChecker().checkFactWithResolver(fact.context, ssid, context, linkValueKeys)
+    let resolverLinks = await this._getFactChecker().checkFactWithResolver(contextFact, ssid, context, linkValueKeys)
     if (!Array.isArray(resolverLinks)) resolverLinks = []
-    linkValues = Object.keys(linkValues)
+    return Object.keys(creatingActs)
       .filter(key => resolverLinks.includes(key))
       .reduce((obj, key) => {
-        obj[key] = linkValues[key]
+        obj[key] = creatingActs[key]
         return obj
       }, {})
-    const providedFacts = this._combineLinkValues(linkValues)
-    return this._resolve(fact, ssid, context, providedFacts)
   }
 }

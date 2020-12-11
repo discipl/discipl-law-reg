@@ -41,13 +41,16 @@ function takeAction (actor, act, factResolver = () => false, cases = {}) {
 function takeFailingAction (actor, act, message, factResolver = () => false, cases = {}) {
   return {
     execute: async function (lawReg, ssids, link, index, actionLinks) {
+      let error
       try {
         const resolver = _factResolverWithCases(factResolver, cases, actionLinks)
         return await lawReg.take(ssids[actor], link, act, resolver)
       } catch (e) {
-        expect(e.message).to.equal(message, `TakeFailingAction${act} Step failed. Step Index ${index}`)
-        return link
+        error = e
       }
+      expect(error).to.not.equal(undefined, `TakeFailingAction${act} Step failed to throw error. Step Index ${index}`)
+      expect(error.message).to.equal(message, `TakeFailingAction${act} Step failed. Step Index ${index}`)
+      return link
     }
   }
 }

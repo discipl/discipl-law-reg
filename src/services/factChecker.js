@@ -142,7 +142,7 @@ export class FactChecker {
    * @param {Context} context - context of the checking
    * @returns {Promise<boolean>} - true if the fact has been created
    */
-  async checkCreatedFact (fact, ssid, context) {
+  async checkCreatableFactCreated (fact, ssid, context) {
     this.logger.debug('Checking if', fact, 'was created')
     const creatingActions = Object.keys(await this.getCreatingActs(fact, ssid, context))
     if (creatingActions.length === 0) {
@@ -212,13 +212,14 @@ export class FactChecker {
       if (lastTakenAction != null) {
         const actData = await core.get(lastTakenAction, ssid)
         const act = actData.data[DISCIPL_FLINT_ACT]
-        this.logger.debug('Found earlier act', act.act)
 
         if (act.create != null && act.create.includes(fact)) {
+          this.logger.debug('Found possible creating act', act.act)
           possibleCreatingActions[caseLink] = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED]
         }
 
         if (act.terminate != null && act.terminate.includes(fact)) {
+          this.logger.debug('Found possible terminating act', act.act)
           const terminatedLink = caseData.data[DISCIPL_FLINT_FACTS_SUPPLIED][fact]
           terminatedCreatingActions.push(terminatedLink)
         }
