@@ -11,18 +11,6 @@ export class CreateExpressionChecker extends BaseSubExpressionChecker {
       return finalCreateResult
     }
 
-    // TODO why is this here?
-    // for (const op of fact.operands) {
-    //   let factExists = await this._getFactChecker().checkFactProvidedInAct(op, ssid, context)
-    //   if (!factExists) {
-    //     factExists = await this._getFactChecker().checkFact(op, ssid, context)
-    //   }
-    //   if (!factExists) {
-    //     finalCreateResult = false
-    //     break
-    //   }
-    // }
-
     this.logger.debug('Resolving fact', fact, 'as', finalCreateResult, 'by determining earlier creation')
     this._getContextExplainer().extendContextExplanationWithResult(context, finalCreateResult)
 

@@ -168,29 +168,6 @@ export class FactChecker {
   }
 
   /**
-   * Checks if a given fact was provided in an act that wasn't terminated yet that the given entity has access to.
-   *
-   * @param {string} fact - Description of the fact, surrounded with []
-   * @param {ssid} ssid - Identity of entity doing the checking
-   * @param {Context} context - context of the checking
-   * @returns {Promise<object>} - the facts value or false if it hasn't been provided
-   */
-  async checkFactProvidedInAct (fact, ssid, context) {
-    this.logger.debug('Checking if', fact, 'was provided in an action')
-    const creatingActions = await this.getCreatingActs(context.previousFact, ssid, context)
-    if (Object.keys(creatingActions).length !== 0) {
-      const actionWithTheFact = Object.values(creatingActions).find((value) => value[fact] !== undefined)
-      if (actionWithTheFact !== undefined) {
-        const theFact = actionWithTheFact[fact]
-        this.logger.debug('fact', fact, 'was provided as', theFact)
-        return theFact
-      }
-    }
-    this.logger.debug('fact', fact, 'was not provided')
-    return false
-  }
-
-  /**
    * Get all creating acts where the fact was created and not terminated yet
    *
    * @param {string} fact - Description of the fact, surrounded with []
